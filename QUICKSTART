@@ -9,4 +9,9 @@ Either open ssa.jar using the GUI of your operating system
 
 on the command line.
 
-In order to run SSA under Matlab, use the wrapper script ssa.m
+In order to run SSA under Matlab, change into this directory and
+type 
+
+  help ssa
+
+on the Matlab command line. 
