@@ -1,0 +1,45 @@
+<project>
+
+    <path id="classpath">
+        <fileset dir="lib" includes="**/*.jar"/>
+    </path>
+
+    <target name="clean">
+        <delete dir="build"/>
+        <delete dir="dist"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="build/classes"/>
+        <javac srcdir="src" destdir="build/classes" classpathref="classpath"/>
+    </target>
+
+		<property name="distloc" location="dist" />
+
+    <target name="dist" depends="compile">
+				<copy todir="dist/lib">
+					<fileset dir="lib" />
+				</copy>
+
+				<path id="distlib">
+				    <fileset dir="dist/lib" includes="**/*.jar"/>
+				</path>
+
+				<manifestclasspath property="jar.classpath" jarfile="dist/ssa.jar">
+				  <classpath refid="distlib" />
+				</manifestclasspath>
+		
+        <jar destfile="dist/ssa.jar" basedir="build/classes">
+            <manifest>
+                <attribute name="Main-Class" value="ssatoolbox.Main"/>
+								<attribute name="Class-Path" value="${jar.classpath}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="dist">
+        <java jar="dist/ssa.jar" fork="true"/>
+    </target>
+
+</project>
+

@@ -1,0 +1,479 @@
+\documentclass{article}
+
+\usepackage{graphicx}% Include figure files
+\usepackage{dcolumn}% Align table columns on decimal point
+\usepackage{bm}% bold math
+\usepackage{amsmath}
+\usepackage{ifthen}
+\usepackage{amsfonts}
+\usepackage{dsfont}
+\usepackage{boxedminipage}
+\usepackage{hyperref}
+
+\newcommand{\R}{\ensuremath{\mathds{R}}}
+\newcommand{\C}{\ensuremath{\mathds{C}}}
+\newcommand{\Q}{\ensuremath{\mathds{Q}}}
+\newcommand{\N}{\ensuremath{\mathcal{N}}}
+\newcommand{\Z}{\ensuremath{\mathds{Z}}}
+\newcommand{\D}{\ensuremath{\mathds{D}}}
+\newcommand{\W}{\ensuremath{\mathds{W}}}
+\newcommand{\B}{\ensuremath{\mathds{B}}}
+\newcommand{\mS}{\ensuremath{\mathds{S}}}
+\newcommand{\I}{\ensuremath{I}}
+\newcommand{\1}{\ensuremath{\mathds{1}}}
+\newcommand{\SO}{\ensuremath{\mathsf{SO}}}
+\newcommand{\Sp}{\ensuremath{\mathsf{Sp}}}
+\newcommand{\s}{\ensuremath{\mathfrak{s}}}
+\newcommand{\n}{\ensuremath{\mathfrak{n}}}
+\newcommand{\Ocplx}{\ensuremath{\mathcal{O}}}
+\newcommand{\0}{\ensuremath{0}}
+\newcommand{\cset}[1]{\mathcal{#1}}
+
+\newcommand{\softname}{SSA Toolbox}
+
+\newcommand{\KLD}{D_{\text{KL}}}
+%\DeclareMathOperator*{\KLD}{KL}
+
+\DeclareMathOperator*{\E}{E}
+\DeclareMathOperator*{\sign}{sign}
+\DeclareMathOperator*{\trace}{tr}
+\DeclareMathOperator*{\Var}{Var}
+\DeclareMathOperator*{\Cov}{Cov}
+\DeclareMathOperator*{\expm}{expm}
+\DeclareMathOperator*{\myspan}{span}
+
+\begin{document}
+
+\title{SSA Toolbox 0.1b \\ Manual}
+\author{Jan Saputra M\"uller, Paul von B\"unau, \\ Frank C.~Meinecke, Franz J.~Kir\'{a}ly, Klaus-Robert M\"uller}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+\section{Technical Prerequisites}
+
+\paragraph{Obtaining the latest SSA~Toolbox}
+
+The latest version of the SSA~Toolbox is available from the offical SSA homepage: 
+\begin{center}
+	\url{http://www.stationary-subspace-analysis.org}
+\end{center}
+There you can also find pointers to further references, example data and a link 
+to the SSA mailing list. 
+
+\paragraph{Platforms}
+
+The SSA~Toolbox is written in the platform-independent Java programming language; 
+platform-specific numerical libraries\footnote{BLAS+LAPACK provided through
+jblas (see \url{http://www.jblas.org}).} are included for several target architectures. 
+The SSA~Toolbox requires the Java Runtime Environment\footnote{See 
+\url{http://www.java.com/getjava}} version 1.5 or later. Most operating systems
+have a Java Runtime Environment pre-installed, you might be able to find out 
+the version by typing \texttt{java -version} on the command line. The SSA~Toolbox has 
+been tested on the following platforms.
+\begin{itemize}
+	\item Microsoft Windows (only 32 bit Java Virtual Machine)
+	\item Linux (32 and 64 bit)
+	\item Mac OS X (32 and 64 bit)
+\end{itemize}
+On 64 bit systems you will have to install the package \texttt{libgfortran3}. This can be
+done for example under Ubuntu with
+\begin{center}
+	\texttt{apt-get install libgfortran3}
+\end{center}
+
+\paragraph{Installation and Running}
+
+Download the software from the SSA homepage\footnote{\url{http://www.stationary-subspace-analysis.org}}. 
+The SSA~Toolbox comes as a single file \texttt{ssa\_toolbox-v0.1.zip}. 
+After unpacking, you can start the SSA~Toolbox by opening the file \texttt{ssa.jar}
+with the default method, e.g.~by double-clicking on it under Microsoft Windows, 
+OS X and some Linux distributions.
+
+You can also manually invoke the SSA~Toolbox by typing
+\begin{center}
+  \texttt{java -jar ssa.jar}
+\end{center}
+on the command line or running the shell scripts \texttt{ssa.sh} (Linux)
+or \texttt{ssa.bat} (Windows). If you want to use the SSA~Toolbox directly from Matlab, 
+you can use the wrapper script \texttt{ssa.m}. Type \texttt{help ssa} on the Matlab 
+command line to find out about the format of its input and output parameters. 
+Note that if you invoke the SSA Toolbox from within Matlab, it will use its
+internal JVM unless you specify an external JVM, e.g. using the environment
+variable \texttt{MATLAB\_JAVA} under Linux.
+
+\section{The SSA Model and Terminology}
+
+Stationary Subspace Analysis \cite{PRL:SSA:2009} factorizes a multivariate time-series 
+into its stationary and non-stationary components. That is, we assume that the data 
+generating system consists of $d$ stationary source signals 
+${\mathbf s^\s}(t) = [s_1(t), \dots, s_d(t)]^\top$ and $D-d$ non-stationary source signals
+${\mathbf s^\n}(t) = [s_{d+1}(t), \dots, s_D(t)]^\top$ and that the observed signals 
+$x(t)$ are a linear superposition of these sources,
+\begin{equation}
+  {\mathbf x}(t) = A {\mathbf s}(t) = 
+    \begin{bmatrix} A^{\s} & A^{\n} \end{bmatrix}
+    \begin{bmatrix} {\mathbf s^{\s}}(t) \\ {\mathbf s^{\n}}(t) \end{bmatrix}
+\label{eq:mixing_model}
+\end{equation}
+where $A$ is an invertible matrix. Note that in contrast to 
+Independent Component Analyis~\cite{ICABook} we do \textit{not} assume that 
+the sources ${\mathbf s}(t)$ are independent. We refer to the spaces spannend 
+by the columns of $A^{\s}$ and $A^{\n}$ as the stationary ($\s$-) and 
+non-stationary ($\n$-) space respectively.  
+%Please note that for the purpose
+%of the SSA~Toolbox, we have interchanged the dimensions, i.e.~contrary
+%to the publications \cite{PRL:SSA:2009}, the time runs along the first dimension
+%and the different sources and signals each correspond to a 
+%column\footnote{This is to be consistent with the majority of statistics and signal
+%processing software packages, in particular to facilitate easy data exchange
+%via the CSV file format.}
+
+The SSA algorithm factorizes the observed signals $x(t)$ according to
+Equation~\ref{eq:mixing_model}, i.e.~it finds a linear transformation
+\begin{equation}
+\label{eq:est_demixing}
+  \hat{A}^{-1} = \begin{bmatrix} \hat{P}^{\s} \\ \hat{P}^{\n} \end{bmatrix}
+\end{equation}
+that separates the \s-sources from the \n-sources. The inverse of the estimated 
+demixing matrix $\hat{A}^{-1}$ is the estimated mixing matrix, 
+\begin{equation}
+\label{eq:est_mixing}
+ \hat{A} = \begin{bmatrix} \hat{A}^{\s} & \hat{A}^{\n} \end{bmatrix}, 
+\end{equation}
+and the estimated stationary and non-stationary sources are thus given by
+\begin{align}
+\label{eq:est_s_sources}
+  \hat{\mathbf s}^{\s}(t) & = \hat{P}^{\s} {\mathbf x}(t) \\
+\label{eq:est_n_sources}
+  \hat{\mathbf s}^{\n}(t) & = \hat{P}^{\n} {\mathbf x}(t) 
+\end{align}
+respectively.
+Note that SSA only identifies the $\s$-projection and the $\n$-space uniquely.
+$\hat P^{\n}$ is chosen such that it is orthogonal to $\hat P^{\s}$.
+Therefore, $\hat A^{\s}$ is orthogonal to $\hat A^{\n}$.\\
+The SSA Toolbox allows for input and output in two formats: the first
+dimension corresponding to the channels and the second to time or vice versa.  
+Note that the above definitions holds for the former case, 
+i.e.~$\text{channels} \times \text{time}$. If the other output format has
+been chosen, then the results (Equations~\ref{eq:est_demixing}, \ref{eq:est_mixing}, 
+\ref{eq:est_s_sources} and \ref{eq:est_n_sources}) are transposed.
+
+\section{Input}
+
+The input to the SSA Toolbox consists of
+\begin{itemize}
+ \item Data: the timeseries $x(t)$, either $\text{channels} \times \text{time}$ or 
+				$\text{channels} \times \text{time}$.
+
+ \item Segmentation of the timeseries into epochs, either
+	\begin{itemize}
+	  \item equally-sized (segmented automatically by the SSA Toolbox); or 
+	  \item according to a user-supplied custom epoch definition. 
+	\end{itemize}
+
+ \item Parameters (see Section~\ref{sec:params}).
+\end{itemize}
+
+The parameters are set via the graphical user interface. The timeseries 
+$x(t)$ and a custom epoch definition can be loaded from comma-separated-values
+(CSV) and Matlab (.mat) files.
+
+\subsection{Comma-Separated-Values File Format}
+\label{sec:csv_input}
+
+Comma Separated Values (CSV) files are human-readable text files for storing tabular data. 
+The columns are separated by commas and each line of the file corresponds to a row. 
+Lines starting with a hash (\texttt{\#}) are ignored. If the data has more rows than columns,
+then each row will be interpreted as a time point and each column as a channel. Otherwise,
+the format is assumed to be $\text{channels} \times \text{time}$. See 
+Figure~\ref{fig:ex_timeseries} for an example.
+
+\begin{figure}[h]
+\centering
+\begin{boxedminipage}{10cm}
+\begin{verbatim}
+# 2ch recording VPzj Oct 30th
+-0.18671,0.11393
+0.72579,1.0668
+-0.58832,0.059281
+2.1832,-0.095648
+-0.1364,-0.83235
+\end{verbatim}
+\end{boxedminipage}
+\caption{
+Timeseries in CSV format with two channels and five timepoints. 
+The first line is a comment for documentation purposes.
+\label{fig:ex_timeseries}
+}
+\end{figure}
+
+A custom segmentation of the timeseries into epochs can be specified by means of 
+a separate CSV file, which must have the same number of rows as the timeseries 
+and one column. The entries correspond to the index (starting with 1) of the 
+epoch that a timepoint belongs to. Figure~\ref{fig:ex_segmentation} shows 
+an example for a segmentation of the timeseries in Figure~\ref{fig:ex_timeseries}.
+
+\begin{figure}[h]
+\centering
+\begin{boxedminipage}{10cm}
+\begin{verbatim}
+# Epochs for recording VPzj Oct 30th
+1
+1
+1
+2
+2
+\end{verbatim}
+\end{boxedminipage}
+\caption{
+Custom epoch definition for the timeseries shown in Figure~\ref{fig:ex_timeseries}. 
+The first three timepoints belong to the same epoch and the last two timepoints form the
+second epoch.
+\label{fig:ex_segmentation}
+}
+\end{figure}
+
+\subsection{Matlab File Format}
+
+In the Matlab file format, the timeseries must be contained in a variable
+called \texttt{X}. If \texttt{X} has more rows than columns, then each row
+will be interpreted as a time point and each column as a channel. Otherwise,
+the format is assumed to be $\text{channels} \times \text{time}$. 
+
+\begin{figure}[h]
+\centering
+\begin{boxedminipage}{10cm}
+\begin{verbatim}
+>> X
+
+X =
+
+   -0.4326   -0.1867
+   -1.6656    0.7258
+    0.1253   -0.5883
+    0.2877    2.1832
+   -1.1465   -0.1364
+
+\end{verbatim}
+\end{boxedminipage}
+\caption{Timeseries in Matlab with two channels and five timepoints.
+\label{fig:ex_matlabts}
+}
+\end{figure}
+
+If \texttt{X} is a cell array, then the elements
+are interpreted as epochs where each epoch must have the same number 
+of channels, Figure~\ref{fig:ex_matlabsegs} shows
+an example.
+
+\begin{figure}[h]
+\centering
+\begin{boxedminipage}{10cm}
+\begin{verbatim}
+>> X
+
+X = 
+
+    [100x2 double]    [100x2 double]    [80x2 double]
+\end{verbatim}
+\end{boxedminipage}
+\caption{Timeseries in Matlab with custom epoch definition. The timeseries is split
+into three epochs where the first two epochs contain 100 samples each and the third
+epoch consists of 80 samples.
+\label{fig:ex_matlabsegs}
+}
+\end{figure}
+
+\subsection{Parameters of SSA}
+\label{sec:params}
+
+The SSA algorithm has the following parameters which are set via the graphical user
+interface.
+
+\paragraph{Number of stationary sources} The number of stationary sources $d$ to be 
+found in the timeseries. The minimum number of epochs required to avoid spurious
+stationary directions depends on $d$, see Section~\ref{sec:determinacy}. 
+
+\paragraph{Number of restarts} The number of times the optimization procedure
+should be repeated with different random initialization in order to avoid local minima.
+The final result is the decomposition which attained the smallest objective function
+value.
+
+\paragraph{Number of equally-sized epochs} The number of equally sized epochs $N$ that 
+the timeseries should be split into, if the user did not supply a custom segmentation.
+The minimum number of epochs required to avoid spurious
+stationary directions depends on the number of stationary sources $d$, see Section~\ref{sec:determinacy}. 
+
+\paragraph{Which moments of the sources should be considered} Depending on the application domain, changes in mean or covariance matrix either do not occur or are not relevant. The user can therefore select whether non-stationarities in the mean, covariance matrix or both should be considered. The default is that both moments are taken into account.
+
+\subsubsection{Determinacy of the solution}
+\label{sec:determinacy}
+
+If the number of epochs $N$ is too small in relation to the number of 
+non-stationary sources $D-d$, there may exist spurious stationary components that render
+the solution non-identifiable, i.e. components which appear stationary on the
+limited amount of observed data but which are in fact non-stationry.
+Informally speaking, spurious stationary components occur when the amount of 
+observed variation in the distributions (i.e. the number of epochs) is insufficient 
+to eliminate seemingly stationary directions in the non-stationary subspace. 
+
+It can be shown \cite{PRL:SSA:2009} that there exist no spurious stationary directions 
+if the number of distinct epochs is larger than 
+\begin{equation*}
+	N > \frac{D-d}{2} + 2.
+\end{equation*}
+When only changes in one moment are considered, more
+distinct epochs are needed for guaranteed determinacy,
+\begin{equation*}
+	N > D-d + 1 .
+\end{equation*}
+The SSA~Toolbox issues a warning if this condition is violated.
+
+\section{Output}
+
+The result of the SSA algorithm is an estimated demixing matrix $\hat{A}^{-1}$
+(see Equation~\ref{eq:est_demixing}). From this, the following output
+is generated by the SSA~Toolbox (assuming the output format $\text{channels} \times \text{time}$):
+\begin{itemize}
+	\item the estimated projection to the stationary sources $\hat{P}^\s \in \R^{d \times D}$, 
+				see Equation~\ref{eq:est_demixing}
+						
+	\item the estimated projection to the non-stationary sources $\hat{P}^\n \in \R^{ (D-d) \times D}$, 
+		see Equation~\ref{eq:est_demixing}
+
+	\item the estimated basis of the stationary subspace $\hat{A}^\s \in \R^{D \times d}$, 
+		see Equation~\ref{eq:est_mixing}
+	
+	\item the estimated basis of the non-stationary subspace $\hat{A}^\n \in \R^{D \times (D-d)}$,
+		see Equation~\ref{eq:est_mixing}
+
+	\item the estimated stationary sources $\hat{\mathbf s}^\s(t) = \hat{P}^\s {\mathbf x}(t)$, 
+		see Equation~\ref{eq:est_s_sources}
+	
+	\item the estimated non-stationary sources $\hat{\mathbf s}^\n(t) = \hat{P}^\n {\mathbf x}(t) $,
+		see Equation~\ref{eq:est_n_sources}
+	
+\end{itemize}
+These six matrices resp.~time series can either be saved in individual CSV files 
+(see Section~\ref{sec:csv_input} for a general description of the format) or to a single
+Matlab file (.mat). 
+
+\subsection{Matlab File Format}
+
+The output of the SSA Toolbox can be written to a single Matlab file which contains
+a structure \texttt{ssa\_results} where the attributes correspond to the six outputs. 
+See Figure~\ref{fig:ex_matlab_res} for an example.
+
+\begin{figure}[h]
+\centering
+\begin{boxedminipage}{12cm}
+\begin{verbatim}
+>> ssa_results = 
+
+         est_Ps: [3x6 double]
+         est_Pn: [3x6 double]
+         est_As: [6x3 double]
+         est_An: [6x3 double]
+      est_s_src: [3x10000 double]
+      est_n_src: [3x10000 double]
+     parameters: [1x1 struct]
+    description: 'SSA results (Thu Jun 10 12:58:23 CEST 2010)'
+\end{verbatim}
+\end{boxedminipage}
+\caption{
+Matlab result structure of the SSA Toolbox. Five dimensional data (500 samples) 
+are decomposed into $d = 3$ stationary sources and $D-d = 2$ non-stationary sources.
+\label{fig:ex_matlab_res}
+}
+\end{figure}
+
+\section{Support}
+
+If you have any question, bug report or want to discuss the application of SSA
+to a specific problem, please join the SSA mailing list:
+\begin{center}
+        \url{http://groups.google.com/group/ssa-list}
+\end{center}
+You can find further
+information on the official SSA homepage: 
+\begin{center}
+	\url{http://www.stationary-subspace-analysis.org}
+\end{center}
+
+%\section{The SSA Algorithm in a Nutshell}
+%
+%Since the solution is undetermined up to scaling, sign 
+%and linear transformations within the \s- and \n-space, we set the
+%estimated \s-sources to zero mean and unit variance
+%by centering and whitening of the data, i.e.~we write the estimated
+%demixing matrix as $\hat{A}^{-1} = \hat{B}W$ where $W =
+%\Cov(x)^{-1/2}$ is a whitening matrix and $\hat{B}$ is an orthogonal
+%matrix\footnote{This is also standard approach in ICA \cite{ICABook,tdsep}.}.
+%The rotation part $\hat{B}$ of the demixing is determined 
+%using an optimization procedure such that the estimated stationary sources, 
+%i.e.~the first $d$ components of the estimated sources 
+%$\mathbf{\hat{s}}(t) = \hat{B}W \mathbf{x}(t)$, are as stationary as possible. Therefore, 
+%we split the data into $N$ consecutive epochs $\cset{X}_1, \ldots, \cset{X}_N \subset \R^D$
+%and consider estimated sources as stationary if their joint distribution remains 
+%unchanged over all epochs. In order to limit the influence of estimation
+%errors due to finite samples, we characterize the distribution in each
+%epoch $\cset{X}_i$ by its empirical mean $\hat{\boldsymbol \mu}_i$ and covariance matrix
+%$\hat{\Sigma}_i$ only. To generically compare distributions up to their
+%first two moments we use the Kullback-Leibler divergence $\KLD$ between
+%Gaussians, which is the maximum-entropy distribution that is consistent
+%with the specified moments \cite{Jay57}. Note that we do {\em not} assume the data 
+%to be Gaussian, we only assume that the non-stationarities are visible in 
+%the first two moments. 
+
+%Let $\hat{\boldsymbol \mu}_i$ and $\hat{\Sigma}_i$ be the empirical mean and 
+%covariance matrix of epoch $i$. Then, for a given rotation $B^\top B = \I$, 
+%the mean and covariance of the estimated \s-sources are given by
+%\begin{align*}
+%  \hat{\boldsymbol \mu}^\s_i = \I^d B W \hat{\boldsymbol \mu}_i 
+%  \; \text{ and } \;
+%  \hat{\Sigma}^\s_i = \I^d BW \hat{\Sigma}_i (\I^d B W)^\top
+%\end{align*}
+%respectively, where $\I^d$ denotes the identity matrix truncated to the first
+%$d$ rows. Since we have set estimated \s-sources to zero mean and unit covariance,
+%minimizing the KL-divergence across all epochs is equivalent to minimizing 
+%the KL-divergence between the distribution in each epoch and the multivariate
+%standard normal distribution. 
+%
+%Starting with a random orthogonal matrix, in each step of the optimization 
+%we aim to find an orthogonal update $R^\top R = \I$ of the current rotation $B_0$
+%such that $B \gets R B_0$ minimizes the loss function
+%\begin{eqnarray}
+%\label{eq:lossfun}
+%L_{B_0}(R) &=& \sum_{i=1}^N
+%            \KLD \left[ \N(\hat{\boldsymbol \mu}^\s_i,\hat{\Sigma}^\s_i) \; || 
+%            \; \N(0,I) \right]  \nonumber \\ 
+%     &=& \sum_{i=1}^N
+%          \left( -\log\det \hat{\Sigma}^\s_i + \hat{\boldsymbol \mu}^{\s\top}_i \hat{\boldsymbol \mu}^\s_i \right) .
+%\end{eqnarray}
+%
+%If changes in the first moment shall not be considered, then the loss
+%function simplifies to 
+%\begin{equation}
+%\label{eq:lossfun_nomeans}
+%L_{B_0}(R) 
+%     = - \sum_{i=1}^N
+%         \log\det \hat{\Sigma}^\s_i .
+%\end{equation}
+
+%In order to determine the update rotation $R$, we use the fact
+%that the manifold of orthogonal matrices is connected to the set of skew-symmatrices 
+%$M = -M^\top$ via the exponential map \cite{Bak02}. That is, every orthogonal matrix $R$ 
+%can be expressed as $R = e^M$ for some skew-symmetric matrix $M$.  Thus, the gradient of the loss 
+%function $L_{B_0}$ w.r.t.~$M$ at $M = 0$ provides us with a search direction $H=-H^\top$ in the set 
+%of skew symmetric  matrices. Then we find the update $R$ by performing a line-search 
+%\cite{Nocedal99,Plu05} along the one-parameter subgroup $\{ e^{t H} \; | \; t \in \R \}$ 
+%of $SO(D)$ to determine the optimal step length $t^*$ such that $R = e^{t^* H}$. 
+
+\bibliographystyle{plain}
+\bibliography{../../bib/stable}
+
+\end{document}
