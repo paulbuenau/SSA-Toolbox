@@ -1,0 +1,12 @@
+See manual.pdf for details.
+
+== QUICK START ==================================
+
+Either open ssa.jar using the GUI of your operating system 
+(e.g. double-click under Windows) or type 
+
+  java -jar ssa.jar
+
+on the command line.
+
+In order to run SSA under Matlab, use the wrapper script ssa.m
