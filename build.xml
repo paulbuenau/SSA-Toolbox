@@ -16,7 +16,7 @@
 
 		<property name="distloc" location="dist" />
 
-    <target name="dist" depends="compile">
+    <target name="jar" depends="compile">
 				<copy todir="dist/lib">
 					<fileset dir="lib" />
 				</copy>
@@ -37,7 +37,32 @@
         </jar>
     </target>
 
-    <target name="run" depends="dist">
+		<target name="dist" depends="jar,manual">
+      <copy file="matlab/ssa.m" todir="dist" />
+      <copy file="QUICKSTART" todir="dist" />
+		</target>
+
+		<target name="manual">
+			<exec dir="manual" executable="pdflatex">
+			  <arg line="manual.tex"/>
+			</exec>			
+
+			<exec dir="manual" executable="bibtex">
+			  <arg line="manual"/>
+			</exec>			
+
+			<exec dir="manual" executable="pdflatex">
+			  <arg line="manual.tex"/>
+			</exec>			
+
+			<exec dir="manual" executable="pdflatex">
+			  <arg line="manual.tex"/>
+			</exec>			
+
+			<copy file="manual/manual.pdf" todir="dist" />
+		</target>
+
+    <target name="run" depends="jar">
         <java jar="dist/ssa.jar" fork="true"/>
     </target>
 

@@ -166,10 +166,10 @@ been chosen, then the results (Equations~\ref{eq:est_demixing}, \ref{eq:est_mixi
 
 The input to the SSA Toolbox consists of
 \begin{itemize}
- \item Data: the timeseries $x(t)$, either $\text{channels} \times \text{time}$ or 
+ \item Data: the time series $x(t)$, either $\text{channels} \times \text{time}$ or 
 				$\text{channels} \times \text{time}$.
 
- \item Segmentation of the timeseries into epochs, either
+ \item Segmentation of the time series into epochs, either
 	\begin{itemize}
 	  \item equally-sized (segmented automatically by the SSA Toolbox); or 
 	  \item according to a user-supplied custom epoch definition. 
@@ -178,8 +178,8 @@ The input to the SSA Toolbox consists of
  \item Parameters (see Section~\ref{sec:params}).
 \end{itemize}
 
-The parameters are set via the graphical user interface. The timeseries 
-$x(t)$ and a custom epoch definition can be loaded from comma-separated-values
+The parameters are set via the graphical user interface. The time series 
+$x(t)$ and a custom epoch definition can be loaded from comma-separated values
 (CSV) and Matlab (.mat) files.
 
 \subsection{Comma-Separated-Values File Format}
@@ -205,17 +205,17 @@ Figure~\ref{fig:ex_timeseries} for an example.
 \end{verbatim}
 \end{boxedminipage}
 \caption{
-Timeseries in CSV format with two channels and five timepoints. 
+Timeseries in CSV format with two channels and five time points. 
 The first line is a comment for documentation purposes.
 \label{fig:ex_timeseries}
 }
 \end{figure}
 
-A custom segmentation of the timeseries into epochs can be specified by means of 
-a separate CSV file, which must have the same number of rows as the timeseries 
+A custom segmentation of the time series into epochs can be specified by means of 
+a separate CSV file, which must have the same number of rows as the time series 
 and one column. The entries correspond to the index (starting with 1) of the 
-epoch that a timepoint belongs to. Figure~\ref{fig:ex_segmentation} shows 
-an example for a segmentation of the timeseries in Figure~\ref{fig:ex_timeseries}.
+epoch that a time point belongs to. Figure~\ref{fig:ex_segmentation} shows 
+an example for a segmentation of the time series in Figure~\ref{fig:ex_timeseries}.
 
 \begin{figure}[h]
 \centering
@@ -230,8 +230,8 @@ an example for a segmentation of the timeseries in Figure~\ref{fig:ex_timeseries
 \end{verbatim}
 \end{boxedminipage}
 \caption{
-Custom epoch definition for the timeseries shown in Figure~\ref{fig:ex_timeseries}. 
-The first three timepoints belong to the same epoch and the last two timepoints form the
+Custom epoch definition for the time series shown in Figure~\ref{fig:ex_timeseries}. 
+The first three time points belong to the same epoch and the last two time points form the
 second epoch.
 \label{fig:ex_segmentation}
 }
@@ -239,7 +239,7 @@ second epoch.
 
 \subsection{Matlab File Format}
 
-In the Matlab file format, the timeseries must be contained in a variable
+In the Matlab file format, the time series must be contained in a variable
 called \texttt{X}. If \texttt{X} has more rows than columns, then each row
 will be interpreted as a time point and each column as a channel. Otherwise,
 the format is assumed to be $\text{channels} \times \text{time}$. 
@@ -260,7 +260,7 @@ X =
 
 \end{verbatim}
 \end{boxedminipage}
-\caption{Timeseries in Matlab with two channels and five timepoints.
+\caption{Timeseries in Matlab with two channels and five time points.
 \label{fig:ex_matlabts}
 }
 \end{figure}
@@ -281,7 +281,7 @@ X =
     [100x2 double]    [100x2 double]    [80x2 double]
 \end{verbatim}
 \end{boxedminipage}
-\caption{Timeseries in Matlab with custom epoch definition. The timeseries is split
+\caption{Timeseries in Matlab with custom epoch definition. The time series is split
 into three epochs where the first two epochs contain 100 samples each and the third
 epoch consists of 80 samples.
 \label{fig:ex_matlabsegs}
@@ -295,7 +295,7 @@ The SSA algorithm has the following parameters which are set via the graphical u
 interface.
 
 \paragraph{Number of stationary sources} The number of stationary sources $d$ to be 
-found in the timeseries. The minimum number of epochs required to avoid spurious
+found in the time series. For the minimum number of epochs required to avoid spurious
 stationary directions depends on $d$, see Section~\ref{sec:determinacy}. 
 
 \paragraph{Number of restarts} The number of times the optimization procedure
@@ -304,13 +304,13 @@ The final result is the decomposition which attained the smallest objective func
 value.
 
 \paragraph{Number of equally-sized epochs} The number of equally sized epochs $N$ that 
-the timeseries should be split into, if the user did not supply a custom segmentation.
+the time series should be split into, if the user did not supply a custom segmentation.
 The minimum number of epochs required to avoid spurious
 stationary directions depends on the number of stationary sources $d$, see Section~\ref{sec:determinacy}. 
 
 \paragraph{Which moments of the sources should be considered} Depending on the application domain, changes in mean or covariance matrix either do not occur or are not relevant. The user can therefore select whether non-stationarities in the mean, covariance matrix or both should be considered. The default is that both moments are taken into account.
 
-\subsubsection{Determinacy of the solution}
+\subsubsection*{Determinacy of the solution}
 \label{sec:determinacy}
 
 If the number of epochs $N$ is too small in relation to the number of 
@@ -404,76 +404,7 @@ information on the official SSA homepage:
 	\url{http://www.stationary-subspace-analysis.org}
 \end{center}
 
-%\section{The SSA Algorithm in a Nutshell}
-%
-%Since the solution is undetermined up to scaling, sign 
-%and linear transformations within the \s- and \n-space, we set the
-%estimated \s-sources to zero mean and unit variance
-%by centering and whitening of the data, i.e.~we write the estimated
-%demixing matrix as $\hat{A}^{-1} = \hat{B}W$ where $W =
-%\Cov(x)^{-1/2}$ is a whitening matrix and $\hat{B}$ is an orthogonal
-%matrix\footnote{This is also standard approach in ICA \cite{ICABook,tdsep}.}.
-%The rotation part $\hat{B}$ of the demixing is determined 
-%using an optimization procedure such that the estimated stationary sources, 
-%i.e.~the first $d$ components of the estimated sources 
-%$\mathbf{\hat{s}}(t) = \hat{B}W \mathbf{x}(t)$, are as stationary as possible. Therefore, 
-%we split the data into $N$ consecutive epochs $\cset{X}_1, \ldots, \cset{X}_N \subset \R^D$
-%and consider estimated sources as stationary if their joint distribution remains 
-%unchanged over all epochs. In order to limit the influence of estimation
-%errors due to finite samples, we characterize the distribution in each
-%epoch $\cset{X}_i$ by its empirical mean $\hat{\boldsymbol \mu}_i$ and covariance matrix
-%$\hat{\Sigma}_i$ only. To generically compare distributions up to their
-%first two moments we use the Kullback-Leibler divergence $\KLD$ between
-%Gaussians, which is the maximum-entropy distribution that is consistent
-%with the specified moments \cite{Jay57}. Note that we do {\em not} assume the data 
-%to be Gaussian, we only assume that the non-stationarities are visible in 
-%the first two moments. 
-
-%Let $\hat{\boldsymbol \mu}_i$ and $\hat{\Sigma}_i$ be the empirical mean and 
-%covariance matrix of epoch $i$. Then, for a given rotation $B^\top B = \I$, 
-%the mean and covariance of the estimated \s-sources are given by
-%\begin{align*}
-%  \hat{\boldsymbol \mu}^\s_i = \I^d B W \hat{\boldsymbol \mu}_i 
-%  \; \text{ and } \;
-%  \hat{\Sigma}^\s_i = \I^d BW \hat{\Sigma}_i (\I^d B W)^\top
-%\end{align*}
-%respectively, where $\I^d$ denotes the identity matrix truncated to the first
-%$d$ rows. Since we have set estimated \s-sources to zero mean and unit covariance,
-%minimizing the KL-divergence across all epochs is equivalent to minimizing 
-%the KL-divergence between the distribution in each epoch and the multivariate
-%standard normal distribution. 
-%
-%Starting with a random orthogonal matrix, in each step of the optimization 
-%we aim to find an orthogonal update $R^\top R = \I$ of the current rotation $B_0$
-%such that $B \gets R B_0$ minimizes the loss function
-%\begin{eqnarray}
-%\label{eq:lossfun}
-%L_{B_0}(R) &=& \sum_{i=1}^N
-%            \KLD \left[ \N(\hat{\boldsymbol \mu}^\s_i,\hat{\Sigma}^\s_i) \; || 
-%            \; \N(0,I) \right]  \nonumber \\ 
-%     &=& \sum_{i=1}^N
-%          \left( -\log\det \hat{\Sigma}^\s_i + \hat{\boldsymbol \mu}^{\s\top}_i \hat{\boldsymbol \mu}^\s_i \right) .
-%\end{eqnarray}
-%
-%If changes in the first moment shall not be considered, then the loss
-%function simplifies to 
-%\begin{equation}
-%\label{eq:lossfun_nomeans}
-%L_{B_0}(R) 
-%     = - \sum_{i=1}^N
-%         \log\det \hat{\Sigma}^\s_i .
-%\end{equation}
-
-%In order to determine the update rotation $R$, we use the fact
-%that the manifold of orthogonal matrices is connected to the set of skew-symmatrices 
-%$M = -M^\top$ via the exponential map \cite{Bak02}. That is, every orthogonal matrix $R$ 
-%can be expressed as $R = e^M$ for some skew-symmetric matrix $M$.  Thus, the gradient of the loss 
-%function $L_{B_0}$ w.r.t.~$M$ at $M = 0$ provides us with a search direction $H=-H^\top$ in the set 
-%of skew symmetric  matrices. Then we find the update $R$ by performing a line-search 
-%\cite{Nocedal99,Plu05} along the one-parameter subgroup $\{ e^{t H} \; | \; t \in \R \}$ 
-%of $SO(D)$ to determine the optimal step length $t^*$ such that $R = e^{t^* H}$. 
-
 \bibliographystyle{plain}
-\bibliography{../../bib/stable}
+\bibliography{ssa.bib}
 
 \end{document}
