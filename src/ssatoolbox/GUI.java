@@ -1,3 +1,36 @@
+/*
+
+Copyright (c) 2010, Jan Saputra Müller, Paul von Bünau, Frank C. Meinecke,
+Franz J. Kiraly and Klaus-Robert Müller.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice, this
+list of conditions and the following disclaimer in the documentation and/or other
+ materials provided with the distribution.
+
+* Neither the name of the Berlin Institute of Technology (Technische Universität
+Berlin) nor the names of its contributors may be used to endorse or promote
+products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+ EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+ */
+
+
 package ssatoolbox;
 
 import java.awt.Component;
@@ -148,58 +181,13 @@ public class GUI extends javax.swing.JFrame implements Logger {
             }
         });
 
-       // Dimension windowSize = new Dimension(780, 600);
-       // setSize(windowSize);
-
         panelControl.setFocusTraversalPolicy(new MyFocusTraversalPolicy());
 
-        setTitle("SSA Toolbox (version " + Main.SSA_VERSION + ")" );
-
+        setTitle("SSA Toolbox " + controller.SSA_VERSION);
 
         setValuesFromModel();
 
     }
-
-/*    public void setSystemLookAndFeel() {
-        UIManager.LookAndFeelInfo lif [] =  UIManager.getInstalledLookAndFeels();
-
-        for(int i = 0; i < lif.length; i++) {
-            if(lif[i].getClassName().equals(UIManager.getSystemLookAndFeelClassName())) {
-                menuLaF.getItem(i).setSelected(true);
-                break;
-            }
-        }
-    }*/
-            
-/*    private void buildLookAndFeelMenu() {
-        
-        final ButtonGroup bgrp = new ButtonGroup();
-        UIManager.LookAndFeelInfo lif [] =  UIManager.getInstalledLookAndFeels();
-
-        for(int i = 0; i < lif.length; i++) {
-            System.out.println(lif[i].getName());
-
-            final String className = lif[i].getClassName();
-            final javax.swing.JFrame thisgui = this;
-
-            final JRadioButtonMenuItem mi = new JRadioButtonMenuItem(lif[i].getName());
-            mi.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    try{
-                        if(mi.isSelected()) {
-                          // UIManager.setLookAndFeel(className);
-                          // SwingUtilities.updateComponentTreeUI(thisgui);
-                          // SwingUtilities.updateComponentTreeUI(dialogCitation);
-                        }
-                    }catch(Exception ex){}
-                }
-            });
-
-            bgrp.add(mi);
-            
-            menuLaF.add(mi);            
-        }
-    }*/
 
     private void setEnableArrayWise(JComponent [] comps, boolean enabled) {
         for(int i = 0; i < comps.length; i++) comps[i].setEnabled(enabled);
@@ -365,6 +353,15 @@ public class GUI extends javax.swing.JFrame implements Logger {
         jTextField2 = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         bgrpOutputDataformat = new javax.swing.ButtonGroup();
+        dialogAbout = new javax.swing.JDialog();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        jButton2 = new javax.swing.JButton();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
         panelContents = new javax.swing.JPanel();
         panelControl = new javax.swing.JPanel();
         btStartStopSSA = new javax.swing.JButton();
@@ -441,7 +438,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
 
         jTextArea1.setColumns(20);
         jTextArea1.setEditable(false);
-        jTextArea1.setFont(new java.awt.Font("Courier New", 0, 13)); // NOI18N
+        jTextArea1.setFont(new java.awt.Font("Courier New", 0, 13));
         jTextArea1.setRows(5);
         jTextArea1.setText("@Article{PRL:SSA:2009,\n  title = {Finding Stationary Subspaces in Multivariate Time Series},\n  author = {von B\\\"unau, Paul  and Meinecke, Frank C. and Kir\\'aly, Franz C. and M\\\"uller, Klaus-Robert },\n  journal = {Phys. Rev. Lett.},\n  volume = {103},\n  number = {21},\n  pages = {214101},\n  numpages = {4},\n  year = {2009},\n  month = {Nov},\n  doi = {10.1103/PhysRevLett.103.214101},\n  publisher = {American Physical Society}\n}\n");
         jScrollPane2.setViewportView(jTextArea1);
@@ -465,7 +462,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         jPanel2.add(jLabel2, gridBagConstraints);
 
         jTextArea2.setColumns(20);
-        jTextArea2.setFont(new java.awt.Font("Courier New", 0, 13)); // NOI18N
+        jTextArea2.setFont(new java.awt.Font("Courier New", 0, 13));
         jTextArea2.setRows(5);
         jTextArea2.setText("@Article{JMLR:SSAToolbox:2009,\n  author =   {Jan Saputra M{\\\"uller} and\n               Paul von B{\\\"u}nau and\n               Frank C.~Meinecke and\n               Franz J.~Kir\\'{a}ly and \n               Klaus-Robert M{\\\"u}ller},\n  title =  {SSA Toolbox}, \n  journal =   {Journal of Machine Learning Research (accepted)},\n  year =   2009\n}");
         jScrollPane3.setViewportView(jTextArea2);
@@ -535,6 +532,74 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         dialogCitation.getContentPane().add(jPanel2, gridBagConstraints);
+
+        dialogAbout.setTitle("About the SSA Toolbox");
+
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        jLabel5.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
+        jLabel5.setText("SSA Toolbox " + controller.SSA_VERSION);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 0);
+        jPanel1.add(jLabel5, gridBagConstraints);
+
+        jButton2.setText("Close");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jButton2, gridBagConstraints);
+
+        jLabel6.setText("Copyright (c) 2010 Jan Saputra Müller, Paul von Bünau, ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        jPanel1.add(jLabel6, gridBagConstraints);
+
+        jLabel7.setText("Licensed under the BSD license (see file COPYING for details)");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        jPanel1.add(jLabel7, gridBagConstraints);
+
+        jLabel8.setText("www.stationary-subspace-analysis.org");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        jPanel1.add(jLabel8, gridBagConstraints);
+
+        jLabel9.setText("Frank C. Meinecke, Franz J. Kiraly and Klaus-Robert Müller");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        jPanel1.add(jLabel9, gridBagConstraints);
+
+        jLabel10.setText("All rights reserved\n");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        jPanel1.add(jLabel10, gridBagConstraints);
+
+        dialogAbout.getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("SSA");
@@ -941,6 +1006,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 10);
@@ -1167,7 +1233,13 @@ public class GUI extends javax.swing.JFrame implements Logger {
 }//GEN-LAST:event_btStartStopSSAActionPerformed
 
     private void jMenuItem14ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem14ActionPerformed
-        // TODO add your handling code here:
+        Point screenpos = this.getLocationOnScreen();
+
+        dialogAbout.pack();
+        dialogAbout.setSize(450, 180);
+        dialogAbout.setLocation(screenpos.x + 50, screenpos.y + 50);
+        dialogAbout.setVisible(true);
+
     }//GEN-LAST:event_jMenuItem14ActionPerformed
 
     private void miExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miExitActionPerformed
@@ -1501,6 +1573,10 @@ public class GUI extends javax.swing.JFrame implements Logger {
     private void tfNumberOfStationarySourcesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfNumberOfStationarySourcesActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_tfNumberOfStationarySourcesActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        dialogAbout.setVisible(false);
+    }//GEN-LAST:event_jButton2ActionPerformed
         
     /**
     * @param args the command line arguments
@@ -1516,17 +1592,26 @@ public class GUI extends javax.swing.JFrame implements Logger {
     private javax.swing.JCheckBox cbMomentCovMat;
     private javax.swing.JCheckBox cbMomentMean;
     private javax.swing.JComboBox combSave;
+    private javax.swing.JDialog dialogAbout;
     private javax.swing.JDialog dialogCitation;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem13;
     private javax.swing.JMenuItem jMenuItem14;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;

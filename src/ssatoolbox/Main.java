@@ -1,3 +1,35 @@
+/*
+
+Copyright (c) 2010, Jan Saputra Müller, Paul von Bünau, Frank C. Meinecke,
+Franz J. Kiraly and Klaus-Robert Müller.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice, this
+list of conditions and the following disclaimer in the documentation and/or other
+ materials provided with the distribution.
+
+* Neither the name of the Berlin Institute of Technology (Technische Universität
+Berlin) nor the names of its contributors may be used to endorse or promote
+products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+ EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+ */
+
 package ssatoolbox;
 
 import com.jmatio.io.*;
@@ -39,20 +71,22 @@ public class Main {
     private GUI gui = null;
     private Logger logger = null;
     protected ToolboxConfig toolboxConfig = new ToolboxConfig();
-    //private boolean stop_ssa = false;
 
-    public static final String SSA_VERSION = "0.1";
+    public String SSA_VERSION = null;
 
     /**
      * Constructor for class Main.
      */
     public Main() {
+        Package p = this.getClass().getPackage();
+        SSA_VERSION = p.getImplementationVersion();
+
         data.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent arg0) {                
                 if(arg0.getPropertyName().equals("numberOfEqualSizeEpochs")) {
                     if(data.getNumberOfEqualSizeEpochs() != -1) {
                         if(data.getNumberOfEqualSizeEpochs() < 2) {
-                            logger.appendToLog("ERROR: Number of epochs < 2");
+                            logger.appendToLog("ERROR: Number of epochs must be greater than 2");
                             data.setNumberOfEqualSizeEpochs( ((Integer)arg0.getOldValue()).intValue() );
                         } else {
                             checkDeterminacy();
@@ -62,7 +96,7 @@ public class Main {
                 } 
             }
         });
-
+        
         ssa_parameters.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent arg0) {
                 if(arg0.getPropertyName().equals("numberOfStationarySources")) {
@@ -76,15 +110,26 @@ public class Main {
                     }
                     return;
                 }
+            }
+        });
 
-                if(arg0.getPropertyName().equals("ignoreChangeInMeans")) {                    
-                    checkDeterminacy();
+        ssa_parameters.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent arg0) {
+                if(arg0.getPropertyName().equals("useCovariance") ||
+                        arg0.getPropertyName().equals("useMean") ) {
+                    if(ssa_parameters.getNumberOfStationarySources() != -1) {
+                        if(ssa_parameters.getNumberOfStationarySources() >= data.getNumberOfDimensions()) {
+                            logger.appendToLog("ERROR: Number of stationary sources >= number of input dimensions");
+                            ssa_parameters.setNumberOfStationarySources(((Integer)arg0.getOldValue()).intValue());
+                        } else {
+                            checkDeterminacy();
+                        }
+                    }
                     return;
                 }
             }
         });
 
-        
          UIManager.LookAndFeelInfo lif [] =  UIManager.getInstalledLookAndFeels();
 
 /*         GUI_1 gui = new GUI_1();
@@ -106,9 +151,6 @@ public class Main {
         gui.setGUIState(GUI.STATE_NO_DATA);
         gui.showGUI();
 
-        System.out.println(gui.getPreferredSize());   
-
-//        gui.setSystemLookAndFeel();
         logger.appendToLog("*** Welcome to the SSA Toolbox (version " + SSA_VERSION + ") ***");
         logger.appendToLog("Now you might want to load some data (see menu File).");
     }
@@ -120,13 +162,13 @@ public class Main {
         if(data.getNumberOfEpochs() >= 2 && ssa_parameters.getNumberOfStationarySources() >= 1) {
             if(!ssa_parameters.isUseMean()) {
                 if(data.getNumberOfEpochs() <= (data.getNumberOfDimensions() - ssa_parameters.getNumberOfStationarySources()) + 1) {
-                    //TODO more details.
-                    logger.appendToLog("WARNING: determinacy condition violated");
+                    logger.appendToLog("WARNING: Too few epochs specified; there may be spurious stationary directions");
+                    logger.appendToLog("You need to have at least " + ((data.getNumberOfDimensions() - ssa_parameters.getNumberOfStationarySources()) + 2) + " distinct epochs to guarantee determinacy of the solution");
                 }
             } else {
                 if(data.getNumberOfEpochs() <=  (data.getNumberOfDimensions() - ssa_parameters.getNumberOfStationarySources())/2 + 2) {
-                    logger.appendToLog("WARNING: determinacy condition violated");
-                    //TODO more details.
+                    logger.appendToLog("WARNING: Too few epochs specified; there may be spurious stationary directions");
+                    logger.appendToLog("You need to have at least " +  ((data.getNumberOfDimensions() - ssa_parameters.getNumberOfStationarySources())/2 + 3) + " distinct epochs to guarantee determinacy of the solution");
                 }
             }
         }
@@ -167,17 +209,23 @@ public class Main {
                 //stop_ssa = false;
 
                 ssa.setLogger(gui);
-                results = ssa.optimize(ssa_parameters, data);
+                try {
+                    results = ssa.optimize(ssa_parameters, data);
+                    gui.setGUIState(GUI.STATE_RESULT_AVAILABLE);
+                } catch(RuntimeException ex) {
+                    logger.appendToLog(ex.getMessage());
+                }
 
-                logger.appendToLog("SSA terminated.");
+                checkDeterminacy();
+
+/*                logger.appendToLog("SSA terminated.");
                 logger.appendToLog("Best result:");
                 logger.appendToLog("  Ps: " + results.Ps);
                 logger.appendToLog("  Pn: " + results.Pn);
                 logger.appendToLog("  As: " + results.Bs);
                 logger.appendToLog("  An: " + results.Bn);
                 logger.appendToLog("  Loss: " + results.loss);
-                logger.appendToLog("  Converged: " + results.converged);
-                gui.setGUIState(GUI.STATE_RESULT_AVAILABLE);
+                logger.appendToLog("  Converged: " + results.converged);*/
             }
         }).start();
     }

@@ -1,5 +1,7 @@
 <project>
 
+    <loadproperties srcfile="VERSION" />
+
     <path id="classpath">
         <fileset dir="lib" includes="**/*.jar"/>
     </path>
@@ -33,6 +35,8 @@
             <manifest>
                 <attribute name="Main-Class" value="ssatoolbox.Main"/>
 								<attribute name="Class-Path" value="${jar.classpath}"/>
+                <attribute name="Specification-Version" value="${version}"/>
+                <attribute name="Implementation-Version" value="${version}"/> 
             </manifest>
         </jar>
     </target>
@@ -42,7 +46,17 @@
       <copy file="QUICKSTART" todir="dist" />
 		</target>
 
+    <target name="distarchives" depends="dist">
+      <tar destfile="ssa_toolbox-${version}.tar" basedir="dist" />
+      <gzip destfile="ssa_toolbox-${version}.tar.gz" src="ssa_toolbox-${version}.tar" />
+      <delete file="ssa_toolbox-${version}.tar" />
+
+      <zip destfile="ssa_toolbox-${version}.zip" basedir="dist" />
+    </target>
+
 		<target name="manual">
+      <echo message="${version}" file="manual/version.tex" />
+
 			<exec dir="manual" executable="pdflatex">
 			  <arg line="manual.tex"/>
 			</exec>			
