@@ -5,6 +5,7 @@ function [est_Ps, est_Pn, est_As, est_An, loss, iterations, ssa_results] = ssa(X
 %   = ssa(X, d, {reps: 5}, {equal_epochs: 10}, {use_mean: true}, {use_covariance: true})
 %
 %input
+%  <no input>     Print version number of SSA Toolbox
 %  X              Data in one of two possible formats:
 %                  * D x n matrix with data in the columns
 %                  * cell array where each X{i} is a D x n_i matrix
@@ -33,20 +34,27 @@ function [est_Ps, est_Pn, est_As, est_An, loss, iterations, ssa_results] = ssa(X
 
 % set dynamic java path to needed libraries
 basedir = fileparts(mfilename('fullpath'));
-javaclasspath({[basedir filesep 'lib' filesep 'jblas-1.0.1.jar'], [basedir filesep 'ssa.jar']});
+javaclasspath({[basedir filesep 'ssa.jar']});
 
-% set default parameters
-if ~exist('reps', 'var') reps = 5; end
-if ~exist('equal_epochs', 'var') equal_epochs = 10; end
-if ~exist('use_mean', 'var') use_mean = true; end
-if ~exist('use_covariance', 'var') use_covariance = true; end
-    
 % instantiate classes
 ssadata = ssatoolbox.Data;
 ssaparam = ssatoolbox.SSAParameters;
 ssaopt = ssatoolbox.SSA;
 cl = ssatoolbox.ConsoleLogger;
 ssaopt.setLogger(cl);
+
+% no parameter?
+if ~exist('X', 'var')
+    version = ssadata.getClass.getPackage.getImplementationVersion;
+    fprintf(['SSA Toolbox version ' char(version) '\n']);
+    return;
+end
+
+% set default parameters
+if ~exist('reps', 'var') reps = 5; end
+if ~exist('equal_epochs', 'var') equal_epochs = 10; end
+if ~exist('use_mean', 'var') use_mean = true; end
+if ~exist('use_covariance', 'var') use_covariance = true; end
 
 % detect whether to use equal or custom epochization
 if iscell(X)
@@ -72,7 +80,7 @@ if iscell(X)
     ssadata.setUseCustomEpochDefinition(true);
 else
     % epochize equally
-    fprintf('No custom epochization found. Using equal sized epochs.\n');
+    fprintf('No custom epochization found. Using equally sized epochs.\n');
     Xdm = org.jblas.DoubleMatrix(X);
     ssadata.setTimeSeries(Xdm, []);
     ssadata.setNumberOfEqualSizeEpochs(equal_epochs);
