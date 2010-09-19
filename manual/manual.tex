@@ -308,7 +308,10 @@ the time series should be split into, if the user did not supply a custom segmen
 The minimum number of epochs required to avoid spurious
 stationary directions depends on the number of stationary sources $d$, see Section~\ref{sec:determinacy}. 
 
-\paragraph{Which moments of the sources should be considered} Depending on the application domain, changes in mean or covariance matrix either do not occur or are not relevant. The user can therefore select whether non-stationarities in the mean, covariance matrix or both should be considered. The default is that both moments are taken into account.
+\paragraph{Which moments of the sources should be considered} Depending on the application domain, 
+changes in mean or covariance matrix either do not occur or are not relevant. The user can therefore 
+select whether non-stationarities in the mean, covariance matrix or both should be considered. 
+The default is that both moments are taken into account.
 
 \subsubsection*{Determinacy of the solution}
 \label{sec:determinacy}
@@ -316,22 +319,24 @@ stationary directions depends on the number of stationary sources $d$, see Secti
 If the number of epochs $N$ is too small in relation to the number of 
 non-stationary sources $D-d$, there may exist spurious stationary components that render
 the solution non-identifiable, i.e. components which appear stationary on the
-limited amount of observed data but which are in fact non-stationry.
+limited amount of observed data but which are in fact non-stationary.
 Informally speaking, spurious stationary components occur when the amount of 
 observed variation in the distributions (i.e. the number of epochs) is insufficient 
 to eliminate seemingly stationary directions in the non-stationary subspace. 
 
-It can be shown \cite{PRL:SSA:2009} that there exist no spurious stationary directions 
-if the number of distinct epochs is larger than 
+It can be shown \cite{PRL:SSA:2009} that there always exist spurious stationary components
+if the number of distinct epochs is
+ 
 \begin{equation*}
 	N > \frac{D-d}{2} + 2.
 \end{equation*}
-When only changes in one moment are considered, more
-distinct epochs are needed for guaranteed determinacy,
+When only changes in one moment are considered, the indeterminacy bound is
 \begin{equation*}
 	N > D-d + 1 .
 \end{equation*}
-The SSA~Toolbox issues a warning if this condition is violated.
+The SSA~Toolbox issues a warning if these conditions are violated.
+For practical reasons, it should suffice to exceed those bounds by 50
+percent in order to obtain a suitable result.
 
 \section{Output}
 
