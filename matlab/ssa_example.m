@@ -30,7 +30,8 @@ Xs = randn(1, n);
 X = [Xs; Xns];
 
 % random mixing matrix
-A = randn(2, 2) + 1*[0, 1; 0, 1];
+sc = 3;
+A = randn(2, 2) .* [1, sc; 1, sc];
 
 % mix signals
 Xmixed = A * X;
