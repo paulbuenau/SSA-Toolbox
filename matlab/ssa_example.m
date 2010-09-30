@@ -53,15 +53,18 @@ Xest_ns = est_Pn * Xmixed;
 %%%%%%%%%%%%%%%%%%%%
 figure;
 
+markers = (n/4):(n/4):((3/4)*n);
 % first signal
 subplot(5, 4, 1:4);
 plot(Xmixed(1, :));
 title('Input signal 1');
+line_markers(markers);
 
 % second signal
 subplot(5, 4, 5:8);
 plot(Xmixed(2, :));
 title('Input signal 2');
+line_markers(markers);
 
 % scatter plots of the epochs
 eps = n / 4; % epoch size
@@ -85,3 +88,8 @@ title('Estimated stationary signal');
 subplot(5, 4, 17:20);
 plot(Xest_ns);
 title('Estimated non-stationary signal');
+
+function line_markers(x)
+lim = get(gca,'YLim');
+h = arrayfun(@(x) line([x x], lim, 'r'), x);
+% set color?
