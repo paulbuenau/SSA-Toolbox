@@ -1,5 +1,4 @@
 <project>
-
     <loadproperties srcfile="VERSION" />
 
     <path id="classpath">
