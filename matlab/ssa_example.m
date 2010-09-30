@@ -30,7 +30,7 @@ Xs = randn(1, n);
 X = [Xs; Xns];
 
 % random mixing matrix
-A = randn(2, 2);
+A = randn(2, 2) + 1*[0, 1; 0, 1];
 
 % mix signals
 Xmixed = A * X;
@@ -66,15 +66,21 @@ title('Input signal 2');
 eps = n / 4; % epoch size
 subplot(5, 4, 9);
 scatter(Xmixed(1, 1:eps), Xmixed(2, 1:eps));
+title('scatter epoch 1');
 subplot(5, 4, 10);
 scatter(Xmixed(1, (eps + 1):(2*eps)), Xmixed(2, (eps + 1):(2*eps)));
+title('scatter epoch 2');
 subplot(5, 4, 11);
 scatter(Xmixed(1, (2*eps + 1):(3*eps)), Xmixed(2, (2*eps + 1):(3*eps)));
+title('scatter epoch 3');
 subplot(5, 4, 12);
 scatter(Xmixed(1, (3*eps + 1):end), Xmixed(2, (3*eps + 1):end));
+title('scatter epoch 4');
 
 % estimated stationary and non-stationary signal
 subplot(5, 4, 13:16);
 plot(Xest_s);
+title('Estimated stationary signal');
 subplot(5, 4, 17:20);
 plot(Xest_ns);
+title('Estimated non-stationary signal');
