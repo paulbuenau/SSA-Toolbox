@@ -5,7 +5,7 @@ function [est_Ps, est_Pn, est_As, est_An, loss, iterations, ssa_results] = ssa(X
 %   = ssa(X, d, {reps: 5}, {equal_epochs: 10}, {use_mean: true}, {use_covariance: true})
 %
 %input
-%  <no input>     Print version number of SSA Toolbox
+%  <no input>     Show version information
 %  X              Data in one of two possible formats:
 %                  * D x n matrix with data in the columns
 %                  * cell array where each X{i} is a D x n_i matrix
@@ -31,6 +31,38 @@ function [est_Ps, est_Pn, est_As, est_An, loss, iterations, ssa_results] = ssa(X
 %
 %author
 %  Jan Saputra Mueller, saputra@cs.tu-berlin.de
+%
+%license
+%  This software is distributed under the BSD license. See COPYING for
+%  details.
+
+% Copyright (c) 2010, Jan Saputra Müller, Paul von Bünau, Frank C. Meinecke,
+% Franz J. Kiraly and Klaus-Robert Müller.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without modification,
+% are permitted provided that the following conditions are met:
+% 
+% * Redistributions of source code must retain the above copyright notice, this
+% list of conditions and the following disclaimer.
+% 
+% * Redistributions in binary form must reproduce the above copyright notice, this
+% list of conditions and the following disclaimer in the documentation and/or other
+%  materials provided with the distribution.
+% 
+% * Neither the name of the Berlin Institute of Technology (Technische Universität
+% Berlin) nor the names of its contributors may be used to endorse or promote
+% products derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+%  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+% OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+% SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+% INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+% STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+% OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 % set dynamic java path to needed libraries
 basedir = fileparts(mfilename('fullpath'));
@@ -47,6 +79,7 @@ ssaopt.setLogger(cl);
 if ~exist('X', 'var')
     version = ssadata.getClass.getPackage.getImplementationVersion;
     fprintf(['SSA Toolbox version ' char(version) '\n']);
+    fprintf('This software is distributed under the BSD license. See COPYING for details.\n');
     return;
 end
 
