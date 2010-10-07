@@ -50,61 +50,84 @@ Xest_ns = est_Pn * Xmixed;
 % plot signals
 %%%%%%%%%%%%%%%%%%%%
 figure;
+sp_ho = 0.1;
+sp_ve = 0.05;
+s_he = 0.18;
+s_sc = 0.02;
 
 markers = (n/4):(n/4):((3/4)*n);
 % first signal
-subplot(5, 4, 1:4);
+axes('position', [sp_ho, 1 - sp_ve - s_he, 1 - 2*sp_ho, s_he]);
 plot(Xmixed(1, :));
-title('Input signal 1');
+set(gca, 'XTick', [], 'YTick', []);
+ylabel('Signal 1');
 line_markers(markers);
 
 % second signal
-subplot(5, 4, 5:8);
+axes('position', [sp_ho, 1 - sp_ve - 2*s_he, 1 - 2*sp_ho, s_he]);
 plot(Xmixed(2, :));
-title('Input signal 2');
+set(gca, 'XTick', [], 'YTick', []);
+ylabel('Signal 2');
 line_markers(markers);
 
 % scatter plots of the epochs
-vw = [-10 10];
+vw = [-5 5];
 eps = n / 4; % epoch size
 cbas = 'black'; % color for basis of s- and n-space
 cebas = 'red'; % color for estimated basis of s- and n-space
 
-subplot(5, 4, 9);
-scatter(Xmixed(1, 1:eps), Xmixed(2, 1:eps), '.');
-drawaxis(A(:,1), A(:,2), cbas, 10); % basis of s- and n-space
-drawaxis(est_As, est_An, cebas, 10); % basis of estimated s- and n-space
+axes('position', [sp_ho + s_sc, 1 - sp_ve - 3*s_he + s_sc, (1 - 2*sp_ho)/4 - 2*s_sc, s_he - 2*s_sc]);
+scatter(Xest_s(1:eps), Xest_ns(1:eps), '.');
+box on;
+axis equal;
+axis square;
 set(gca, 'Xlim', vw, 'Ylim', vw, 'XTick', [], 'YTick', []);
-title('scatter epoch 1');
+xlabel('est 1');
+ylabel('est 2');
 
-subplot(5, 4, 10);
-scatter(Xmixed(1, (eps + 1):(2*eps)), Xmixed(2, (eps + 1):(2*eps)), '.');
-drawaxis(A(:,1), A(:,2), cbas, 10); % basis of s- and n-space
-drawaxis(est_As, est_An, cebas, 10); % basis of estimated s- and n-space
+axes('position', [sp_ho + s_sc + (1 - 2*sp_ho)/4, 1 - sp_ve - 3*s_he + s_sc, (1 - 2*sp_ho)/4 - 2*s_sc, s_he - 2*s_sc]);
+scatter(Xest_s((eps + 1):(2*eps)), Xest_ns((eps + 1):(2*eps)), '.');
+box on;
+axis equal;
+axis square;
 set(gca, 'Xlim', vw, 'Ylim', vw, 'XTick', [], 'YTick', []);
-title('scatter epoch 2');
+xlabel('est 1');
+ylabel('est 2');
 
-subplot(5, 4, 11);
-scatter(Xmixed(1, (2*eps + 1):(3*eps)), Xmixed(2, (2*eps + 1):(3*eps)), '.');
-drawaxis(A(:,1), A(:,2), cbas, 10); % basis of s- and n-space
-drawaxis(est_As, est_An, cebas, 10); % basis of estimated s- and n-space
+axes('position', [sp_ho + s_sc + 2*(1 - 2*sp_ho)/4, 1 - sp_ve - 3*s_he + s_sc, (1 - 2*sp_ho)/4 - 2*s_sc, s_he - 2*s_sc]);
+scatter(Xest_s((2*eps + 1):(3*eps)), Xest_ns((2*eps + 1):(3*eps)), '.');
+box on;
+axis equal;
+axis square;
 set(gca, 'Xlim', vw, 'Ylim', vw, 'XTick', [], 'YTick', []);
-title('scatter epoch 3');
+xlabel('est 1');
+ylabel('est 2');
 
-subplot(5, 4, 12);
-scatter(Xmixed(1, (3*eps + 1):end), Xmixed(2, (3*eps + 1):end), '.');
-drawaxis(A(:,1), A(:,2), cbas, 10); % basis of s- and n-space
-drawaxis(est_As, est_An, cebas, 10); % basis of estimated s- and n-space
+axes('position', [sp_ho + s_sc + 3*(1 - 2*sp_ho)/4, 1 - sp_ve - 3*s_he + s_sc, (1 - 2*sp_ho)/4 - 2*s_sc, s_he - 2*s_sc]);
+scatter(Xest_s((3*eps + 1):end), Xest_ns((3*eps + 1):end), '.');
+box on;
+axis equal;
+axis square;
 set(gca, 'Xlim', vw, 'Ylim', vw, 'XTick', [], 'YTick', []);
-title('scatter epoch 4');
+xlabel('est 1');
+ylabel('est 2');
 
 % estimated stationary and non-stationary signal
-subplot(5, 4, 13:16);
+axes('position', [sp_ho, 1 - sp_ve - 4*s_he, 1 - 2*sp_ho, s_he]);
 plot(Xest_s);
-title('Estimated stationary signal');
-subplot(5, 4, 17:20);
+set(gca, 'XTick', [], 'YTick', []);
+ylabel('est s-src');
+
+axes('position', [sp_ho, 1 - sp_ve - 5*s_he, 1 - 2*sp_ho, s_he]);
 plot(Xest_ns);
-title('Estimated non-stationary signal');
+set(gca, 'XTick', [], 'YTick', []);
+ylabel('est n-src');
+
+% plot(Xest_s);
+% title('Estimated stationary signal');
+% subplot(5, 4, 17:20);
+% plot(Xest_ns);
+% title('Estimated non-stationary signal');
 
 % random covariance matrix with a fixed stationary part
 function C = randcov
