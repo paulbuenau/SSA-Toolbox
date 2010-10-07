@@ -1,5 +1,4 @@
 <project>
-
     <loadproperties srcfile="VERSION" />
 
     <path id="classpath">
@@ -43,6 +42,7 @@
 
 		<target name="dist" depends="jar,manual">
       <copy file="matlab/ssa.m" todir="dist" />
+      <copy file="matlab/ssa_example.m" todir="dist" />
       <copy file="QUICKSTART" todir="dist" />
 		</target>
 
