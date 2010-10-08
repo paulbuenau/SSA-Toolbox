@@ -1,6 +1,6 @@
 See manual.pdf for details.
 
-== QUICK START ==================================
+== QUICK START =================================================
 
 Either open ssa.jar using the GUI of your operating system 
 (e.g. double-click under Windows) or type 
@@ -14,4 +14,4 @@ type
 
   help ssa
 
-on the Matlab command line. 
+on the Matlab command line. For an example see ssa_example.m.
