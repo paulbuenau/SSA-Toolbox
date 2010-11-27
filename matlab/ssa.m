@@ -74,6 +74,7 @@ ssaparam = ssatoolbox.SSAParameters;
 ssaopt = ssatoolbox.SSA;
 cl = ssatoolbox.ConsoleLogger;
 ssaopt.setLogger(cl);
+ssadata.setLogger(cl);
 
 % no parameter?
 if ~exist('X', 'var')

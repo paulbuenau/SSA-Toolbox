@@ -200,6 +200,9 @@ public class Main {
         (new Thread() {
             @Override
             public void run() {
+                ssa.setLogger(gui);
+                data.setLogger(gui);
+
                 logger.appendToLog("Calculating covariance matrices and means...");
                 data.epochize();
 
@@ -208,7 +211,6 @@ public class Main {
 
                 //stop_ssa = false;
 
-                ssa.setLogger(gui);
                 try {
                     results = ssa.optimize(ssa_parameters, data);
                     gui.setGUIState(GUI.STATE_RESULT_AVAILABLE);

@@ -39,7 +39,7 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.TreeMap;
-import org.jblas.DoubleMatrix;
+import org.jblas.*;
 
 /**
  * This class stores the data and custom epoch definitions and computes epoch-wise
@@ -54,6 +54,8 @@ public class Data {
 
     public static final int DATAFORMAT_TIME_X_CHANNELS = 1;
     public static final int DATAFORMAT_CHANNELS_X_TIME = 2;
+
+    public static final double REGULARIZATION_THRESH = 0.0000001;
 
     protected boolean useCustomEpochDefinition;
 
@@ -76,6 +78,9 @@ public class Data {
     protected int outputDataformat = -1;
    
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    // handle to logger
+    private Logger logger = null;
 
     public int getInputDataformat() {
         return inputDataformat;
@@ -390,6 +395,24 @@ public class Data {
      */
     private void initializeSSA(DoubleMatrix S[], DoubleMatrix mu[])
     {
+        // check whether regularization is necessary
+        double smallestEig = Double.POSITIVE_INFINITY;
+        for(int i = 0; i < S.length; i++)
+        {
+            double eig = Eigen.symmetricEigenvalues(S[i]).get(0, 0);
+            if(eig < smallestEig) smallestEig = eig;
+        }
+        if(smallestEig < REGULARIZATION_THRESH)
+        {
+            logger.appendToLog("At least one direction has nearly zero-variance. Using regularization.");
+            // regularize
+            DoubleMatrix alphaI = DoubleMatrix.eye(S[0].getRows()).muli(REGULARIZATION_THRESH - smallestEig);
+            for(int i = 0; i < S.length; i++)
+            {
+                S[i].addi(alphaI);
+            }
+        }
+
         // calculate covariance matrix and mean over all epochs
         Sall = DoubleMatrix.zeros(S[0].getRows(), S[0].getColumns());
         muall = DoubleMatrix.zeros(mu[0].getRows());
@@ -405,5 +428,10 @@ public class Data {
 
         this.S = S;
         this.mu = mu;
+    }
+
+    public void setLogger(Logger logger)
+    {
+        this.logger = logger;
     }
 }
