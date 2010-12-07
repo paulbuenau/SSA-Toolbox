@@ -32,8 +32,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package ssatoolbox;
 
-import org.jblas.DoubleMatrix;
-
 /**
  * This class stores the results of the SSA algorithm.
  *
@@ -41,8 +39,8 @@ import org.jblas.DoubleMatrix;
  */
 public class Results {
     // results
-    public DoubleMatrix Ps, Pn;
-    public DoubleMatrix Bs, Bn;
+    public SSAMatrix Ps, Pn;
+    public SSAMatrix Bs, Bn;
     public double loss;
     public int iterations;
     public boolean converged;
@@ -73,10 +71,10 @@ public class Results {
      * @param inputFile input file used
      * @param epochFile file with custom epochization
      */
-    public Results( DoubleMatrix Ps,
-                    DoubleMatrix Pn,
-                    DoubleMatrix Bs,
-                    DoubleMatrix Bn,
+    public Results( SSAMatrix Ps,
+                    SSAMatrix Pn,
+                    SSAMatrix Bs,
+                    SSAMatrix Bn,
                     double loss,
                     boolean converged,
                     int iterations,

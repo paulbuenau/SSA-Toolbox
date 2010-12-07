@@ -39,7 +39,6 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.TreeMap;
-import org.jblas.*;
 
 /**
  * This class stores the data and custom epoch definitions and computes epoch-wise
@@ -65,12 +64,12 @@ public class Data {
     protected int[] epochDefinition = null;
     protected int customEpochs = 0;
     // data for SSA algorithm
-    protected DoubleMatrix X = null;
-    protected DoubleMatrix S[]; // covariance matrices
-    protected DoubleMatrix mu[]; // means
-    protected DoubleMatrix W; // whitening matrix
-    protected DoubleMatrix Sall; // covariance matrix over all epochs
-    protected DoubleMatrix muall; // mean over all epochs
+    protected SSAMatrix X = null;
+    protected SSAMatrix S[]; // covariance matrices
+    protected SSAMatrix mu[]; // means
+    protected SSAMatrix W; // whitening matrix
+    protected SSAMatrix Sall; // covariance matrix over all epochs
+    protected SSAMatrix muall; // mean over all epochs
 
     protected int numberOfEqualSizeEpochs = -1;
 
@@ -263,7 +262,7 @@ public class Data {
      * @param X matrix with samples in the columns
      * @param file file from which the timeseries was loaded
      */
-    public void setTimeSeries(DoubleMatrix X, File file)
+    public void setTimeSeries(SSAMatrix X, File file)
     {
         int oldDim = getNumberOfDimensions();
         int oldSamples = getTotalNumberOfSamples();
@@ -325,13 +324,13 @@ public class Data {
     {
         if(X != null)
         {
-            DoubleMatrix S[] = new DoubleMatrix[epochs];
-            DoubleMatrix mu[] = new DoubleMatrix[epochs];
+            SSAMatrix S[] = new SSAMatrix[epochs];
+            SSAMatrix mu[] = new SSAMatrix[epochs];
             int epochSize = X.getColumns() / epochs;
 
             for(int i = 0; i < epochs; i++)
             {
-                DoubleMatrix epoch = X.getRange(0, X.getRows(), i*epochSize, (i+1)*epochSize);
+                SSAMatrix epoch = X.getRange(0, X.getRows(), i*epochSize, (i+1)*epochSize);
                 mu[i] = MathFunctions.mean(epoch);
                 S[i] = MathFunctions.cov(epoch, mu[i]);
             }
@@ -358,15 +357,15 @@ public class Data {
             }
         }
 
-        mu = new DoubleMatrix[map.size()];
-        S = new DoubleMatrix[map.size()];
+        mu = new SSAMatrix[map.size()];
+        S = new SSAMatrix[map.size()];
 
         Iterator<LinkedList<Integer>> it = map.values().iterator();
         int i = 0;
         while(it.hasNext())
         {
             LinkedList<Integer> ep = it.next();
-            DoubleMatrix samples = X.getColumns(toIntArray(ep));
+            SSAMatrix samples = X.getColumns(toIntArray(ep));
             mu[i] = MathFunctions.mean(samples);
             S[i] = MathFunctions.cov(samples, mu[i]);
             i++;
@@ -393,20 +392,20 @@ public class Data {
      * @param S array of covariance matrices over all epochs
      * @param mu array of means over all epochs
      */
-    private void initializeSSA(DoubleMatrix S[], DoubleMatrix mu[])
+    private void initializeSSA(SSAMatrix S[], SSAMatrix mu[])
     {
         // check whether regularization is necessary
         double smallestEig = Double.POSITIVE_INFINITY;
         for(int i = 0; i < S.length; i++)
         {
-            double eig = Eigen.symmetricEigenvalues(S[i]).get(0, 0);
+            double eig = S[i].symmetricEigenvalues().get(0, 0);
             if(eig < smallestEig) smallestEig = eig;
         }
         if(smallestEig < REGULARIZATION_THRESH)
         {
             logger.appendToLog("At least one direction has nearly zero-variance. Using regularization.");
             // regularize
-            DoubleMatrix alphaI = DoubleMatrix.eye(S[0].getRows()).muli(REGULARIZATION_THRESH - smallestEig);
+            SSAMatrix alphaI = SSAMatrix.eye(S[0].getRows()).muli(REGULARIZATION_THRESH - smallestEig);
             for(int i = 0; i < S.length; i++)
             {
                 S[i].addi(alphaI);
@@ -414,10 +413,12 @@ public class Data {
         }
 
         // calculate covariance matrix and mean over all epochs
-        Sall = DoubleMatrix.zeros(S[0].getRows(), S[0].getColumns());
-        muall = DoubleMatrix.zeros(mu[0].getRows());
+        Sall = SSAMatrix.zeros(S[0].getRows(), S[0].getColumns());
+        //muall = SSAMatrix.zeros(1, mu[0].getRows());
+        muall = SSAMatrix.zeros(mu[0].getRows(), 1);
         for(int i = 0; i < S.length; i++)
         {
+            
             Sall.addi(S[i]);
             muall.addi(mu[i]);
         }

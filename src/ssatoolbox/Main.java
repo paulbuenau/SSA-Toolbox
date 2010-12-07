@@ -50,7 +50,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import org.jblas.DoubleMatrix;
 
 /**
  * This is the main class which implements the business-logic. It reacts to events
@@ -327,7 +326,7 @@ public class Main {
         if(dataArray[0].length > dataArray.length)
         {
             // more columns than rows => samples are in the columns
-            DoubleMatrix timeSeries = new DoubleMatrix(dataArray);
+            SSAMatrix timeSeries = new SSAMatrix(dataArray);
             data.setTimeSeries(timeSeries, f);
             data.setInputDataformat(Data.DATAFORMAT_CHANNELS_X_TIME);
             data.setOutputDataformat(Data.DATAFORMAT_CHANNELS_X_TIME);
@@ -335,7 +334,7 @@ public class Main {
         else
         {
             // more rows than columns => samples are in the rows
-            DoubleMatrix timeSeries = new DoubleMatrix(dataArray).transpose();
+            SSAMatrix timeSeries = new SSAMatrix(dataArray).transpose();
             data.setTimeSeries(timeSeries, f);
             data.setInputDataformat(Data.DATAFORMAT_TIME_X_CHANNELS);
             data.setOutputDataformat(Data.DATAFORMAT_TIME_X_CHANNELS);
@@ -475,7 +474,7 @@ public class Main {
         switch(Xmat.getType())
         {
             case MLArray.mxDOUBLE_CLASS:
-                DoubleMatrix dm = new DoubleMatrix(((MLDouble)Xmat).getArray());
+                SSAMatrix dm = new SSAMatrix(((MLDouble)Xmat).getArray());
                 if(dm.getColumns() > dm.getRows())
                 {
                     data.setTimeSeries(dm, f);
@@ -493,7 +492,7 @@ public class Main {
                 break;
             case MLArray.mxCELL_CLASS:
                 MLCell mlc = (MLCell)Xmat;
-                DoubleMatrix timeSeries = null;
+                SSAMatrix timeSeries = null;
                 int dim = 0;
                 LinkedList<Integer> epList = new LinkedList<Integer>();
                 int minEpochSize = Integer.MAX_VALUE;
@@ -508,7 +507,7 @@ public class Main {
                     }
                     if(i == 0)
                     {
-                        timeSeries = new DoubleMatrix(((MLDouble)mlc.get(0)).getArray());
+                        timeSeries = new SSAMatrix(((MLDouble)mlc.get(0)).getArray());
                         if(timeSeries.getColumns() > timeSeries.getRows())
                         {
                             data.setInputDataformat(Data.DATAFORMAT_CHANNELS_X_TIME);
@@ -532,7 +531,7 @@ public class Main {
                     }
                     else
                     {
-                        DoubleMatrix nextX = new DoubleMatrix(((MLDouble)mlc.get(i)).getArray());
+                        SSAMatrix nextX = new SSAMatrix(((MLDouble)mlc.get(i)).getArray());
                         if(!dataInCol)
                         {
                             nextX = nextX.transpose();
@@ -543,7 +542,7 @@ public class Main {
                             logger.appendToLog("Error: All samples in X must have the same dimension");
                             return;
                         }
-                        timeSeries = DoubleMatrix.concatHorizontally(timeSeries, nextX);
+                        timeSeries = SSAMatrix.concatHorizontally(timeSeries, nextX);
                         for(int j = 0; j < nextX.getColumns(); j++)
                         {
                             epList.add(i);
@@ -591,7 +590,7 @@ public class Main {
      * @param M matrix to save
      * @param f file to save to
      */
-    private void saveCSV(DoubleMatrix M, File f)
+    private void saveCSV(SSAMatrix M, File f)
     {
         logger.appendToLog("Saving...");
 
@@ -631,7 +630,7 @@ public class Main {
      */
     public void saveStationarySourcesCSV(File f) {
         logger.appendToLog("Extracting stationary signal...");
-        DoubleMatrix ss;
+        SSAMatrix ss;
         if(data.getOutputDataformat() == Data.DATAFORMAT_CHANNELS_X_TIME)
         {
             ss = results.Ps.mmul(data.X);
@@ -650,7 +649,7 @@ public class Main {
      */
     public void saveNonstationarySourcesCSV(File f) {
         logger.appendToLog("Extracting non-stationary signal...");
-        DoubleMatrix nss;
+        SSAMatrix nss;
         if(data.getOutputDataformat() == Data.DATAFORMAT_CHANNELS_X_TIME)
         {
             nss = results.Pn.mmul(data.X);
@@ -708,21 +707,21 @@ public class Main {
         LinkedList<MLArray> list = new LinkedList<MLArray>();
 
         MLStructure mls = new MLStructure("ssa_results", new int[]{1,1});
-        mls.setField("est_Ps", new MLDouble("est_Ps", results.Ps.toArray2()));
-        mls.setField("est_Pn", new MLDouble("est_Pn", results.Pn.toArray2()));
-        mls.setField("est_As", new MLDouble("est_As", results.Bs.toArray2()));
-        mls.setField("est_An", new MLDouble("est_An", results.Bn.toArray2()));
-        DoubleMatrix ss = results.Ps.mmul(data.X);
-        DoubleMatrix nss = results.Pn.mmul(data.X);
+        mls.setField("est_Ps", new MLDouble("est_Ps", results.Ps.getArray()));
+        mls.setField("est_Pn", new MLDouble("est_Pn", results.Pn.getArray()));
+        mls.setField("est_As", new MLDouble("est_As", results.Bs.getArray()));
+        mls.setField("est_An", new MLDouble("est_An", results.Bn.getArray()));
+        SSAMatrix ss = results.Ps.mmul(data.X);
+        SSAMatrix nss = results.Pn.mmul(data.X);
         if(data.getOutputDataformat() == Data.DATAFORMAT_CHANNELS_X_TIME)
         {
-            mls.setField("est_s_src", new MLDouble("est_s_src", ss.toArray2()));
-            mls.setField("est_n_src", new MLDouble("est_n_src", nss.toArray2()));
+            mls.setField("est_s_src", new MLDouble("est_s_src", ss.getArray()));
+            mls.setField("est_n_src", new MLDouble("est_n_src", nss.getArray()));
         }
         else
         {
-            mls.setField("est_s_src", new MLDouble("est_s_src", ss.transpose().toArray2()));
-            mls.setField("est_n_src", new MLDouble("est_n_src", nss.transpose().toArray2()));
+            mls.setField("est_s_src", new MLDouble("est_s_src", ss.transpose().getArray()));
+            mls.setField("est_n_src", new MLDouble("est_n_src", nss.transpose().getArray()));
         }
         
         // parameter structure

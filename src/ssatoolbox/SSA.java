@@ -32,8 +32,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package ssatoolbox;
 
-import org.jblas.*;
-
 /**
  * Implementation of the "Stationary Subspace Analysis" (SSA) algorithm
  *
@@ -42,8 +40,8 @@ import org.jblas.*;
 public class SSA
 {
     // buffer for rotated covariance matrices and means
-    private DoubleMatrix Snew[];
-    private DoubleMatrix munew[];
+    private SSAMatrix Snew[];
+    private SSAMatrix munew[];
 
     // constants for line-search
     private static final double LSALPHA = 0.5*(0.01+0.3);
@@ -64,14 +62,14 @@ public class SSA
      */
     public Results optimizeOnce(SSAParameters par, Data data)
     {
-        DoubleMatrix S[] = new DoubleMatrix[data.S.length];
-        DoubleMatrix mu[] = new DoubleMatrix[data.mu.length];
+        SSAMatrix S[] = new SSAMatrix[data.S.length];
+        SSAMatrix mu[] = new SSAMatrix[data.mu.length];
 
         int n = data.S[0].getRows();
         int d = par.isNSA() ? (n - par.getNumberOfStationarySources()) : par.getNumberOfStationarySources();
 
         // start with whitening + random rotation
-        DoubleMatrix B = MathFunctions.randRot(n).mmuli(data.W);
+        SSAMatrix B = MathFunctions.randRot(n).mmuli(data.W);
 
         // apply initialization matrix to covariance matrices and means
         for(int i = 0; i < data.S.length; i++)
@@ -81,18 +79,18 @@ public class SSA
         }
 
         // Optimization loop
-        DoubleMatrix grad, gradOld = null;
-        DoubleMatrix alpha, alphaOld = null;
+        SSAMatrix grad, gradOld = null;
+        SSAMatrix alpha, alphaOld = null;
         double loss = 0, lossNew = 0;
         boolean converged = false;
         int i;
         for(i = 0; i < Integer.MAX_VALUE; i++)
         {
             // get current objective function value and gradient
-            DoubleMatrix ret[] = objectiveFunction( d,
+            SSAMatrix ret[] = objectiveFunction( d,
                                                     S, mu, null, true,
                                                     par.isUseMean());
-            loss = ret[0].get(0);
+            loss = ret[0].get(0, 0);
             grad = ret[1];
 
             // do NSA instead of SSA?
@@ -117,18 +115,18 @@ public class SSA
             alphaOld = alpha;
 
             // normalize search direction
-            DoubleMatrix search = alpha.div(Math.sqrt(alpha.mul(alpha).sum() * 2));
-            //DoubleMatrix search = alpha.div(alpha.norm2());
+            SSAMatrix search = alpha.div(Math.sqrt(alpha.mul(alpha).sum() * 2));
+            //SSAMatrix search = alpha.div(alpha.norm2());
 
             // backtracking line search
             double t = 1;
             for(int j = 0; j < 10; j++, t *= LSBETA)
             {
-                DoubleMatrix M = search.mul(t);
+                SSAMatrix M = search.mul(t);
                 ret = objectiveFunction(d,
                                         S, mu, M, false,
                                         par.isUseMean());
-                lossNew = ret[0].get(0);
+                lossNew = ret[0].get(0, 0);
                 if(par.isNSA())
                 {
                     lossNew = -lossNew;
@@ -165,21 +163,21 @@ public class SSA
         }
 
         // projection matrix for stationary subspace
-        DoubleMatrix Ps = B.getRange(0, d, 0, n);
+        SSAMatrix Ps = B.getRange(0, d, 0, n);
         // projection matrix for non-stationary subspace
-        DoubleMatrix Pn = B.getRange(d, n, 0, n);
+        SSAMatrix Pn = B.getRange(d, n, 0, n);
         // mixing matrix is the inverse of B
-        DoubleMatrix Mix = Solve.solve(B, DoubleMatrix.eye(n));
+        SSAMatrix Mix = SSAMatrix.solve(B, SSAMatrix.eye(n));
         // basis for stationary subspace
-        DoubleMatrix Bs = Mix.getRange(0, n, 0, d);
+        SSAMatrix Bs = Mix.getRange(0, n, 0, d);
         // basis for non-stationary subspace
-        DoubleMatrix Bn = Mix.getRange(0, n, d, n);
+        SSAMatrix Bn = Mix.getRange(0, n, d, n);
 
         // do NSA instead of SSA?
         if(par.isNSA())
         {
             // exchange stationary <-> non-stationary
-            DoubleMatrix buf = Ps;
+            SSAMatrix buf = Ps;
             Ps = Pn;
             Pn = buf;
             buf = Bs;
@@ -187,7 +185,7 @@ public class SSA
             Bn = buf;
         }
 
-        //return new DoubleMatrix[]{Ps, Pn, Mix, new DoubleMatrix(new double[]{matLoss}), new DoubleMatrix(new double[]{converged})};
+        //return new SSAMatrix[]{Ps, Pn, Mix, new SSAMatrix(new double[]{matLoss}), new SSAMatrix(new double[]{converged})};
         return new Results(Ps, Pn, Bs, Bn, Math.min(loss, lossNew), converged, i,
                           par.getNumberOfStationarySources(),
                           par.getNumberOfRestarts(),
@@ -238,13 +236,13 @@ public class SSA
             // use only mean; SSA as an eigenvalue problem
             logger.appendToLog("Only mean should be used; Solving SSA as an eigenvalue problem.");
 
-            DoubleMatrix mu[] = new DoubleMatrix[data.mu.length];
+            SSAMatrix mu[] = new SSAMatrix[data.mu.length];
 
             int n = data.S[0].getRows();
             int d = par.getNumberOfStationarySources();
 
             // prepare matrix H on which we want to solve the eigenvalue problem
-            DoubleMatrix H = DoubleMatrix.zeros(n, n);
+            SSAMatrix H = SSAMatrix.zeros(n, n);
             for(int i = 0; i < data.S.length; i++)
             {
                 // whiten means
@@ -254,23 +252,24 @@ public class SSA
             }
 
             // solve eigenvalue problem
-            DoubleMatrix E[] = Eigen.symmetricEigenvectors(H);
+            SSAMatrix E[] = H.symmetricEigenvectors();
             // the eigenvectors are in the columnsand are our projection directions; we need them
             // in the rows in our projection matrices
-            DoubleMatrix B = E[0].transpose();
+            SSAMatrix B = E[0].transpose();
             // loss is the sum of the eigenvalues for the stationary subspace
-            double loss = E[1].diag().getRowRange(0, d, 0).sum();
+            //double loss = E[1].diag().getRowRange(0, d, 0).sum();
+            double loss = E[1].diag().getRange(0, d, 0, 1).sum();
 
             // projection matrix for stationary subspace
-            DoubleMatrix Ps = B.getRange(0, d, 0, n);
+            SSAMatrix Ps = B.getRange(0, d, 0, n);
             // projection matrix for non-stationary subspace
-            DoubleMatrix Pn = B.getRange(d, n, 0, n);
+            SSAMatrix Pn = B.getRange(d, n, 0, n);
             // mixing matrix is the inverse of B
-            DoubleMatrix Mix = Solve.solve(B, DoubleMatrix.eye(n));
+            SSAMatrix Mix = SSAMatrix.solve(B, SSAMatrix.eye(n));
             // basis for stationary subspace
-            DoubleMatrix Bs = Mix.getRange(0, n, 0, d);
+            SSAMatrix Bs = Mix.getRange(0, n, 0, d);
             // basis for non-stationary subspace
-            DoubleMatrix Bn = Mix.getRange(0, n, d, n);
+            SSAMatrix Bn = Mix.getRange(0, n, d, n);
 
             return new Results(Ps, Pn, Bs, Bn, loss, true, 1,
                               par.getNumberOfStationarySources(),
@@ -298,52 +297,52 @@ public class SSA
      * @return array of matrices: 1x1 matrix with the loss at exp(M) at index 0 and optionally
      *         the gradient at exp(M) w.r.t. M at index 1 (only if calcGradient was set to true) and exp(M) at index 2
      */
-    public DoubleMatrix[] objectiveFunction(    int d,
-                                                DoubleMatrix S[],
-                                                DoubleMatrix mu[],
-                                                DoubleMatrix M,
+    public SSAMatrix[] objectiveFunction(    int d,
+                                                SSAMatrix S[],
+                                                SSAMatrix mu[],
+                                                SSAMatrix M,
                                                 boolean calcGradient,
                                                 boolean useMean)
     {
         double loss = 0.0;
-        DoubleMatrix gradient = null;
+        SSAMatrix gradient = null;
 
         // rotated covariance matrices and means
-        Snew = new DoubleMatrix[S.length];
-        munew = new DoubleMatrix[mu.length];
+        Snew = new SSAMatrix[S.length];
+        munew = new SSAMatrix[mu.length];
 
         int n = S[0].getRows();
 
         // only initialize variable gradient if it is needed later
         if(calcGradient)
         {
-            gradient = DoubleMatrix.zeros(d, n);
+            gradient = SSAMatrix.zeros(d, n);
         }
 
         // calculate rotation matrix
-        DoubleMatrix Rcomplete;
+        SSAMatrix Rcomplete;
         if(M == null)
         {
-            Rcomplete = DoubleMatrix.eye(n);
+            Rcomplete = SSAMatrix.eye(n);
         }
         else
         {
-            Rcomplete = MatrixFunctions.expm(M);
+            Rcomplete = M.expm();
         }
-        //DoubleMatrix R = Rcomplete.getRange(0, d, 0, n);
-        DoubleMatrix Rtcomplete = Rcomplete.transpose();
+        //SSAMatrix R = Rcomplete.getRange(0, d, 0, n);
+        SSAMatrix Rtcomplete = Rcomplete.transpose();
 
         for(int i = 0; i < S.length; i++)
         {
             // rotate covariance matrix and mean vector in epoch i
-            DoubleMatrix RScomplete = Rcomplete.mmul(S[i]); // R multiplied only from left side (needed for gradient)
-            DoubleMatrix RSRtcomplete = RScomplete.mmul(Rtcomplete); // rotated covariance matrix
-            DoubleMatrix Rmucomplete = Rcomplete.mmul(mu[i]); // rotated mean
+            SSAMatrix RScomplete = Rcomplete.mmul(S[i]); // R multiplied only from left side (needed for gradient)
+            SSAMatrix RSRtcomplete = RScomplete.mmul(Rtcomplete); // rotated covariance matrix
+            SSAMatrix Rmucomplete = Rcomplete.mmul(mu[i]); // rotated mean
 
             // truncate to the stationary subspace
-            DoubleMatrix RS = RScomplete.getRange(0, d, 0, n);
-            DoubleMatrix RSRt = RSRtcomplete.getRange(0, d, 0, d);
-            DoubleMatrix Rmu = Rmucomplete.getRange(0, d, 0, 1);
+            SSAMatrix RS = RScomplete.getRange(0, d, 0, n);
+            SSAMatrix RSRt = RSRtcomplete.getRange(0, d, 0, d);
+            SSAMatrix Rmu = Rmucomplete.getRange(0, d, 0, 1);
 
             Snew[i] = RSRtcomplete;
             munew[i] = Rmucomplete;
@@ -368,16 +367,16 @@ public class SSA
         if(!calcGradient)
         {
             // only return loss
-            return new DoubleMatrix[]{new DoubleMatrix(new double[]{loss}), null, Rcomplete};
+            return new SSAMatrix[]{new SSAMatrix(new double[][]{{loss}}), null, Rcomplete};
         }
         else
         {
             // concatenate (n-d) x n zero matrix to gradient (gradient is square afterwards)
-            gradient = DoubleMatrix.concatVertically(gradient.muli(2.0), DoubleMatrix.zeros(n - d, n));
+            gradient = SSAMatrix.concatVertically(gradient.muli(2.0), SSAMatrix.zeros(n - d, n));
             // calculate the gradient at exp(M) w.r.t. M
             gradient = gradient.mmul(Rcomplete.transpose()).subi(Rcomplete.mmul(gradient.transpose()));
             // return loss and gradient
-            return new DoubleMatrix[]{new DoubleMatrix(new double[]{loss}), gradient, Rcomplete};
+            return new SSAMatrix[]{new SSAMatrix(new double[][]{{loss}}), gradient, Rcomplete};
         }
     }
 

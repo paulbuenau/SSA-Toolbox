@@ -95,7 +95,7 @@ if iscell(X)
     % create custom epochization
     fprintf('Custom epochization found...\n');
     Xwoeps = [X{:}];
-    Xdm = org.jblas.DoubleMatrix(Xwoeps);
+    Xdm = ssatoolbox.SSAMatrix(Xwoeps);
     ssadata.setTimeSeries(Xdm, []);
     epdef = zeros(1, size(X, 2));
     epochs = length(X);
@@ -115,7 +115,7 @@ if iscell(X)
 else
     % epochize equally
     fprintf('No custom epochization found. Using equally sized epochs.\n');
-    Xdm = org.jblas.DoubleMatrix(X);
+    Xdm = ssatoolbox.SSAMatrix(X);
     ssadata.setTimeSeries(Xdm, []);
     ssadata.setNumberOfEqualSizeEpochs(equal_epochs);
 end
@@ -133,10 +133,10 @@ fprintf('Starting optimization...\n\n');
 ssaresult = ssaopt.optimize(ssaparam, ssadata);
 
 % return results
-est_Ps = ssaresult.Ps.toArray2;
-est_Pn = ssaresult.Pn.toArray2;
-est_As = ssaresult.Bs.toArray2;
-est_An = ssaresult.Bn.toArray2;
+est_Ps = ssaresult.Ps.getArray;
+est_Pn = ssaresult.Pn.getArray;
+est_As = ssaresult.Bs.getArray;
+est_An = ssaresult.Bn.getArray;
 loss = ssaresult.loss;
 iterations = ssaresult.iterations;
 

@@ -232,8 +232,25 @@ public class SSAMatrix
         return 0; // should not happen
     }
     
+    public void set(int i, int j, double value)
+    {
+        convert();
+        
+        switch(globalLib)
+        {
+            case JBLAS:
+                MATRIX_JBLAS.put(i, j, value);
+                break;
+            case COLT:
+                MATRIX_COLT.set(i, j, value);
+                break;
+        }
+    }
+    
     public SSAMatrix transpose()
     {
+        convert();
+        
         switch(lib)
         {
             case JBLAS:
@@ -243,6 +260,62 @@ public class SSAMatrix
         }
         
         return null; // should not happen
+    }
+    
+    /**
+     * Returns the diagonal of the matrix (which has to be square).
+     *
+     * @return diagonal of the matrix
+     */
+    public SSAMatrix diag()
+    {
+        convert();
+        
+        switch(lib)
+        {
+            case JBLAS:
+                return new SSAMatrix(MATRIX_JBLAS.diag());
+            case COLT:
+                return new SSAMatrix(cern.colt.matrix.DoubleFactory2D.dense.make(cern.colt.matrix.DoubleFactory2D.dense.diagonal(MATRIX_COLT).toArray(), getRows()));
+        }
+        
+        return null; // should not happen
+    }
+    
+    /**
+     * Calculates the sum of all elements in the matrix.
+     *
+     * @return sum
+     */
+    public double sum()
+    {
+        switch(lib)
+        {
+            case JBLAS:
+                return MATRIX_JBLAS.sum();
+            case COLT:
+                return MATRIX_COLT.zSum();
+        }
+        
+        return 0; // should not happen
+    }
+    
+    /**
+     * Calculates the product of all elements in the matrix.
+     *
+     * @return product
+     */
+    public double prod()
+    {
+        switch(lib)
+        {
+            case JBLAS:
+                return MATRIX_JBLAS.prod();
+            case COLT:
+                return MATRIX_COLT.aggregate(cern.jet.math.Functions.mult, cern.jet.math.Functions.identity);
+        }
+        
+        return 0; // should not happen
     }
     
     /**
@@ -326,6 +399,30 @@ public class SSAMatrix
     }
     
     /**
+     * Subtraction by a scalar (in place).
+     *
+     * @param s scalar
+     * @return subtraction result
+     */
+    public SSAMatrix subi(double s)
+    {
+        convert();
+        
+        switch(lib)
+        {
+            case JBLAS:
+                MATRIX_JBLAS.subi(s);
+                break;
+                
+            case COLT:
+                MATRIX_COLT.assign(cern.jet.math.Functions.bindArg2(cern.jet.math.Functions.minus, s));
+                break;
+        }
+        
+        return this;
+    }
+    
+    /**
      * Element-wise multiplication (in place).
      *
      * @param m other matrix
@@ -382,7 +479,7 @@ public class SSAMatrix
                 break;
                 
             case COLT:
-                MATRIX_COLT.assign(cern.jet.math.Functions.bindArg1(cern.jet.math.Functions.mult, s));
+                MATRIX_COLT.assign(cern.jet.math.Functions.bindArg2(cern.jet.math.Functions.mult, s));
                 break;
         }
         
@@ -402,6 +499,45 @@ public class SSAMatrix
         SSAMatrix m = new SSAMatrix(this);
         
         return m.muli(s);
+    }
+    
+    /**
+     * Division by a scalar (in place).
+     *
+     * @param s scalar
+     * @return division result
+     */
+    public SSAMatrix divi(double s)
+    {
+        convert();
+        
+        switch(lib)
+        {
+            case JBLAS:
+                MATRIX_JBLAS.divi(s);
+                break;
+                
+            case COLT:
+                MATRIX_COLT.assign(cern.jet.math.Functions.bindArg2(cern.jet.math.Functions.div, s));
+                break;
+        }
+        
+        return this;
+    }
+    
+    /**
+     * Division by a scalar.
+     *
+     * @param s scalar
+     * @return division result
+     */
+    public SSAMatrix div(double s)
+    {
+        convert();
+        
+        SSAMatrix m = new SSAMatrix(this);
+        
+        return m.divi(s);
     }
     
     /**
@@ -453,18 +589,290 @@ public class SSAMatrix
     /**
      * Returns a zero-matrix.
      *
-     * @param m number of rows
-     * @param n number of columns
+     * @param rows number of rows
+     * @param columns number of columns
      * @return zero matrix
      */
-    public static SSAMatrix zeros(int m, int n)
+    public static SSAMatrix zeros(int rows, int columns)
     {
         switch(globalLib)
         {
             case JBLAS:
-                return new SSAMatrix(org.jblas.DoubleMatrix.zeros(m, n));
+                return new SSAMatrix(org.jblas.DoubleMatrix.zeros(rows, columns));
             case COLT:
-                return new SSAMatrix(cern.colt.matrix.DoubleFactory2D.dense.make(m, n));
+                return new SSAMatrix(cern.colt.matrix.DoubleFactory2D.dense.make(rows, columns));
+        }
+        
+        return null; // should not happen
+    }
+    
+    /**
+     * Returns a matrix with only ones.
+     *
+     * @param rows number of rows
+     * @param columns number of columns
+     * @return matrix with only ones
+     */
+    public static SSAMatrix ones(int rows, int columns)
+    {
+        switch(globalLib)
+        {
+            case JBLAS:
+                return new SSAMatrix(org.jblas.DoubleMatrix.ones(rows, columns));
+            case COLT:
+                return new SSAMatrix(cern.colt.matrix.DoubleFactory2D.dense.make(rows, columns, 1.0));
+        }
+        
+        return null; // should not happen
+    }
+    
+    /**
+     * Returns the identity matrix.
+     *
+     * @param rowsAndColumns number of rows and columns
+     * @return identity matrix
+     */
+    public static SSAMatrix eye(int rowsAndColumns)
+    {
+        switch(globalLib)
+        {
+            case JBLAS:
+                return new SSAMatrix(org.jblas.DoubleMatrix.eye(rowsAndColumns));
+            case COLT:
+                return new SSAMatrix(cern.colt.matrix.DoubleFactory2D.dense.identity(rowsAndColumns));
+        }
+        
+        return null; // should not happen
+    }
+    
+    /**
+     * Computes the cholesky decomposition of the matrix.
+     * The matrix has to be square, symmetric and positive definite.
+     *
+     * @return lower triangular matrix U such that the original matrix is equal to U'*U 
+     */
+    public SSAMatrix cholesky()
+    {
+        convert();
+        
+        switch(globalLib)
+        {
+            case JBLAS:
+                return new SSAMatrix(org.jblas.Decompose.cholesky(MATRIX_JBLAS));
+            case COLT:
+                return new SSAMatrix(cern.colt.matrix.linalg.Algebra.DEFAULT.transpose((new cern.colt.matrix.linalg.CholeskyDecomposition(MATRIX_COLT)).getL()));
+        }
+        
+        return null; // should not happen
+    }
+    
+    /**
+     * Computes the eigenvectors and eigenvalues of a symmetric matrix.
+     *
+     * @return array, with eigenvectors at index 0 and diagonal eigenvalue matrix at index 1.
+     */
+    public SSAMatrix[] symmetricEigenvectors()
+    {
+        convert();
+        
+        SSAMatrix V[] = new SSAMatrix[2];
+        
+        switch(globalLib)
+        {
+            case JBLAS:
+                org.jblas.DoubleMatrix[] Vjblas = org.jblas.Eigen.symmetricEigenvectors(MATRIX_JBLAS);
+                V[0] = new SSAMatrix(Vjblas[0]);
+                V[1] = new SSAMatrix(Vjblas[1]);
+                break;
+            case COLT:
+                cern.colt.matrix.linalg.EigenvalueDecomposition Vcolt = new cern.colt.matrix.linalg.EigenvalueDecomposition(MATRIX_COLT);
+                V[0] = new SSAMatrix(Vcolt.getV());
+                V[1] = new SSAMatrix(Vcolt.getD());
+                break;
+        }
+        
+        return V;
+    }
+    
+    public SSAMatrix symmetricEigenvalues()
+    {
+        convert();
+
+        switch(globalLib)
+        {
+            case JBLAS:
+                return new SSAMatrix(org.jblas.Eigen.symmetricEigenvalues(MATRIX_JBLAS));
+            case COLT:
+                return new SSAMatrix((new cern.colt.matrix.linalg.EigenvalueDecomposition(MATRIX_COLT)).getD());
+        }
+        
+        return null; // should not happen
+    }
+    
+    /**
+     * Solves A*X=B for given matrices A and B.
+     *
+     * @return matrix X
+     */
+    public static SSAMatrix solve(SSAMatrix A, SSAMatrix B)
+    {
+        A.convert();
+        B.convert();
+        
+        switch(globalLib)
+        {
+            case JBLAS:
+                return new SSAMatrix(org.jblas.Solve.solve(A.MATRIX_JBLAS, B.MATRIX_JBLAS));
+            case COLT:
+                return new SSAMatrix(cern.colt.matrix.linalg.Algebra.DEFAULT.solve(A.MATRIX_COLT, B.MATRIX_COLT));
+        }
+        
+        return null;
+    }
+    
+    public static SSAMatrix rand(int rows, int columns)
+    {
+        switch(globalLib)
+        {
+            case JBLAS:
+                return new SSAMatrix(org.jblas.DoubleMatrix.rand(rows, columns));
+            case COLT:
+                return new SSAMatrix(cern.colt.matrix.DoubleFactory2D.dense.random(rows, columns));
+        }
+        
+        return null; // should not happen
+    }
+    
+    public double normmax()
+    {
+        convert();
+        
+        switch(globalLib)
+        {
+            case JBLAS:
+                return MATRIX_JBLAS.normmax();
+            case COLT:
+                return MATRIX_COLT.aggregate(cern.jet.math.Functions.max, cern.jet.math.Functions.abs);
+        }
+        
+        return 0; // should not happen
+    }
+    
+    public SSAMatrix getRange(int ra, int rb, int ca, int cb)
+    {
+        convert();
+        
+        switch(globalLib)
+        {
+            case JBLAS:
+                return new SSAMatrix(MATRIX_JBLAS.getRange(ra, rb, ca, cb));
+            case COLT:
+                return new SSAMatrix(MATRIX_COLT.viewPart(ra, ca, rb - ra, cb - ca));
+        }
+        
+        return null; // should not happen
+    }
+    
+    public SSAMatrix getColumns(int cindices[])
+    {
+        convert();
+        
+        switch(globalLib)
+        {
+            case JBLAS:
+                return new SSAMatrix(MATRIX_JBLAS.getColumns(cindices));
+            case COLT:
+                return new SSAMatrix(MATRIX_COLT.viewSelection(null, cindices));
+        }
+        
+        return null; // should not happen
+    }
+    
+    public static SSAMatrix concatVertically(SSAMatrix A, SSAMatrix B)
+    {
+        A.convert();
+        B.convert();
+        
+        switch(globalLib)
+        {
+            case JBLAS:
+                return new SSAMatrix(org.jblas.DoubleMatrix.concatVertically(A.MATRIX_JBLAS, B.MATRIX_JBLAS));
+            case COLT:
+                return new SSAMatrix(cern.colt.matrix.DoubleFactory2D.dense.appendRows(A.MATRIX_COLT, B.MATRIX_COLT));
+        }
+        
+        return null; // should not happen
+    }
+    
+    public static SSAMatrix concatHorizontally(SSAMatrix A, SSAMatrix B)
+    {
+        A.convert();
+        B.convert();
+        
+        switch(globalLib)
+        {
+            case JBLAS:
+                return new SSAMatrix(org.jblas.DoubleMatrix.concatHorizontally(A.MATRIX_JBLAS, B.MATRIX_JBLAS));
+            case COLT:
+                return new SSAMatrix(cern.colt.matrix.DoubleFactory2D.dense.appendColumns(A.MATRIX_COLT, B.MATRIX_COLT));
+        }
+        
+        return null; // should not happen
+    }
+    
+    public SSAMatrix expm()
+    {
+        convert();
+        
+        switch(globalLib)
+        {
+            case JBLAS:
+                return new SSAMatrix(org.jblas.MatrixFunctions.expm(MATRIX_JBLAS));
+            case COLT:
+		// constants for pade approximation
+		final double c0 = 1.0;
+		final double c1 = 0.5;
+		final double c2 = 0.12;
+		final double c3 = 0.01833333333333333;
+		final double c4 = 0.0019927536231884053;
+		final double c5 = 1.630434782608695E-4;
+		final double c6 = 1.0351966873706E-5;
+		final double c7 = 5.175983436853E-7;
+		final double c8 = 2.0431513566525E-8;
+		final double c9 = 6.306022705717593E-10;
+		final double c10 = 1.4837700484041396E-11;
+		final double c11 = 2.5291534915979653E-13;
+		final double c12 = 2.8101705462199615E-15;
+		final double c13 = 1.5440497506703084E-17;
+
+		int j = Math.max(0, 1 + (int)Math.floor(Math.log(this.normmax())/Math.log(2)));
+		SSAMatrix As = this.div(Math.pow(2, j)); // scaled version of A
+		int n = this.getRows();
+
+		// calculate D and N using special Horner techniques
+		SSAMatrix As_2 = As.mmul(As);
+		SSAMatrix As_4 = As_2.mmul(As_2);
+		SSAMatrix As_6 = As_4.mmul(As_2);
+		// U = c0*I + c2*A^2 + c4*A^4 + (c6*I + c8*A^2 + c10*A^4 + c12*A^6)*A^6
+		SSAMatrix U = SSAMatrix.eye(n).muli(c0).addi(As_2.mul(c2)).addi(As_4.mul(c4)).addi(
+		    SSAMatrix.eye(n).muli(c6).addi(As_2.mul(c8)).addi(As_4.mul(c10)).addi(As_6.mul(c12)).mmuli(As_6));
+		// V = c1*I + c3*A^2 + c5*A^4 + (c7*I + c9*A^2 + c11*A^4 + c13*A^6)*A^6
+		SSAMatrix V = SSAMatrix.eye(n).muli(c1).addi(As_2.mul(c3)).addi(As_4.mul(c5)).addi(
+		    SSAMatrix.eye(n).muli(c7).addi(As_2.mul(c9)).addi(As_4.mul(c11)).addi(As_6.mul(c13)).mmuli(As_6));
+
+		SSAMatrix AV = As.mmuli(V);
+		SSAMatrix N = U.add(AV);
+		SSAMatrix D = U.subi(AV);
+
+		// solve DF = N for F
+		SSAMatrix F = solve(D, N);
+
+		// now square j times
+		for(int k = 0; k < j; k++)
+		{
+		    F.mmuli(F);
+		}
+		return F;
         }
         
         return null; // should not happen

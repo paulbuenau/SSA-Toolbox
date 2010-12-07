@@ -33,8 +33,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package ssatoolbox;
 
-import org.jblas.*;
-
 /**
  * Mathematical functions used in the SSA implementation
  *
@@ -47,11 +45,11 @@ public class MathFunctions
      * @param M matrix
      * @return mean of the column vectors
      */
-    public static DoubleMatrix mean(DoubleMatrix M)
+    public static SSAMatrix mean(SSAMatrix M)
     {
         int n = M.getColumns();
 
-        return M.mmul(DoubleMatrix.ones(n, 1)).divi((double)n);
+        return M.mmul(SSAMatrix.ones(n, 1)).divi((double)n);
     }
 
     /**
@@ -60,10 +58,10 @@ public class MathFunctions
      * @param mean mean of the column vectors
      * @return covariance matrix of the column vectors
      */
-    public static DoubleMatrix cov(DoubleMatrix M, DoubleMatrix mean)
+    public static SSAMatrix cov(SSAMatrix M, SSAMatrix mean)
     {
         int n = M.getColumns();
-        DoubleMatrix Mc = M.sub(mean.mmul(DoubleMatrix.ones(1, n))); // matrix with centered data
+        SSAMatrix Mc = M.sub(mean.mmul(SSAMatrix.ones(1, n))); // matrix with centered data
 
         return Mc.mmul(Mc.transpose()).divi((double)(n-1));
     }
@@ -73,7 +71,7 @@ public class MathFunctions
      * @param M matrix
      * @return covariance matrix of the column vectors
      */
-    public static DoubleMatrix cov(DoubleMatrix M)
+    public static SSAMatrix cov(SSAMatrix M)
     {
         return cov(M, mean(M));
     }
@@ -85,9 +83,9 @@ public class MathFunctions
      * @param A symmetric, positive definite matrix
      * @return determinante of A
      */
-    public static double det(DoubleMatrix A)
+    public static double det(SSAMatrix A)
     {
-        double d = Decompose.cholesky(A).diag().prod();
+        double d = A.cholesky().diag().prod();
         return d*d;
     }
 
@@ -97,10 +95,10 @@ public class MathFunctions
      * @param A symmetric, positive definite matrix
      * @return inverse of A
      */
-    public static DoubleMatrix inv(DoubleMatrix A)
+    public static SSAMatrix inv(SSAMatrix A)
     {
-        DoubleMatrix U = Decompose.cholesky(A);
-        DoubleMatrix UInv = Solve.solve(U, DoubleMatrix.eye(A.getRows()));
+        SSAMatrix U = A.cholesky();
+        SSAMatrix UInv = SSAMatrix.solve(U, SSAMatrix.eye(A.getRows()));
         return UInv.mmuli(UInv.transpose());
     }
 
@@ -212,12 +210,12 @@ public class MathFunctions
      *
      * @return whitening matrix
      */
-    public static DoubleMatrix whitening(DoubleMatrix C)
+    public static SSAMatrix whitening(SSAMatrix C)
     {
-        DoubleMatrix V[] = Eigen.symmetricEigenvectors(C);
+        SSAMatrix V[] = C.symmetricEigenvectors();
         for(int i = 0; i < C.getRows(); i++)
         {
-            V[1].put(i, i, 1 / Math.sqrt(V[1].get(i, i)));
+            V[1].set(i, i, 1 / Math.sqrt(V[1].get(i, i)));
         }
 
         return V[0].mmuli(V[1].mmuli(V[0].transpose()));
@@ -230,12 +228,12 @@ public class MathFunctions
      * @param size size of rotation matrix
      * @return random rotation matrix
      */
-    public static DoubleMatrix randRot(int size)
+    public static SSAMatrix randRot(int size)
     {
-        DoubleMatrix M = DoubleMatrix.rand(size, size).subi(0.5);
+        SSAMatrix M = SSAMatrix.rand(size, size).subi(0.5);
 
         M.subi(M.transpose());
 
-        return MatrixFunctions.expm(M);
+        return M.expm();
     }
 }
