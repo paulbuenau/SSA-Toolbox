@@ -44,7 +44,7 @@
 
 \begin{document}
 
-\title{SSA Toolbox \input version.tex \\ Manual}
+\title{SSA Toolbox \input version.tex --- Manual}
 \author{Jan Saputra M\"uller, Paul von B\"unau, \\ Frank C.~Meinecke, Franz J.~Kir\'{a}ly, Klaus-Robert M\"uller}
 
 \maketitle
@@ -53,13 +53,41 @@
 
 \newpage
 
-\section{Technical Prerequisites}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+
+This is the manual for the SSA Toolbox, an efficient open-source implementation of the 
+Stationary Subspace Analysis \cite{PRL:SSA:2009} algorithm. Stationary Subspace Analysis (SSA)
+is a general purpose algorithm for the explorative analysis of non-stationary data, i.e.~data
+whose properties change over time. SSA can help to detect, characterize and visualize temporal
+changes in complex high-dimensional data sets.
+
+The SSA Toolbox is written entirely in Java and thus platform-independent. It has been tested
+successfuly on Windows, Linux and MacOS. The SSA Toolbox comes with a state-of-the-art native 
+Linear Algebra library (BLAS/LAPACK) that will be invoked if the operating system supports 
+it. If not, a purely Java-based library will be used. Data and results can imported and
+exported as comma-separated values (CSV) files, the fail-safe format of last resort, and through
+Matlab's proprietory mat files. 
+ 
+There are at least three ways to use the SSA Toolbox:
+\begin{enumerate}
+	\item Standalone application with graphical user interface. 
+	
+	\item From within Matlab. Note that if your system is supported by jblas, 
+
+	\item As a Java library to use from ...
+\end{enumerate}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Installation and Running}
+\label{sec:install_run}
 
 \paragraph{Obtaining the latest SSA~Toolbox}
 
 The latest version of the SSA~Toolbox is available from the offical SSA homepage: 
 \begin{center}
-	\url{http://www.stationary-subspace-analysis.org}
+	\url{http://www.stationary-subspace-analysis.org/toolbox}
 \end{center}
 There you can also find pointers to further references, example data and a link 
 to the SSA mailing list. 
@@ -87,7 +115,6 @@ been tested on the following platforms.
 
 \paragraph{Installation and Running}
 
-Download the software from the SSA homepage\footnote{\url{http://www.stationary-subspace-analysis.org}}. 
 The SSA~Toolbox comes as a single \texttt{.zip} or \texttt{.tar.gz} archive. 
 After unpacking, you can start the SSA~Toolbox by opening the file \texttt{ssa.jar}
 with the default method, e.g.~by double-clicking on it under Microsoft Windows, 
@@ -105,7 +132,8 @@ Note that if you invoke the SSA Toolbox from within Matlab, it will use its
 internal JVM unless you specify an external JVM, e.g. using the environment
 variable \texttt{MATLAB\_JAVA} under Linux.
 
-\section{The SSA Model and Terminology}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Stationary Subspace Analysis in Brief}
 
 Stationary Subspace Analysis \cite{PRL:SSA:2009} factorizes a multivariate time-series 
 into its stationary and non-stationary components. That is, we assume that the data 
@@ -162,7 +190,8 @@ i.e.~$\text{channels} \times \text{time}$. If the other output format has
 been chosen, then the results (Equations~\ref{eq:est_demixing}, \ref{eq:est_mixing}, 
 \ref{eq:est_s_sources} and \ref{eq:est_n_sources}) are transposed.
 
-\section{Input}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Input, Output and Parameters}
 
 The input to the SSA Toolbox consists of
 \begin{itemize}
@@ -338,7 +367,8 @@ The SSA~Toolbox issues a warning if these conditions are violated.
 For practical reasons, it should suffice to exceed those bounds by 50
 percent in order to obtain a suitable result.
 
-\section{Output}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Output}
 
 The result of the SSA algorithm is an estimated demixing matrix $\hat{A}^{-1}$
 (see Equation~\ref{eq:est_demixing}). From this, the following output
@@ -396,7 +426,71 @@ are decomposed into $d = 3$ stationary sources and $D-d = 2$ non-stationary sour
 }
 \end{figure}
 
-\section{Support}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Example}
+
+The example in Matlab, explained step by step. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Frequently Asked Questions}
+
+\paragraph{When should I use SSA?}
+
+\paragraph{Can I use SSA on a univariate time series?}
+
+\paragraph{How do I determine the number of stationary sources?}
+
+\paragraph{Why is it not possible to identify the non-stationary sources and what does this mean?}
+	
+\paragraph{Why is it not possible to identify the stationary subspace and what does this mean?}
+
+\paragraph{I do not understand what the output of the SSA Toolbox is. Please explain.}
+
+\paragraph{I would like to use the Toolbox from Python/Octave/or any other environment, is this possible?}
+
+\paragraph{Can I get a $p$-value for my result?}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Developers}
+
+This section contains some information about the technical structure of the SSA Toolbox
+that is helpful for developers who want to extend it or use parts in other projects. The 
+source code distribution of the SSA Toolbox is available from the project 
+web site (see Section~\ref{sec:sec:install_run}) and from github, a public git repository 
+server, which is the primary location of the SSA Toolbox:
+\begin{center}
+	\texttt{https://github.com/paulbuenau/SSA-Toolbox}
+\end{center}
+On github you will always find the latest, probably unreleased version of the source code. 
+
+%%%%%%%%%%%%%%%%%
+\subsection*{Class Structure}
+
+The SSA Toolbox consists of the classes \texttt{SSA}, \texttt{SSAParameters}, etc. 
+
+\paragraph{SSA} 
+
+This class implements the algorithm ...
+
+\paragraph{SSAParameters}
+
+The class \texttt{SSAParameters} stores the paramteres .. it is responsible for checking ...
+
+\paragraph{Data}
+
+%%%%%%%%%%%%%%%%%
+\subsection*{External Dependencies}
+
+The Toolbox needs jamtio (for Matlab files)
+
+The algorithm uses jblas/this other CERN library
+
+%%%%%%%%%%%%%%%%%
+\subsection*{Unit Tests}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Contact and Support}
 
 If you have any question, bug report or want to discuss the application of SSA
 to a specific problem, please join the SSA mailing list:
@@ -408,6 +502,8 @@ information on the official SSA homepage:
 \begin{center}
 	\url{http://www.stationary-subspace-analysis.org}
 \end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \bibliographystyle{plain}
 \bibliography{ssa.bib}
