@@ -114,7 +114,7 @@ public class TestSSA extends TestCase
         par.setUseCovariance(true);
         
         data.setTimeSeries(SSAMatrix.zeros(4, 100), null);
-        data.setNumberOfEqualSizeEpochs(2); // we would need at least 3 > 4 - 2 epochs
+        data.setNumberOfEqualSizeEpochs(2); // we would need at least 4 > 4 - 2 + 1 epochs
         
         boolean exceptionThrown = false;
         try

@@ -466,24 +466,60 @@ On github you will always find the latest, probably unreleased version of the so
 %%%%%%%%%%%%%%%%%
 \subsection*{Class Structure}
 
-The SSA Toolbox consists of the classes \texttt{SSA}, \texttt{SSAParameters}, etc. 
+The SSA Toolbox consists of the classes \texttt{SSA}, \texttt{SSAParameters}, \texttt{Data}, \texttt{Results}, \texttt{MathFunctions}, 
+\texttt{GUI}, \texttt{Main}, \texttt{SSAMatrix}.
 
 \paragraph{SSA} 
 
-This class implements the algorithm ...
+This class implements the SSA algorithm. The main-part of the implementation is in the method \texttt{optimizeOnce}, which does
+the conjugate gradient descent. The calculation of the objective function and its gradient is done in the method \texttt{objectiveFunction}.
+Apart from that, the class \texttt{SSA} is responsible for checking our determinacy bounds and has to throw an exception if they are violated.
 
 \paragraph{SSAParameters}
 
-The class \texttt{SSAParameters} stores the paramteres .. it is responsible for checking ...
+The class \texttt{SSAParameters} stores the parameters, such as the assumed number of stationary sources, the number of restarts for the optimization and
+whether to use means/covariance matrices. It is responsible to check whether the entered parameters are valid and has to throw an exception otherwise.
 
 \paragraph{Data}
+
+The class \texttt{Data} stores our time series and does the epochization (equally sized epochs or custom epochization). It has to check whether the
+epochization is valid (and possible) and has to throw an exception otherwise.
+
+\paragraph{Results}
+
+This class stores the results of the SSA algorithm.
+
+\paragraph{MathFunctions}
+
+This class contains auxilliary functions.
+
+\paragraph{GUI}
+
+This class is responsible for the GUI of the standalone-version of the toolbox. It implements the interface \texttt{Logger}.
+
+\paragraph{Main}
+
+This is the main class of the standalone-version of the toolbox.
+
+\paragraph{SSAMatrix}
+
+\texttt{SSAMatrix} is a wrapper class for different matrix libraries. All matrices in the toolbox are instances of this class. It passes the
+matrix operations to the currently used matrix library.
+
+\paragraph{Logger}
+
+This is an interface for logging. It contains only one method, which has to be implemented by all implementing classes: \texttt{appendToLog}.
+
+\paragraph{ConsoleLogger}
+
+This class implements the interface \texttt{Logger}. It writes all messages which are passed to the method
+\texttt{appendToLog} directly to the console (needed for the matlab-wrapper).
 
 %%%%%%%%%%%%%%%%%
 \subsection*{External Dependencies}
 
-The Toolbox needs jamtio (for Matlab files)
-
-The algorithm uses jblas/this other CERN library
+The toolbox needs \texttt{JMatIO} (for Matlab files). The class \texttt{SSAMatrix} uses the matrix library \texttt{Colt} or \texttt{jBlas}, depending on which library
+is currently selected.
 
 %%%%%%%%%%%%%%%%%
 \subsection*{Unit Tests}

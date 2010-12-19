@@ -74,10 +74,10 @@ public class SSA
         else if( (par.isUseMean() && !par.isUseCovariance()) || (!par.isUseMean() && par.isUseCovariance()) )
         {
             // mean only or covariance only
-            if(data.getNumberOfEpochs() <= (data.getNumberOfDimensions() - par.getNumberOfStationarySources()))
+            if(data.getNumberOfEpochs() <= (data.getNumberOfDimensions() - par.getNumberOfStationarySources()) + 1)
             {
                 throw new IllegalArgumentException("Too few epochs specified; there may be spurious stationary directions.\nYou need to have at least "
-                                                 +  ((data.getNumberOfDimensions() - par.getNumberOfStationarySources()) + 1)
+                                                 +  ((data.getNumberOfDimensions() - par.getNumberOfStationarySources()) + 2)
                                                  + " distinct epochs to guarantee determinacy of the solution.");
             }
         }
