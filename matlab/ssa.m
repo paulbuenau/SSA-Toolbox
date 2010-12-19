@@ -130,7 +130,12 @@ ssaparam.setUseCovariance(use_covariance);
 
 % run optimization
 fprintf('Starting optimization...\n\n');
+try
 ssaresult = ssaopt.optimize(ssaparam, ssadata);
+catch me
+    fprintf(me.getReport);
+    return;
+end
 
 % return results
 est_Ps = ssaresult.Ps.getArray;

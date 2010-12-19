@@ -88,7 +88,7 @@ public class Main {
                             logger.appendToLog("ERROR: Number of epochs must be greater than 2");
                             data.setNumberOfEqualSizeEpochs( ((Integer)arg0.getOldValue()).intValue() );
                         } else {
-                            checkDeterminacy();
+                            //checkDeterminacy();
                         }
                     }
                     return;
@@ -104,7 +104,7 @@ public class Main {
                             logger.appendToLog("ERROR: Number of stationary sources >= number of input dimensions");
                             ssa_parameters.setNumberOfStationarySources(((Integer)arg0.getOldValue()).intValue());
                         } else {
-                            checkDeterminacy();
+                            //checkDeterminacy();
                         }
                     }
                     return;
@@ -121,7 +121,7 @@ public class Main {
                             logger.appendToLog("ERROR: Number of stationary sources >= number of input dimensions");
                             ssa_parameters.setNumberOfStationarySources(((Integer)arg0.getOldValue()).intValue());
                         } else {
-                            checkDeterminacy();
+                            //checkDeterminacy();
                         }
                     }
                     return;
@@ -157,7 +157,7 @@ public class Main {
     /**
      * Checks whether determinacy conditions are violated.
      */
-    private void checkDeterminacy() {
+    /*private void checkDeterminacy() {
         if(data.getNumberOfEpochs() >= 2 && ssa_parameters.getNumberOfStationarySources() >= 1) {
             if(!ssa_parameters.isUseMean()) {
                 if(data.getNumberOfEpochs() <= (data.getNumberOfDimensions() - ssa_parameters.getNumberOfStationarySources()) + 1) {
@@ -171,7 +171,7 @@ public class Main {
                 }
             }
         }
-    }
+    }*/
 
     /**
      * Main function.
@@ -213,11 +213,13 @@ public class Main {
                 try {
                     results = ssa.optimize(ssa_parameters, data);
                     gui.setGUIState(GUI.STATE_RESULT_AVAILABLE);
-                } catch(RuntimeException ex) {
+                }
+                catch(RuntimeException ex) {
                     logger.appendToLog(ex.getMessage());
+                    gui.setGUIState(GUI.STATE_PARAMETRIZATION);
                 }
 
-                checkDeterminacy();
+                //checkDeterminacy();
 
 /*                logger.appendToLog("SSA terminated.");
                 logger.appendToLog("Best result:");

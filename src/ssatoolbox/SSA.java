@@ -54,6 +54,40 @@ public class SSA
     private volatile boolean stopped = false;
 
     /**
+     * Checks whether the parameters for SSA are valid, and throws an exception if they are not.
+     *
+     * @param par class containing the SSA parameters
+     * @param data class containing the data
+     */
+    public void checkParameters(SSAParameters par, Data data)
+    {
+        if(par.isUseMean() && par.isUseCovariance())
+        {
+            // mean + covariance
+            if(data.getNumberOfEpochs() <=  (data.getNumberOfDimensions() - par.getNumberOfStationarySources())/2 + 2)
+            {
+                throw new IllegalArgumentException("Too few epochs specified; there may be spurious stationary directions.\nYou need to have at least "
+                                                 +  ((data.getNumberOfDimensions() - par.getNumberOfStationarySources())/2 + 3) 
+                                                 + " distinct epochs to guarantee determinacy of the solution.");
+            }
+        }
+        else if( (par.isUseMean() && !par.isUseCovariance()) || (!par.isUseMean() && par.isUseCovariance()) )
+        {
+            // mean only or covariance only
+            if(data.getNumberOfEpochs() <= (data.getNumberOfDimensions() - par.getNumberOfStationarySources()))
+            {
+                throw new IllegalArgumentException("Too few epochs specified; there may be spurious stationary directions.\nYou need to have at least "
+                                                 +  ((data.getNumberOfDimensions() - par.getNumberOfStationarySources()) + 1)
+                                                 + " distinct epochs to guarantee determinacy of the solution.");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException("At least one of the options 'use mean' or 'use covariance matrix' has to be selected.");
+        }
+    }
+
+    /**
      * Solves the SSA optimization problem using backtracking linesearch once.
      *
      * @param par class containing the SSA parameters
@@ -206,6 +240,8 @@ public class SSA
      */
     public Results optimize(SSAParameters par, Data data)
     {
+        checkParameters(par, data);
+
         if(par.isUseCovariance())
         {
             // optimization by gradient decent
@@ -222,7 +258,7 @@ public class SSA
                 if(logger != null)
                 {
                     // show progress
-                    logger.appendToLog("Repetition " + (i+1) + ": iterations=" + buf.iterations + ", min. objective function value=" + buf.loss);
+                    appendToLog("Repetition " + (i+1) + ": iterations=" + buf.iterations + ", min. objective function value=" + buf.loss);
                 }
                 if(stopped)
                 {
@@ -234,7 +270,7 @@ public class SSA
         }
         else if(par.isUseMean()) {
             // use only mean; SSA as an eigenvalue problem
-            logger.appendToLog("Only mean should be used; Solving SSA as an eigenvalue problem.");
+            appendToLog("Only mean should be used; Solving SSA as an eigenvalue problem.");
 
             SSAMatrix mu[] = new SSAMatrix[data.mu.length];
 
@@ -383,6 +419,14 @@ public class SSA
     public void stop()
     {
         this.stopped = true;
+    }
+
+    public void appendToLog(String s)
+    {
+        if(logger != null)
+        {
+            logger.appendToLog(s);
+        }
     }
 
     public void setLogger(Logger logger)

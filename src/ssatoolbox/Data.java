@@ -164,7 +164,7 @@ public class Data {
      * @param numberOfEpochs number of equal size epochs
      */
     public void setNumberOfEqualSizeEpochs(int numberOfEpochs) {
-        if(numberOfEpochs < 1 /*&& numberOfEpochs != -1*/) throw new IllegalArgumentException("Number of epochs must be positive");
+        if(numberOfEpochs < 1) throw new IllegalArgumentException("Number of epochs must be positive");
 
         if(numberOfEpochs != this.numberOfEqualSizeEpochs) {
             if(numberOfEpochs > getTotalNumberOfSamples())
@@ -403,7 +403,7 @@ public class Data {
         }
         if(smallestEig < REGULARIZATION_THRESH)
         {
-            logger.appendToLog("At least one direction has nearly zero-variance. Using regularization.");
+            appendToLog("At least one direction has nearly zero-variance. Using regularization.");
             // regularize
             SSAMatrix alphaI = SSAMatrix.eye(S[0].getRows()).muli(REGULARIZATION_THRESH - smallestEig);
             for(int i = 0; i < S.length; i++)
@@ -429,6 +429,14 @@ public class Data {
 
         this.S = S;
         this.mu = mu;
+    }
+
+    public void appendToLog(String s)
+    {
+        if(logger != null)
+        {
+            logger.appendToLog(s);
+        }
     }
 
     public void setLogger(Logger logger)
