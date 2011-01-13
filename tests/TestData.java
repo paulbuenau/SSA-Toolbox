@@ -30,8 +30,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  */
 
-package ssatoolbox;
-
 import junit.framework.*;
 import ssatoolbox.*;
 
@@ -58,7 +56,8 @@ public class TestData extends TestCase
     }
 
     /**
-     * Tests whether exception is thrown if we have more epochs than data points.
+     * Tests whether exception is thrown if we have more epochs than data points, using
+     * a custom epoch definition. 
      */
     public void testSetCustomEpochDefinition()
     {

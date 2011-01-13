@@ -8,22 +8,43 @@
     <target name="clean">
         <delete dir="build"/>
         <delete dir="dist"/>
+				<delete>
+        	<fileset dir="." includes="TEST-*.xml"/>
+				</delete>
     </target>
+
+		<target name="javadoc">
+			<mkdir dir="javadoc"/>
+			<javadoc sourcepath="src" destdir="javadoc" classpathref="classpath">
+			</javadoc>
+		</target>
+
+		<path id="testclasspath">
+       	<fileset dir="dist" includes="**/*.jar"/>
+      	<fileset dir="tests" includes="*.jar"/>
+		</path>
+
+		<target name="compiletests" depends="jar">
+        <mkdir dir="build/tests"/>
+        <javac target="1.5" srcdir="tests" destdir="build/tests" classpathref="testclasspath"/>
+		</target>	
 
     <target name="compile">
         <mkdir dir="build/classes"/>
         <javac target="1.5" srcdir="src" destdir="build/classes" classpathref="classpath"/>
     </target>
 
-    <target name="test" depends="dist">
-	<junit printsummary="yes" haltonfailure="yes" showoutput="yes" >
-		<classpath>
-			<pathelement path="dist/ssa.jar"/>
-		</classpath>                   
+    <target name="test" depends="compiletests">
+			<junit printsummary="yes" haltonfailure="yes" showoutput="yes" >
+				<classpath>
+					<pathelement path="dist/ssa.jar"/>
+					<pathelement path="build/tests"/>
+      		<fileset dir="tests" includes="*.jar"/>
+				</classpath>                   
 
 		<batchtest fork="yes" todir=".">
 			<formatter type="xml"/>
-			<fileset dir="src">
+			<fileset dir="tests">
 				<include name="**/*Test*.java"/>
 			</fileset>
 		</batchtest>
