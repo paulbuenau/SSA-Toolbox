@@ -81,10 +81,20 @@ public class Data {
     // handle to logger
     private Logger logger = null;
 
+    /**
+     * Returns the input data format.
+     *
+     * @return DATAFORMAT_TIME_X_CHANNELS or DATAFORMAT_CHANNELS_X_TIME
+     */
     public int getInputDataformat() {
         return inputDataformat;
     }
 
+    /**
+     * Returns the output data format.
+     *
+     * @return DATAFORMAT_TIME_X_CHANNELS or DATAFORMAT_CHANNELS_X_TIME
+     */
     public int getOutputDataformat() {
         return outputDataformat;
     }
@@ -209,6 +219,10 @@ public class Data {
         }
     }
 
+    /**
+     * Sets the input data format.
+     * Has to be DATAFORMAT_TIME_X_CHANNELS or DATAFORMAT_CHANNELS_X_TIME.
+     */
     public void setInputDataformat(int newformat) {
         if(newformat != inputDataformat) {
             int oldformat = inputDataformat;
@@ -217,6 +231,10 @@ public class Data {
         }
     }
 
+    /**
+     * Sets the output data format.
+     * Has to be DATAFORMAT_TIME_X_CHANNELS or DATAFORMAT_CHANNELS_X_TIME.
+     */
     public void setOutputDataformat(int newformat) {
         if(newformat != outputDataformat) {
             int oldformat = outputDataformat;
@@ -431,6 +449,11 @@ public class Data {
         this.mu = mu;
     }
 
+    /**
+     * Appends a message to the log.
+     *
+     * @param s message to append
+     */
     public void appendToLog(String s)
     {
         if(logger != null)
@@ -439,6 +462,11 @@ public class Data {
         }
     }
 
+    /**
+     * Sets which logger to use.
+     *
+     * @param logger logger
+     */
     public void setLogger(Logger logger)
     {
         this.logger = logger;

@@ -34,7 +34,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package ssatoolbox;
 
 /**
- * Mathematical functions used in the SSA implementation
+ * Mathematical functions used in the SSA implementation.
  *
  * @author Jan Saputra Mueller, saputra@cs.tu-berlin.de
  */

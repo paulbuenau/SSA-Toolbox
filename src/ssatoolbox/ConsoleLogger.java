@@ -35,7 +35,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package ssatoolbox;
 
 /**
- * ConsoleLogger.java
+ * ConsoleLogger class. This implementation of the interface Logger writes
+ * all log messages directly to the console.
  *
  * @author Jan Saputra Mueller, saputra@cs.tu-berlin.de
  */

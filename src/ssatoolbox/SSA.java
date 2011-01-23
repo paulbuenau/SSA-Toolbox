@@ -33,7 +33,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package ssatoolbox;
 
 /**
- * Implementation of the "Stationary Subspace Analysis" (SSA) algorithm
+ * Implementation of the "Stationary Subspace Analysis" (SSA) algorithm.
  *
  * @author Jan Saputra Mueller, saputra@cs.tu-berlin.de
  */
@@ -231,8 +231,8 @@ public class SSA
     }
 
     /**
-     * Solves the SSA optimization problem using backtracking linesearch
-     * the number of times specified in the variable var. The best result is returned.
+     * Solves the SSA optimization problem using backtracking linesearch.
+     * The best result is returned.
      *
      * @param par class containing the SSA parameters
      * @param data class containing the data
@@ -289,7 +289,7 @@ public class SSA
 
             // solve eigenvalue problem
             SSAMatrix E[] = H.symmetricEigenvectors();
-            // the eigenvectors are in the columnsand are our projection directions; we need them
+            // the eigenvectors are in the columns and are our projection directions; we need them
             // in the rows in our projection matrices
             SSAMatrix B = E[0].transpose();
             // loss is the sum of the eigenvalues for the stationary subspace
@@ -416,11 +416,19 @@ public class SSA
         }
     }
 
+    /**
+     * Stops the optimization.
+     */
     public void stop()
     {
         this.stopped = true;
     }
-
+    
+    /**
+     * Appends a message to the log.
+     *
+     * @param s message to append
+     */
     public void appendToLog(String s)
     {
         if(logger != null)
@@ -429,6 +437,11 @@ public class SSA
         }
     }
 
+    /**
+     * Sets which logger to use.
+     *
+     * @param logger logger
+     */
     public void setLogger(Logger logger)
     {
         this.logger = logger;

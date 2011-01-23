@@ -42,6 +42,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Class for storing the toolbox configuration in a file.
  *
  * @author Jan Saputra Mueller, saputra@cs.tu-berlin.de
  */
@@ -53,6 +54,10 @@ public class ToolboxConfig
     private File configFile;
     private Properties properties;
 
+    /**
+     * ToolboxConfig constructor. It loads the current configuration of the toolbox from
+     * the config-file.
+     */
     public ToolboxConfig()
     {
         // get user home directory
@@ -74,7 +79,7 @@ public class ToolboxConfig
         }
         else
         {
-            // does config directory exists?
+            // does config directory exist?
             File configDir = new File(userHome + fileSep + CONFIG_DIR);
             if(!configDir.exists())
             {
@@ -84,16 +89,30 @@ public class ToolboxConfig
         }
     }
 
+    /**
+     * Sets a property.
+     *
+     * @param Key property name
+     * @param Value property value
+     */
     public void setProperty(String Key, String Value)
     {
         properties.setProperty(Key, Value);
     }
 
+   /**
+     * Gets a property.
+     *
+     * @param Key property name
+     */
     public String getProperty(String Key)
     {
         return properties.getProperty(Key);
     }
 
+    /**
+     * Stores the current configuration in the config-file.
+     */
     public void saveProperties()
     {
         try

@@ -34,11 +34,14 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package ssatoolbox;
 
 /**
- * Logger.java
+ * Logger interface.
  *
  * @author Jan Saputra Mueller, saputra@cs.tu-berlin.de
  */
 public interface Logger
 {
+    /**
+     * Appends a new message to the log.
+     */
     public void appendToLog(String str);
 }

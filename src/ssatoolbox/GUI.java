@@ -62,7 +62,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 
 /**
- * GUI.java
+ * Implementation of the GUI (standalone version of the toolbox).
  *
  * @author Jan Saputra Mueller, saputra@cs.tu-berlin.de
  */
@@ -198,6 +198,10 @@ public class GUI extends javax.swing.JFrame implements Logger {
     }
 
 
+    /**
+     * Sets the state of the GUI. There are four different states:
+     * STATE_NO_DATA, STATE_PARAMETRIZATION, STATE_RESULT_AVAILABLE, STATE_SSA_RUNNING.
+     */
     public void setGUIState(int s) {
         state = s;
 
@@ -1578,9 +1582,6 @@ public class GUI extends javax.swing.JFrame implements Logger {
         dialogAbout.setVisible(false);
     }//GEN-LAST:event_jButton2ActionPerformed
         
-    /**
-    * @param args the command line arguments
-    */
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgrpEpochizationMethod;
@@ -1668,6 +1669,9 @@ public class GUI extends javax.swing.JFrame implements Logger {
     private javax.swing.JTextField tfNumberOfStationarySources;
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * Makes the GUI visible.
+     */
     public void showGUI() {
         setVisible(true);
     }

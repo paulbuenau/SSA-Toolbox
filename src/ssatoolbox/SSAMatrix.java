@@ -32,6 +32,12 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package ssatoolbox;
 
+/**
+ * Wrapper class for different matrix libraries. All matrrices in the toolbox are instances of this class. It passes
+ * the matrix operations to the currently used matrix library.
+ *
+ * @author Jan Saputra Mueller, saputra@cs.tu-berlin.de
+ */
 public class SSAMatrix
 {
     public static final int JBLAS = 0;
@@ -58,6 +64,11 @@ public class SSAMatrix
         setArray(m);
     }
     
+    /**
+     * Copy constructor.
+     * 
+     * @param m matrix to copy from
+     */
     public SSAMatrix(SSAMatrix m)
     {
         this.lib = m.lib;
@@ -73,12 +84,22 @@ public class SSAMatrix
         }
     }
     
+    /**
+     * Copy constructor for the jBlas library.
+     *
+     * @param m jBlas DoubleMatrix matrix to copy from
+     */
     public SSAMatrix(org.jblas.DoubleMatrix m)
     {
         this.lib = JBLAS;
         MATRIX_JBLAS = m.dup();
     }
     
+    /**
+     * Copy constructor for the Colt library.
+     *
+     * @param m Colt DoubleMatrix2D matrix to copy from
+     */
     public SSAMatrix(cern.colt.matrix.DoubleMatrix2D m)
     {
         this.lib = COLT;
@@ -232,6 +253,13 @@ public class SSAMatrix
         return 0; // should not happen
     }
     
+    /**
+     * Sets an entry in the matrix.
+     *
+     * @param i row index
+     * @param j column index
+     * @param value value
+     */
     public void set(int i, int j, double value)
     {
         convert();
@@ -247,6 +275,9 @@ public class SSAMatrix
         }
     }
     
+    /**
+     * Returns a transposed version of the matrix.
+     */
     public SSAMatrix transpose()
     {
         convert();
@@ -667,7 +698,7 @@ public class SSAMatrix
     }
     
     /**
-     * Computes the eigenvectors and eigenvalues of a symmetric matrix.
+     * Computes the eigenvectors and eigenvalues (ascending) of a symmetric matrix.
      *
      * @return array, with eigenvectors at index 0 and diagonal eigenvalue matrix at index 1.
      */
@@ -694,6 +725,11 @@ public class SSAMatrix
         return V;
     }
     
+    /**
+     * Calculates the eigenvalues of a symmetric matrix.
+     *
+     * @return a square matrix with the eigenvalues on its diagonal (ascending).
+     */
     public SSAMatrix symmetricEigenvalues()
     {
         convert();
@@ -730,6 +766,12 @@ public class SSAMatrix
         return null;
     }
     
+    /**
+     * Generates a random matrix (each entry is drawn uniformly from (0, 1) ).
+     *
+     * @param rows number of rows
+     * @param columns number of columns
+     */
     public static SSAMatrix rand(int rows, int columns)
     {
         switch(globalLib)
@@ -743,6 +785,11 @@ public class SSAMatrix
         return null; // should not happen
     }
     
+    /**
+     * Calculates the maximum norm of the matrix.
+     *
+     * @return maximum norm of the matrix
+     */
     public double normmax()
     {
         convert();
@@ -758,6 +805,15 @@ public class SSAMatrix
         return 0; // should not happen
     }
     
+    /**
+     * Returns a range of the matrix.
+     *
+     * @param ra start row
+     * @param rb end row + 1
+     * @param ca start column
+     * @param cb end column + 1
+     * @return range of the matrix
+     */
     public SSAMatrix getRange(int ra, int rb, int ca, int cb)
     {
         convert();
@@ -773,6 +829,12 @@ public class SSAMatrix
         return null; // should not happen
     }
     
+    /**
+     * Returns columns of the matrix.
+     *
+     * @param cindices array of column indices
+     * @return matrix with the selected columns
+     */
     public SSAMatrix getColumns(int cindices[])
     {
         convert();
@@ -788,6 +850,13 @@ public class SSAMatrix
         return null; // should not happen
     }
     
+    /**
+     * Concatenates two matrices vertically.
+     *
+     * @param A first matrix
+     * @param B second matrix
+     * @return concatenated matrix
+     */
     public static SSAMatrix concatVertically(SSAMatrix A, SSAMatrix B)
     {
         A.convert();
@@ -804,6 +873,13 @@ public class SSAMatrix
         return null; // should not happen
     }
     
+    /**
+     * Concatenates two matrices horizontally.
+     *
+     * @param A first matrix
+     * @param B second matrix
+     * @return concatenated matrix
+     */
     public static SSAMatrix concatHorizontally(SSAMatrix A, SSAMatrix B)
     {
         A.convert();
@@ -820,6 +896,11 @@ public class SSAMatrix
         return null; // should not happen
     }
     
+    /**
+     * Calculates the matrix exponential function value of this matrix.
+     *
+     * @return matrix exponential function value
+     */
     public SSAMatrix expm()
     {
         convert();

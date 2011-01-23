@@ -131,20 +131,6 @@ public class Main {
 
          UIManager.LookAndFeelInfo lif [] =  UIManager.getInstalledLookAndFeels();
 
-/*         GUI_1 gui = new GUI_1();
-
-        for(int i = 0; i < lif.length; i++) {
-            if(lif[i].getClassName().equals(UIManager.getSystemLookAndFeelClassName())) {
-                try {
-                    UIManager.setLookAndFeel(lif[i].getClassName());
-                    SwingUtilities.updateComponentTreeUI(gui);                    
-                } catch(Exception Ex) {}
-            }
-        }
-
-
-        gui.setVisible(true);*/
-
         gui = new GUI(this, ssa_parameters, data);
         logger = gui;
         gui.setGUIState(GUI.STATE_NO_DATA);
@@ -153,25 +139,6 @@ public class Main {
         logger.appendToLog("*** Welcome to the SSA Toolbox (version " + SSA_VERSION + ") ***");
         logger.appendToLog("Now you might want to load some data (see menu File).");
     }
-
-    /**
-     * Checks whether determinacy conditions are violated.
-     */
-    /*private void checkDeterminacy() {
-        if(data.getNumberOfEpochs() >= 2 && ssa_parameters.getNumberOfStationarySources() >= 1) {
-            if(!ssa_parameters.isUseMean()) {
-                if(data.getNumberOfEpochs() <= (data.getNumberOfDimensions() - ssa_parameters.getNumberOfStationarySources()) + 1) {
-                    logger.appendToLog("WARNING: Too few epochs specified; there may be spurious stationary directions");
-                    logger.appendToLog("You need to have at least " + ((data.getNumberOfDimensions() - ssa_parameters.getNumberOfStationarySources()) + 2) + " distinct epochs to guarantee determinacy of the solution");
-                }
-            } else {
-                if(data.getNumberOfEpochs() <=  (data.getNumberOfDimensions() - ssa_parameters.getNumberOfStationarySources())/2 + 2) {
-                    logger.appendToLog("WARNING: Too few epochs specified; there may be spurious stationary directions");
-                    logger.appendToLog("You need to have at least " +  ((data.getNumberOfDimensions() - ssa_parameters.getNumberOfStationarySources())/2 + 3) + " distinct epochs to guarantee determinacy of the solution");
-                }
-            }
-        }
-    }*/
 
     /**
      * Main function.
@@ -218,17 +185,6 @@ public class Main {
                     logger.appendToLog(ex.getMessage());
                     gui.setGUIState(GUI.STATE_PARAMETRIZATION);
                 }
-
-                //checkDeterminacy();
-
-/*                logger.appendToLog("SSA terminated.");
-                logger.appendToLog("Best result:");
-                logger.appendToLog("  Ps: " + results.Ps);
-                logger.appendToLog("  Pn: " + results.Pn);
-                logger.appendToLog("  As: " + results.Bs);
-                logger.appendToLog("  An: " + results.Bn);
-                logger.appendToLog("  Loss: " + results.loss);
-                logger.appendToLog("  Converged: " + results.converged);*/
             }
         }).start();
     }
@@ -247,6 +203,11 @@ public class Main {
         System.exit(0);
     }
 
+    /**
+     * Loads a time series from a file.
+     *
+     * @param f file (in *.csv or *.mat format)
+     */
     public void loadTimeseries(File f)
     {
         String filename = f.getPath().toLowerCase();
@@ -447,7 +408,7 @@ public class Main {
     }
 
     /**
-     * Loads data (and an epoch definition if available) from a MAT-file
+     * Loads data (and an epoch definition if available) from a MAT-file.
      *
      * @param f MAT-file
      */

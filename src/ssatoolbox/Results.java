@@ -66,7 +66,8 @@ public class Results {
      * @param iterations number of iterations needed
      * @param d number of stationary sources
      * @param reps number of repetitions
-     * @param ignoreMean ignore mean
+     * @param useMean use mean
+     * @param useCovariance use covariance matrix
      * @param equalEpochs use equally sized epochs
      * @param inputFile input file used
      * @param epochFile file with custom epochization
