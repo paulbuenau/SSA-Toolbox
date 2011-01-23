@@ -523,7 +523,17 @@ is currently selected.
 
 %%%%%%%%%%%%%%%%%
 \subsection*{Unit Tests}
+The unit tests are realized using \texttt{JUnit} and can be found in the subdirectory \texttt{tests} of the repository.
+There are two test classes.
 
+\paragraph{TestData}
+This class contains tests for the class \texttt{Data}. It is checked whether exceptions are thrown in case of an
+illegal epochization.
+
+\paragraph{TestSSA}
+This class consists of tests for the class \texttt{SSA}. It checks whether exceptions are thrown if the
+determinacy bounds are violated. The function \texttt{testOptimize} contains a simple test which checks
+if the SSA optimization works correctly by running the optimization on a very simple data set.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Contact and Support}

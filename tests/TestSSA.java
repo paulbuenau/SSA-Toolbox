@@ -50,7 +50,7 @@ public class TestSSA extends TestCase
         par.setUseCovariance(true);
         
         data.setTimeSeries(SSAMatrix.zeros(6, 100), null);
-        data.setNumberOfEqualSizeEpochs(3); // we would need at least 5 > (6 - 2)/2 + 2 epochs
+        data.setNumberOfEqualSizeEpochs(4); // we would need at least 5 > (6 - 2)/2 + 2 epochs
         data.epochize();
         
         boolean exceptionThrown = false;
@@ -81,7 +81,7 @@ public class TestSSA extends TestCase
         par.setUseCovariance(false);
         
         data.setTimeSeries(SSAMatrix.zeros(4, 100), null);
-        data.setNumberOfEqualSizeEpochs(2); // we would need at least 3 > 4 - 2 epochs
+        data.setNumberOfEqualSizeEpochs(3); // we would need at least 4 > (4 - 2) + 1 epochs
         data.epochize();
         
         boolean exceptionThrown = false;
@@ -112,7 +112,7 @@ public class TestSSA extends TestCase
         par.setUseCovariance(true);
         
         data.setTimeSeries(SSAMatrix.zeros(4, 100), null);
-        data.setNumberOfEqualSizeEpochs(2); // we would need at least 4 > 4 - 2 + 1 epochs
+        data.setNumberOfEqualSizeEpochs(3); // we would need at least 4 > (4 - 2) + 1 epochs
         
         boolean exceptionThrown = false;
         try
@@ -163,7 +163,20 @@ public class TestSSA extends TestCase
 
         Results res = ssa.optimize(par, data);
         
-        assertEquals(0.980, res.Ps.get(0, 0), 0.001);
-        assertEquals(0.036, res.Ps.get(0, 1), 0.001);
+        //assertEquals(0.980, res.Ps.get(0, 0), 0.001);
+        //assertEquals(0.036, res.Ps.get(0, 1), 0.001);
+        
+        // test whether the angle between the estimated projection direction to the stationary subspace and
+        // the real projection direction (1, 0) is small
+        double p1 = res.Ps.get(0, 0);
+        double p2 = res.Ps.get(0, 1);
+        double phi = 180*Math.acos(p1/Math.sqrt(p1*p1 + p2*p2)) / Math.PI;
+        assertEquals(0, phi, 5); // tolerance of 5 degrees
+
+        // the same with the basis-vector of the non-stationary subspace (correct direction: (0, 1) )
+        double b1 = res.Bn.get(0, 0);
+        double b2 = res.Bn.get(1, 0);
+        double alpha = 180*Math.acos(b2/Math.sqrt(b1*b1 + b2*b2)) / Math.PI;
+        assertEquals(0, alpha, 5); // tolerance of 5 degrees
     }
 }
