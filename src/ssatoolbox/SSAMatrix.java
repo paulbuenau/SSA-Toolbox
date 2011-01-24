@@ -959,3 +959,4 @@ public class SSAMatrix
         return null; // should not happen
     }
 }
+

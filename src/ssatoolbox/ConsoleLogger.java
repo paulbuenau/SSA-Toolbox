@@ -47,3 +47,4 @@ public class ConsoleLogger implements Logger
         System.out.println(str);
     }
 }
+

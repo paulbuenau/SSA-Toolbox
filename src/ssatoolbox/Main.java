@@ -723,3 +723,4 @@ public class Main {
         logger.appendToLog("Results successfully saved.");
     }    
 }
+

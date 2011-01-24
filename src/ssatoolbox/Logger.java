@@ -45,3 +45,4 @@ public interface Logger
      */
     public void appendToLog(String str);
 }
+
