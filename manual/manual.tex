@@ -9,6 +9,7 @@
 \usepackage{dsfont}
 \usepackage{boxedminipage}
 \usepackage{hyperref}
+\usepackage{placeins}
 
 \newcommand{\R}{\ensuremath{\mathds{R}}}
 \newcommand{\C}{\ensuremath{\mathds{C}}}
@@ -42,6 +43,8 @@
 \DeclareMathOperator*{\expm}{expm}
 \DeclareMathOperator*{\myspan}{span}
 
+\setcounter{tocdepth}{1} 
+
 \begin{document}
 
 \title{SSA Toolbox \input version.tex --- Manual}
@@ -54,28 +57,34 @@
 \newpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Introduction}
+\section{Introduction and Overview}
 
 This is the manual for the SSA Toolbox, an efficient open-source implementation of the 
-Stationary Subspace Analysis \cite{PRL:SSA:2009} algorithm. Stationary Subspace Analysis (SSA)
+Stationary Subspace Analysis~\cite{PRL:SSA:2009} algorithm. Stationary Subspace Analysis (SSA)
 is a general purpose algorithm for the explorative analysis of non-stationary data, i.e.~data
-whose properties change over time. SSA can help to detect, characterize and visualize temporal
-changes in complex high-dimensional data sets.
+whose statistical properties change over time. SSA can helps to detect, characterize and 
+visualize temporal changes in complex high-dimensional data sets.
 
-The SSA Toolbox is written entirely in Java and thus platform-independent. It has been tested
-successfuly on Windows, Linux and MacOS. The SSA Toolbox comes with a state-of-the-art native 
-Linear Algebra library (BLAS/LAPACK) that will be invoked if the operating system supports 
-it. If not, a purely Java-based library will be used. Data and results can imported and
+The SSA Toolbox is written entirely in Java and is thus platform-independent. It has been tested
+successfuly under Windows, Linux and MacOS. The SSA Toolbox comes with a state-of-the-art native 
+Linear Algebra library (BLAS / LAPACK) that is invoked if the operating system supports 
+it. If not, a purely Java-based library, COLT, will be used. Data and results can imported and
 exported as comma-separated values (CSV) files, the fail-safe format of last resort, and through
-Matlab's proprietory mat files. 
+Matlab's proprietory mat files, a de-facto standard in the Machine Learning community.
+
+The source code of the SSA Toolbox is fully documented (using the JavaDoc standard) and accompanied
+by a set of unit tests written in JUnit. The latest version is always available from 
+github\footnote{See \url{http://https://github.com/paulbuenau/SSA-Toolbox}}, a hosting service for
+the git versioning system. Section~\ref{sec:dev} contains further information for developers, 
+including a high-level overview of the class structure.
  
 There are at least three ways to use the SSA Toolbox:
 \begin{enumerate}
-	\item Standalone application with graphical user interface. 
-	
-	\item From within Matlab. Note that if your system is supported by jblas, 
+	\item As a standalone application with a graphical user interface. 
+	 
+	\item From within Matlab, using the wrapper script \texttt{ssa.m}. 
 
-	\item As a Java library to use from ...
+	\item As a Java library. 
 \end{enumerate}
 
 
@@ -107,11 +116,6 @@ been tested on the following platforms.
 	\item Linux (32 and 64 bit)
 	\item Mac OS X (32 and 64 bit)
 \end{itemize}
-%On 64 bit systems you will have to install the package \texttt{libgfortran3}. This can be
-%done for example under Ubuntu with
-%\begin{center}
-%	\texttt{apt-get install libgfortran3}
-%\end{center}
 
 \paragraph{Installation and Running}
 
@@ -152,13 +156,6 @@ Independent Component Analyis~\cite{ICABook} we do \textit{not} assume that
 the sources ${\mathbf s}(t)$ are independent. We refer to the spaces spannend 
 by the columns of $A^{\s}$ and $A^{\n}$ as the stationary ($\s$-) and 
 non-stationary ($\n$-) space respectively.  
-%Please note that for the purpose
-%of the SSA~Toolbox, we have interchanged the dimensions, i.e.~contrary
-%to the publications \cite{PRL:SSA:2009}, the time runs along the first dimension
-%and the different sources and signals each correspond to a 
-%column\footnote{This is to be consistent with the majority of statistics and signal
-%processing software packages, in particular to facilitate easy data exchange
-%via the CSV file format.}
 
 The SSA algorithm factorizes the observed signals $x(t)$ according to
 Equation~\ref{eq:mixing_model}, i.e.~it finds a linear transformation
@@ -180,23 +177,21 @@ and the estimated stationary and non-stationary sources are thus given by
   \hat{\mathbf s}^{\n}(t) & = \hat{P}^{\n} {\mathbf x}(t) 
 \end{align}
 respectively.
-Note that SSA only identifies the $\s$-projection and the $\n$-space uniquely.
-$\hat P^{\n}$ is chosen such that it is orthogonal to $\hat P^{\s}$.
-Therefore, $\hat A^{\s}$ is orthogonal to $\hat A^{\n}$.\\
-The SSA Toolbox allows for input and output in two formats: the first
-dimension corresponding to the channels and the second to time or vice versa.  
-Note that the above definitions holds for the former case, 
-i.e.~$\text{channels} \times \text{time}$. If the other output format has
-been chosen, then the results (Equations~\ref{eq:est_demixing}, \ref{eq:est_mixing}, 
-\ref{eq:est_s_sources} and \ref{eq:est_n_sources}) are transposed.
+Note that only the $\s$-projection and the $\n$-space are uniquely identifiable.
+$\hat P^{\n}$ is chosen such that it is orthogonal to $\hat P^{\s}$ and 
+$\hat A^{\s}$ is orthogonal to $\hat A^{\n}$.
+
+The SSA Toolbox allows for input and output in (time $\times$ channel) and 
+(channel $\times$ time) format. Note that the above definitions of sources, 
+projections and basis correspond to the (channel $\times$ time) format.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Input, Output and Parameters}
 
 The input to the SSA Toolbox consists of
 \begin{itemize}
- \item Data: the time series $x(t)$, either $\text{channels} \times \text{time}$ or 
-				$\text{channels} \times \text{time}$.
+ \item Data: the time series $x(t)$, either as $(\text{channels} \times \text{time})$ or 
+				$(\text{channels} \times \text{time})$.
 
  \item Segmentation of the time series into epochs, either
 	\begin{itemize}
@@ -204,7 +199,7 @@ The input to the SSA Toolbox consists of
 	  \item according to a user-supplied custom epoch definition. 
 	\end{itemize}
 
- \item Parameters (see Section~\ref{sec:params}).
+ \item Parameters to the SSA Algorithm (see Section~\ref{sec:params}).
 \end{itemize}
 
 The parameters are set via the graphical user interface. The time series 
@@ -218,8 +213,8 @@ Comma Separated Values (CSV) files are human-readable text files for storing tab
 The columns are separated by commas and each line of the file corresponds to a row. 
 Lines starting with a hash (\texttt{\#}) are ignored. If the data has more rows than columns,
 then each row will be interpreted as a time point and each column as a channel. Otherwise,
-the format is assumed to be $\text{channels} \times \text{time}$. See 
-Figure~\ref{fig:ex_timeseries} for an example.
+the format is assumed to be $(\text{channels} \times \text{time})$. See 
+Figure~\ref{fig:ex_timeseries} for an example time series file. 
 
 \begin{figure}[h]
 \centering
@@ -244,7 +239,7 @@ A custom segmentation of the time series into epochs can be specified by means o
 a separate CSV file, which must have the same number of rows as the time series 
 and one column. The entries correspond to the index (starting with 1) of the 
 epoch that a time point belongs to. Figure~\ref{fig:ex_segmentation} shows 
-an example for a segmentation of the time series in Figure~\ref{fig:ex_timeseries}.
+an example CSV file for a segmentation of the time series into custom epochs. 
 
 \begin{figure}[h]
 \centering
@@ -271,7 +266,7 @@ second epoch.
 In the Matlab file format, the time series must be contained in a variable
 called \texttt{X}. If \texttt{X} has more rows than columns, then each row
 will be interpreted as a time point and each column as a channel. Otherwise,
-the format is assumed to be $\text{channels} \times \text{time}$. 
+the format is assumed to be $(\text{channels} \times \text{time})$. 
 
 \begin{figure}[h]
 \centering
@@ -320,12 +315,13 @@ epoch consists of 80 samples.
 \subsection{Parameters of SSA}
 \label{sec:params}
 
-The SSA algorithm has the following parameters which are set via the graphical user
-interface.
+The SSA algorithm has the following parameters which can be set via the graphical 
+user interface.
 
 \paragraph{Number of stationary sources} The number of stationary sources $d$ to be 
-found in the time series. For the minimum number of epochs required to avoid spurious
-stationary directions depends on $d$, see Section~\ref{sec:determinacy}. 
+found in the time series. Depending on $d$, the algorithm needs a certain minimum number 
+of distinct epochs, see Section~\ref{sec:determinacy}. A warning message will be issued
+if this condition is violated.
 
 \paragraph{Number of restarts} The number of times the optimization procedure
 should be repeated with different random initialization in order to avoid local minima.
@@ -353,19 +349,18 @@ Informally speaking, spurious stationary components occur when the amount of
 observed variation in the distributions (i.e. the number of epochs) is insufficient 
 to eliminate seemingly stationary directions in the non-stationary subspace. 
 
-It can be shown \cite{PRL:SSA:2009} that there always exist spurious stationary components
-if the number of distinct epochs is
- 
+It can be shown \cite{PRL:SSA:2009} that there exist no spurious stationary directions
+if the number of epochs $N$ is at least 
 \begin{equation*}
 	N > \frac{D-d}{2} + 2.
 \end{equation*}
-When only changes in one moment are considered, the indeterminacy bound is
+When only changes in one moment are considered, we need more epochs, namely
 \begin{equation*}
 	N > D-d + 1 .
 \end{equation*}
 The SSA~Toolbox issues a warning if these conditions are violated.
-For practical reasons, it should suffice to exceed those bounds by 50
-percent in order to obtain a suitable result.
+In practice, if there is enough data, it is advisable to use more epochs than the minimum
+indicated by this bound. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Output}
@@ -374,23 +369,23 @@ The result of the SSA algorithm is an estimated demixing matrix $\hat{A}^{-1}$
 (see Equation~\ref{eq:est_demixing}). From this, the following output
 is generated by the SSA~Toolbox (assuming the output format $\text{channels} \times \text{time}$):
 \begin{itemize}
-	\item the estimated projection to the stationary sources $\hat{P}^\s \in \R^{d \times D}$, 
-				see Equation~\ref{eq:est_demixing}
+	\item the estimated projection to the stationary sources $\hat{P}^\s \in \R^{d \times D}$ 
+				(see Equation~\ref{eq:est_demixing})
 						
-	\item the estimated projection to the non-stationary sources $\hat{P}^\n \in \R^{ (D-d) \times D}$, 
-		see Equation~\ref{eq:est_demixing}
+	\item the estimated projection to the non-stationary sources $\hat{P}^\n \in \R^{ (D-d) \times D}$ 
+		(see Equation~\ref{eq:est_demixing})
 
-	\item the estimated basis of the stationary subspace $\hat{A}^\s \in \R^{D \times d}$, 
-		see Equation~\ref{eq:est_mixing}
+	\item the estimated basis of the stationary subspace $\hat{A}^\s \in \R^{D \times d}$
+		(see Equation~\ref{eq:est_mixing})
 	
-	\item the estimated basis of the non-stationary subspace $\hat{A}^\n \in \R^{D \times (D-d)}$,
-		see Equation~\ref{eq:est_mixing}
+	\item the estimated basis of the non-stationary subspace $\hat{A}^\n \in \R^{D \times (D-d)}$
+		(see Equation~\ref{eq:est_mixing})
 
 	\item the estimated stationary sources $\hat{\mathbf s}^\s(t) = \hat{P}^\s {\mathbf x}(t)$, 
-		see Equation~\ref{eq:est_s_sources}
+		(see Equation~\ref{eq:est_s_sources})
 	
-	\item the estimated non-stationary sources $\hat{\mathbf s}^\n(t) = \hat{P}^\n {\mathbf x}(t) $,
-		see Equation~\ref{eq:est_n_sources}
+	\item the estimated non-stationary sources $\hat{\mathbf s}^\n(t) = \hat{P}^\n {\mathbf x}(t) $
+		(see Equation~\ref{eq:est_n_sources})
 	
 \end{itemize}
 These six matrices resp.~time series can either be saved in individual CSV files 
@@ -427,41 +422,63 @@ are decomposed into $d = 3$ stationary sources and $D-d = 2$ non-stationary sour
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\FloatBarrier % Flush all figures, we don't want the file format examples below.
+
 \section{Example}
 
-The example in Matlab, explained step by step. 
+The SSA Toolbox comes with a self-contained Matlab example script (\texttt{ssa\_example.m}), which generates
+data, applies SSA and visualizes the result. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\FloatBarrier
+
 \section{Frequently Asked Questions}
 
-\paragraph{When should I use SSA?}
+\paragraph{When should I use SSA?} 
 
-\paragraph{Can I use SSA on a univariate time series?}
+SSA can be applied whenever a multivariate dataset, that has a temporal structure is conceivable 
+generated as a mixture of stationary and non-stationary components, where the non-stationary 
+effects are visible in changes of the mean and covariance matrix. 
 
-\paragraph{How do I determine the number of stationary sources?}
+\paragraph{Can I use SSA on a univariate time series?} No.  
 
-\paragraph{Why is it not possible to identify the non-stationary sources and what does this mean?}
+\paragraph{How do I determine the number of stationary sources?} To date, there exists no automatic
+selection procedure. In practice, one can apply SSA for several numbers of stationary sources and inspect
+the result, possibly also using appropriate statistical hypothesis tests.
+
+\paragraph{Why is it not possible to identify the non-stationary sources and what does this mean?} 
+The true non-stationary sources cannot be identified because adding stationary components to a 
+non-stationary time series leaves it non-stationary. This makes the estimated non-stationary sources 
+arbitrary. It is therefore not possible to recover the true non-stationary sources from the mixture. 
 	
-\paragraph{Why is it not possible to identify the stationary subspace and what does this mean?}
+\paragraph{Why is it not possible to identify the stationary subspace and what does this mean?} The basis
+of the stationary subspace cannot be identified because we cannot estimate the non-stationary sources, which
+are dual to the basis of the stationary subspace. If we could identify the stationary subspace, then we could
+find the non-stationary sources by projecting orthogonal to it.
 
-\paragraph{I do not understand what the output of the SSA Toolbox is. Please explain.}
+\paragraph{I would like to use the Toolbox from Python/Octave/or any other environment, is this possible?} 
+The SSA Toolbox can be used from any environment that can invoke Java code. If you have found a way
+to use the SSA Java libraries from a new programming language or environment, we would very much like
+to hear from you.
 
-\paragraph{I would like to use the Toolbox from Python/Octave/or any other environment, is this possible?}
-
-\paragraph{Can I get a $p$-value for my result?}
+\paragraph{Can I get a $p$-value for my result?} So far there is no method to establish the 
+significance of the SSA solution. However, one could use a test for stationarity on the
+extracted stationary sources to verify the solution, and report the corresponding $p$-values.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Developers}
+\label{sec:dev}
+
 
 This section contains some information about the technical structure of the SSA Toolbox
 that is helpful for developers who want to extend it or use parts in other projects. The 
 source code distribution of the SSA Toolbox is available from the project 
-web site (see Section~\ref{sec:sec:install_run}) and from github, a public git repository 
-server, which is the primary location of the SSA Toolbox:
+web site (see Section~\ref{sec:install_run}) and from github, a public git repository 
+server, which is the primary location of the source code:
 \begin{center}
 	\texttt{https://github.com/paulbuenau/SSA-Toolbox}
 \end{center}
-On github you will always find the latest, probably unreleased version of the source code. 
+On github you will always find the latest, probably unreleased version of the SSA Toolbox.
 
 %%%%%%%%%%%%%%%%%
 \subsection*{Class Structure}
