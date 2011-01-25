@@ -132,8 +132,9 @@ ssaparam.setUseCovariance(use_covariance);
 fprintf('Starting optimization...\n\n');
 try
 ssaresult = ssaopt.optimize(ssaparam, ssadata);
-catch me
-    fprintf(me.getReport);
+catch % me
+    %fprintf(me.getReport);
+    disp(lasterror);
     return;
 end
 
