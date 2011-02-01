@@ -456,6 +456,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints.weighty = 1.0;
         jPanel2.add(jScrollPane2, gridBagConstraints);
 
+	/*
         jLabel2.setText("Please cite the following paper for the SSA Toolbox.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -479,6 +480,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         jPanel2.add(jScrollPane3, gridBagConstraints);
+		*/
 
         jButton1.setText("Close");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -503,7 +505,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 31;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        jPanel2.add(jTextField1, gridBagConstraints);
+        //jPanel2.add(jTextField1, gridBagConstraints);
 
         jLabel3.setText("Reference in BibTeX format:");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -511,7 +513,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints.gridy = 32;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
-        jPanel2.add(jLabel3, gridBagConstraints);
+        //jPanel2.add(jLabel3, gridBagConstraints);
 
         jTextField2.setEditable(false);
         jTextField2.setText("http://dx.doi.org/10.1103/PhysRevLett.103.214101");
@@ -529,7 +531,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        jPanel2.add(jLabel4, gridBagConstraints);
+        //jPanel2.add(jLabel4, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -564,7 +566,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints.weighty = 1.0;
         jPanel1.add(jButton2, gridBagConstraints);
 
-        jLabel6.setText("Copyright (c) 2010 Jan Saputra Müller, Paul von Bünau, ");
+        jLabel6.setText("Copyright (c) 2010 Jan Saputra Mueller, Paul von Buenau, ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -588,7 +590,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         jPanel1.add(jLabel8, gridBagConstraints);
 
-        jLabel9.setText("Frank C. Meinecke, Franz J. Kiraly and Klaus-Robert Müller");
+        jLabel9.setText("Frank C. Meinecke, Franz J. Kiraly and Klaus-Robert Mueller");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
