@@ -1208,21 +1208,44 @@ public class GUI extends javax.swing.JFrame implements Logger {
 				JRadioButtonMenuItem rbmiCOLT = new JRadioButtonMenuItem("COLT");
 				rbmiCOLT.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
+                appendToLog("Switching to COLT library...");
             	SSAMatrix.setGlobalLib(SSAMatrix.COLT);
+                controller.toolboxConfig.setProperty("matrix_library", "colt");
+                controller.toolboxConfig.saveProperties();
             }
         });
 
 				JRadioButtonMenuItem rbmiJBLAS = new JRadioButtonMenuItem("jBLAS");
 				rbmiJBLAS.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
+                appendToLog("Switching to jBLAS library...");
             	SSAMatrix.setGlobalLib(SSAMatrix.JBLAS);
+                controller.toolboxConfig.setProperty("matrix_library", "jblas");
+                controller.toolboxConfig.saveProperties();
             }
         });
 
 				bgrpMatLib.add(rbmiCOLT);
 				bgrpMatLib.add(rbmiJBLAS);
 
-				rbmiCOLT.setSelected(true);
+                                String lib = controller.toolboxConfig.getProperty("matrix_library");
+                                if(lib == null || lib.equals("colt"))
+                                {
+				    rbmiCOLT.setSelected(true);
+                                    SSAMatrix.setGlobalLib(SSAMatrix.COLT);
+                                }
+                                else if(lib.equals("jblas"))
+                                {
+				    rbmiJBLAS.setSelected(true);
+                                    SSAMatrix.setGlobalLib(SSAMatrix.JBLAS);
+                                }
+                                else
+                                {
+                                    appendToLog("Error: Unknown library \"" + lib + "\".");
+                                    appendToLog("Switching to COLT library...");
+				    rbmiCOLT.setSelected(true);
+                                    SSAMatrix.setGlobalLib(SSAMatrix.COLT);
+                                }
 
 				mnuMatrixLibrary.add(rbmiCOLT);
 				mnuMatrixLibrary.add(rbmiJBLAS);
