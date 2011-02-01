@@ -219,7 +219,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         final JComponent saveDataMenuItems [] = new JComponent[]
             {
                 miSaveNonStationaryBasisCSV, miSaveNonstationaryProjectionCSV,
-                miSaveNonstationarySignalsCSV, miSaveResultsMatlab, miSaveStationaryBasisCSV,
+                miSaveNonstationarySignalsCSV, miSaveResultsMatlab, miSaveResultsCSV, miSaveStationaryBasisCSV,
                 miSaveStationaryProjectionCSV, miSaveStationarySignalsCSV, lbCaptionResults,
                 lbCaptionOutputDataformat, rbChannelsXTime, rbTimeXChannels, combSave, btSaveResults
             };

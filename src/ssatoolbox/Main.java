@@ -670,21 +670,21 @@ public class Main {
         LinkedList<MLArray> list = new LinkedList<MLArray>();
 
         MLStructure mls = new MLStructure("ssa_results", new int[]{1,1});
-        mls.setField("est_Ps", new MLDouble("est_Ps", results.Ps.getArray()));
-        mls.setField("est_Pn", new MLDouble("est_Pn", results.Pn.getArray()));
-        mls.setField("est_As", new MLDouble("est_As", results.Bs.getArray()));
-        mls.setField("est_An", new MLDouble("est_An", results.Bn.getArray()));
+        mls.setField("Ps", new MLDouble("Ps", results.Ps.getArray()));
+        mls.setField("Pn", new MLDouble("Pn", results.Pn.getArray()));
+        mls.setField("As", new MLDouble("As", results.Bs.getArray()));
+        mls.setField("An", new MLDouble("An", results.Bn.getArray()));
         SSAMatrix ss = results.Ps.mmul(data.X);
         SSAMatrix nss = results.Pn.mmul(data.X);
         if(data.getOutputDataformat() == Data.DATAFORMAT_CHANNELS_X_TIME)
         {
-            mls.setField("est_s_src", new MLDouble("est_s_src", ss.getArray()));
-            mls.setField("est_n_src", new MLDouble("est_n_src", nss.getArray()));
+            mls.setField("s_src", new MLDouble("s_src", ss.getArray()));
+            mls.setField("n_src", new MLDouble("n_src", nss.getArray()));
         }
         else
         {
-            mls.setField("est_s_src", new MLDouble("est_s_src", ss.transpose().getArray()));
-            mls.setField("est_n_src", new MLDouble("est_n_src", nss.transpose().getArray()));
+            mls.setField("s_src", new MLDouble("s_src", ss.transpose().getArray()));
+            mls.setField("n_src", new MLDouble("n_src", nss.transpose().getArray()));
         }
         
         // parameter structure

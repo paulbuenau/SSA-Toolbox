@@ -1,7 +1,7 @@
-function [est_Ps, est_Pn, est_As, est_An, loss, iterations, ssa_results] = ssa(X, d, reps, equal_epochs, use_mean, use_covariance, matrix_library)
+function [Ps, Pn, As, An, loss, iterations, ssa_results] = ssa(X, d, reps, equal_epochs, use_mean, use_covariance, matrix_library)
 %SSA Stationary Subspace Analysis
 %usage 
-%  [est_Ps, est_Pn, est_As, est_An, loss, iterations, ssa_results] 
+%  [Ps, Pn, As, An, loss, iterations, ssa_results] 
 %   = ssa(X, d, {reps: 5}, {equal_epochs: 10}, {use_mean: true},
 %         {use_covariance: true}, {matrix_library: 'colt'})
 %
@@ -24,10 +24,10 @@ function [est_Ps, est_Pn, est_As, est_An, loss, iterations, ssa_results] = ssa(X
 %                 Default: 'colt'
 %
 %output
-%  est_Ps         Projection matrix to stationary subspace (d x D)
-%  est_Pn         Projection matrix to non-stationary subspace ((D-d) x D)
-%  est_As         Basis of stationary subspace (D x d)
-%  est_An         Basis of non-stationary subspace (D x (D-d))
+%  Ps         Projection matrix to stationary subspace (d x D)
+%  Pn         Projection matrix to non-stationary subspace ((D-d) x D)
+%  As         Basis of stationary subspace (D x d)
+%  An         Basis of non-stationary subspace (D x (D-d))
 %  loss           Objective function value
 %  iterations     Number of iterations until convergence
 %  ssa_results    SSA results structure as described in the manual
@@ -155,25 +155,25 @@ catch % me
 end
 
 % return results
-est_Ps = ssaresult.Ps.getArray;
-est_Pn = ssaresult.Pn.getArray;
-est_As = ssaresult.Bs.getArray;
-est_An = ssaresult.Bn.getArray;
+Ps = ssaresult.Ps.getArray;
+Pn = ssaresult.Pn.getArray;
+As = ssaresult.Bs.getArray;
+An = ssaresult.Bn.getArray;
 loss = ssaresult.loss;
 iterations = ssaresult.iterations;
 
 % ssa_results structure as described in the manual
 ssa_results = struct;
-ssa_results.est_Ps = est_Ps;
-ssa_results.est_Pn = est_Pn;
-ssa_results.est_As = est_As;
-ssa_results.est_An = est_An;
+ssa_results.Ps = Ps;
+ssa_results.Pn = Pn;
+ssa_results.As = As;
+ssa_results.An = An;
 if iscell(X)
-    ssa_results.est_s_src = est_Ps * Xwoeps;
-    ssa_results.est_n_src = est_Pn * Xwoeps;
+    ssa_results.s_src = Ps * Xwoeps;
+    ssa_results.n_src = Pn * Xwoeps;
 else
-    ssa_results.est_s_src = est_Ps * X;
-    ssa_results.est_n_src = est_Pn * X;
+    ssa_results.s_src = Ps * X;
+    ssa_results.n_src = Pn * X;
 end
 parameters = struct;
 parameters.input_file = '';
