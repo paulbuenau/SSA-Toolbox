@@ -550,27 +550,41 @@ is currently selected.
 %%%%%%%%%%%%%%%%%
 \subsection*{Unit Tests}
 The unit tests are realized using \texttt{JUnit} and can be found in the subdirectory \texttt{tests} of the repository.
-There are two test classes.
+There are tests for the classes \texttt{Data} and \texttt{SSA}.
 
 \subsubsection*{Tests for the Data class}
 
-\paragraph{\texttt{testSetCustomEpochDefinition()}}  This test ...
+\paragraph{\texttt{testSetNumberOfEqualSizeEpochs()}}
 
-\paragraph{TestData}
-This class contains tests for the class \texttt{Data}. It consists of two test cases,
-\texttt{testSetNumberOfEqualSizeEpochs()} and \texttt{testSetCustomEpochDefinition()}. Both methods check whether an exception is
-thrown if we have less data points than epochs (for equally sized epochs and when using a custom epoch definition, respectively).
+This test checks whether an exception is thrown if we have less data points than epochs (in case of equally sized epochs).
 
-\paragraph{TestSSA}
-This class consists of tests for the class \texttt{SSA}. The methods \texttt{testOptimizeMeanCov()}, \texttt{testOptimizeMean()} and
-\texttt{testOptimizeCovariance()} check whether exceptions are thrown if the
-determinacy bounds are violated (when using both means and covariance matrices, means only and covariance matrices only, respectively).
-The function \texttt{testOptimize()} contains a simple test which checks
+\paragraph{\texttt{testSetCustomEpochDefinition()}}
+
+This test checks whether an exception is thrown if we have less data points than epochs (in case of a custom epoch definition).
+
+\subsubsection*{Tests for the SSA class}
+
+\paragraph{\texttt{testOptimizeMeanCov()}}
+
+This test checks whether an exception is thrown if the determinacy bound is violated (when using both means and covariance matrices).
+
+\paragraph{\texttt{testOptimizeMean()}}
+
+This test checks whether an exception is thrown if the determinacy bound is violated (when using means only).
+
+\paragraph{\texttt{testOptimizeCovariance()}}
+
+This test checks whether an exception is thrown if the determinacy bound is violated (when using covariance matrices only).
+
+\paragraph{\texttt{testOptimize()}}
+
+This function contains a simple test which checks
 if the SSA optimization works correctly by running the optimization on a very simple data set. This data set is $2$-dimensional, where
 the first dimension is stationary and the second one is non-stationary (this means the mixing matrix to be estimated is the identity matrix).
 For checking the solution of the optimization, the angle between the estimated stationary projection direction and the correct one
 $\begin{pmatrix} 1 \\ 0\end{pmatrix}$ is considered. The same is done with the estimated basis vector of the non-stationary subspace,
 where the correct direction is $\begin{pmatrix} 0 \\ 1\end{pmatrix}$.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Contact and Support}

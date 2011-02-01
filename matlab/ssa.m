@@ -1,8 +1,9 @@
-function [est_Ps, est_Pn, est_As, est_An, loss, iterations, ssa_results] = ssa(X, d, reps, equal_epochs, use_mean, use_covariance)
+function [est_Ps, est_Pn, est_As, est_An, loss, iterations, ssa_results] = ssa(X, d, reps, equal_epochs, use_mean, use_covariance, matrix_library)
 %SSA Stationary Subspace Analysis
 %usage 
 %  [est_Ps, est_Pn, est_As, est_An, loss, iterations, ssa_results] 
-%   = ssa(X, d, {reps: 5}, {equal_epochs: 10}, {use_mean: true}, {use_covariance: true})
+%   = ssa(X, d, {reps: 5}, {equal_epochs: 10}, {use_mean: true},
+%         {use_covariance: true}, {matrix_library: 'colt'})
 %
 %input
 %  <no input>     Show version information
@@ -19,6 +20,8 @@ function [est_Ps, est_Pn, est_As, est_An, loss, iterations, ssa_results] = ssa(X
 %                 in the mean occur). Default: true
 %  use_covariance Optional: Set this to false to ignore changes in the
 %                 covariance matrices. Default: true
+%  matrix_library matrix library to use. Has to be 'colt' or 'jblas'.
+%                 Default: 'colt'
 %
 %output
 %  est_Ps         Projection matrix to stationary subspace (d x D)
@@ -89,6 +92,19 @@ if ~exist('reps', 'var') reps = 5; end
 if ~exist('equal_epochs', 'var') equal_epochs = 10; end
 if ~exist('use_mean', 'var') use_mean = true; end
 if ~exist('use_covariance', 'var') use_covariance = true; end
+if ~exist('matrix_library', 'var') matrix_library = 'colt'; end
+    
+if strcmp(matrix_library, 'colt')
+    fprintf('Using Colt library...\n');
+    ssatoolbox.SSAMatrix.setGlobalLib(ssatoolbox.SSAMatrix.COLT);
+elseif strcmp(matrix_library, 'jblas')
+    fprintf('Using jBlas library...\n');
+    fprintf('If you get problems with jBlas, try the Colt library.\n');
+    ssatoolbox.SSAMatrix.setGlobalLib(ssatoolbox.SSAMatrix.JBLAS);
+else
+    fprintf('Error: Unknown matrix library %s.\n', matrix_library);
+    return;
+end
 
 % detect whether to use equal or custom epochization
 if iscell(X)
