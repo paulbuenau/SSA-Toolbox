@@ -60,6 +60,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import javax.swing.*;
 
 /**
  * Implementation of the GUI (standalone version of the toolbox).
@@ -1199,6 +1200,38 @@ public class GUI extends javax.swing.JFrame implements Logger {
 
         jMenuBar2.add(jMenu3);
 
+				// Settings menu
+				JMenu mnuMatrixLibrary = new JMenu("Matrix Library");
+				ButtonGroup bgrpMatLib = new ButtonGroup();
+				JRadioButtonMenuItem rbmiCOLT = new JRadioButtonMenuItem("COLT");
+				rbmiCOLT.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            	SSAMatrix.setGlobalLib(SSAMatrix.COLT);
+            }
+        });
+
+				JRadioButtonMenuItem rbmiJBLAS = new JRadioButtonMenuItem("jBLAS");
+				rbmiJBLAS.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            	SSAMatrix.setGlobalLib(SSAMatrix.JBLAS);
+            }
+        });
+
+				bgrpMatLib.add(rbmiCOLT);
+				bgrpMatLib.add(rbmiJBLAS);
+
+				rbmiCOLT.setSelected(true);
+
+				mnuMatrixLibrary.add(rbmiCOLT);
+				mnuMatrixLibrary.add(rbmiJBLAS);
+
+				JMenu mnuSettings = new JMenu("Settings");
+				mnuSettings.add(mnuMatrixLibrary);
+				jMenuBar2.add(mnuSettings);
+
+
+				// ------------------------------------					
+
         jMenu4.setText("Help");
 
         jMenuItem13.setText("Citation");
@@ -1207,6 +1240,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
                 jMenuItem13ActionPerformed(evt);
             }
         });
+
         jMenu4.add(jMenuItem13);
 
         jMenuItem14.setText("About");
