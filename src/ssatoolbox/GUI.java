@@ -1093,6 +1093,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
 
         taLog.setColumns(20);
         taLog.setRows(5);
+				taLog.setEditable(false);
         scrpLog.setViewportView(taLog);
 
         panelLog.add(scrpLog, java.awt.BorderLayout.CENTER);
