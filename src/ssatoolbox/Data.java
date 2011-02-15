@@ -169,6 +169,15 @@ public class Data {
     }
 
     /**
+     * Set number of equally-sized epochs using a heuristic.
+     *
+     * @param numberOfStationarySources number of stationary sources to be found.
+     */
+		public void setNumberOfEpochsByHeuristic(int numberOfStationarySources) {
+			throw new RuntimeException("Not implemented yet!");
+		}
+
+    /**
      * Set the number of equal size epochs.
      *
      * @param numberOfEpochs number of equal size epochs

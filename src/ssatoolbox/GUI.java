@@ -210,7 +210,8 @@ public class GUI extends javax.swing.JFrame implements Logger {
             { rbEpochEquallySized, rbUseCustomEpochDefinition, tfNumberOfEpochs,
                 tfNumberOfRestarts, tfNumberOfStationarySources, cbMomentMean,
                 lbParameters, lbNumberOfRestarts, lbNumberOfStationarySources, btLoadCustomEpochDef,
-                cbMomentCovMat, cbMomentMean, miLoadEpochDefinitionCSV, lbMoments, lbCustomEpochDefInfo
+                cbMomentCovMat, cbMomentMean, miLoadEpochDefinitionCSV, lbMoments, lbCustomEpochDefInfo, 
+								btSuggest
         };
 
         final JComponent loadDataMenuItems [] = new JComponent[]
@@ -343,6 +344,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+				btSuggest = new JButton();
         bgrpEpochizationMethod = new javax.swing.ButtonGroup();
         dialogCitation = new javax.swing.JDialog();
         jPanel2 = new javax.swing.JPanel();
@@ -779,7 +781,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         lbNumberOfRestarts.setText("Number of restarts:");
         lbNumberOfRestarts.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
@@ -847,6 +849,20 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         panelParameters.add(tfNumberOfEpochs, gridBagConstraints);
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+
+				btSuggest.setText("Suggest");
+        panelParameters.add(btSuggest, gridBagConstraints);
+
+				btSuggest.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+							data.setNumberOfEpochsByHeuristic(ssa_parameters.getNumberOfStationarySources());
+            }
+        });
+
         btLoadCustomEpochDef.setText("Load custom definition");
         btLoadCustomEpochDef.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -877,7 +893,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
@@ -886,7 +902,8 @@ public class GUI extends javax.swing.JFrame implements Logger {
         lbNumberOfStationarySources.setText("Number of stationary sources:");
         lbNumberOfStationarySources.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
         panelParameters.add(lbNumberOfStationarySources, gridBagConstraints);
@@ -904,7 +921,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
@@ -1644,6 +1661,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+	  private	JButton btSuggest;
     private javax.swing.ButtonGroup bgrpEpochizationMethod;
     private javax.swing.ButtonGroup bgrpOutputDataformat;
     private javax.swing.JButton btLoadCustomEpochDef;
