@@ -210,8 +210,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
             { rbEpochEquallySized, rbUseCustomEpochDefinition, tfNumberOfEpochs,
                 tfNumberOfRestarts, tfNumberOfStationarySources, cbMomentMean,
                 lbParameters, lbNumberOfRestarts, lbNumberOfStationarySources, btLoadCustomEpochDef,
-                cbMomentCovMat, cbMomentMean, miLoadEpochDefinitionCSV, lbMoments, lbCustomEpochDefInfo, 
-								btSuggest
+                cbMomentCovMat, cbMomentMean, miLoadEpochDefinitionCSV, lbMoments, lbCustomEpochDefInfo , rbEqualHeuristic
         };
 
         final JComponent loadDataMenuItems [] = new JComponent[]
@@ -344,7 +343,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-				btSuggest = new JButton();
+
         bgrpEpochizationMethod = new javax.swing.ButtonGroup();
         dialogCitation = new javax.swing.JDialog();
         jPanel2 = new javax.swing.JPanel();
@@ -428,7 +427,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         jMenu4 = new javax.swing.JMenu();
         jMenuItem13 = new javax.swing.JMenuItem();
         jMenuItem14 = new javax.swing.JMenuItem();
-
+			 	rbEqualHeuristic = new JRadioButton();
         dialogCitation.getContentPane().setLayout(new java.awt.GridBagLayout());
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
@@ -790,17 +789,15 @@ public class GUI extends javax.swing.JFrame implements Logger {
         bgrpEpochizationMethod.add(rbEpochEquallySized);
         rbEpochEquallySized.setSelected(true);
         rbEpochEquallySized.setText("Epochs: equally sized. Number:");
-        rbEpochEquallySized.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                rbEpochEquallySizedStateChanged(evt);
-            }
-        });
         rbEpochEquallySized.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rbEpochEquallySizedActionPerformed(evt);
+          		if(rbEpochEquallySized.isSelected()) {
+								data.setEpochType(Data.EPOCHS_EQUALLY);
+							} 
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
+	
+				gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
@@ -809,18 +806,40 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         panelParameters.add(rbEpochEquallySized, gridBagConstraints);
 
+        bgrpEpochizationMethod.add(rbEqualHeuristic);
+				rbEqualHeuristic.setText("Epochs: equally sized, according to heuristic");
+        rbEqualHeuristic.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+          		if(rbEqualHeuristic.isSelected()) {
+								data.setEpochType(Data.EPOCHS_EQUALLY_HEURISTIC);
+							} 
+            }
+        });
+	
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+				panelParameters.add(rbEqualHeuristic, gridBagConstraints);
+
         bgrpEpochizationMethod.add(rbUseCustomEpochDefinition);
         rbUseCustomEpochDefinition.setText("Epochs: according to custom definition.");
         rbUseCustomEpochDefinition.setEnabled(false);
         rbUseCustomEpochDefinition.setFocusable(false);
-        rbUseCustomEpochDefinition.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                rbUseCustomEpochDefinitionStateChanged(evt);
+        rbUseCustomEpochDefinition.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+          		if(rbUseCustomEpochDefinition.isSelected()) {
+								data.setEpochType(Data.EPOCHS_CUSTOM);
+							} 
             }
         });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weighty = 1.0;
@@ -849,20 +868,6 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         panelParameters.add(tfNumberOfEpochs, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-
-				btSuggest.setText("Suggest");
-        panelParameters.add(btSuggest, gridBagConstraints);
-
-				btSuggest.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-							data.setNumberOfEpochsByHeuristic(ssa_parameters.getNumberOfStationarySources());
-            }
-        });
-
         btLoadCustomEpochDef.setText("Load custom definition");
         btLoadCustomEpochDef.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -871,7 +876,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 15, 0, 0);
         panelParameters.add(btLoadCustomEpochDef, gridBagConstraints);
@@ -967,7 +972,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -978,7 +983,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         lbCustomEpochDefInfo.setText("jLabel5");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 15, 0, 0);
         panelParameters.add(lbCustomEpochDefInfo, gridBagConstraints);
@@ -1340,8 +1345,6 @@ public class GUI extends javax.swing.JFrame implements Logger {
             rbUseCustomEpochDefinition.setEnabled(data.hasCustomEpochDefinition());
         }
 
-        rbUseCustomEpochDefinition.setSelected(data.useCustomEpochDefinition());
-
         tfNumberOfEpochs.setText(numberToText(data.getNumberOfEqualSizeEpochs()));
         tfNumberOfStationarySources.setText(numberToText(ssa_parameters.getNumberOfStationarySources()));
         tfNumberOfRestarts.setText(numberToText(ssa_parameters.getNumberOfRestarts()));
@@ -1352,6 +1355,12 @@ public class GUI extends javax.swing.JFrame implements Logger {
             lbNumberOfDims.setText(data.getNumberOfDimensions() + "");
             lbNumberOfSamples.setText(data.getTotalNumberOfSamples() + "");
         }
+
+				switch(data.getEpochType()) {
+					case Data.EPOCHS_EQUALLY: rbEpochEquallySized.setSelected(true); break;
+					case Data.EPOCHS_EQUALLY_HEURISTIC: rbEqualHeuristic.setSelected(true); break;
+					case Data.EPOCHS_CUSTOM: rbUseCustomEpochDefinition.setSelected(true); break;
+				}	
 
         if(data.hasCustomEpochDefinition()) {
             lbCustomEpochDefInfo.setText("Epoch file: " + data.getEpochDefinitionFile().getName());
@@ -1661,7 +1670,6 @@ public class GUI extends javax.swing.JFrame implements Logger {
         
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-	  private	JButton btSuggest;
     private javax.swing.ButtonGroup bgrpEpochizationMethod;
     private javax.swing.ButtonGroup bgrpOutputDataformat;
     private javax.swing.JButton btLoadCustomEpochDef;
@@ -1745,6 +1753,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
     private javax.swing.JTextField tfNumberOfEpochs;
     private javax.swing.JTextField tfNumberOfRestarts;
     private javax.swing.JTextField tfNumberOfStationarySources;
+		private javax.swing.JRadioButton rbEqualHeuristic;
     // End of variables declaration//GEN-END:variables
 
     /**

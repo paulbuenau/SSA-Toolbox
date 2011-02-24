@@ -56,7 +56,9 @@ public class Data {
 
     public static final double REGULARIZATION_THRESH = 0.0000001;
 
-    protected boolean useCustomEpochDefinition;
+		public static final int EPOCHS_EQUALLY = 1;
+		public static final int EPOCHS_EQUALLY_HEURISTIC = 2;
+		public static final int EPOCHS_CUSTOM = 3;
 
     protected File timeseriesFile = null;
     protected File epochDefinitionFile = null;
@@ -72,6 +74,8 @@ public class Data {
     protected SSAMatrix muall; // mean over all epochs
 
     protected int numberOfEqualSizeEpochs = -1;
+
+		protected int epoch_type = EPOCHS_EQUALLY;
 
     protected int inputDataformat = -1;
     protected int outputDataformat = -1;
@@ -144,7 +148,7 @@ public class Data {
      * @return true if a custom epoch definition will be used, otherwise false
      */
     public boolean useCustomEpochDefinition() {
-        return useCustomEpochDefinition;
+        return epoch_type == EPOCHS_CUSTOM;
     }
 
     /**
@@ -211,6 +215,17 @@ public class Data {
         return (getEpochDefinitionFile() != null);
     }
 
+		// TODO document this
+		public int getEpochType() {
+			return epoch_type;
+		}
+	
+		public void setEpochType(int newEpochType) {
+			if(epoch_type != newEpochType) {
+				// TODO implement this. 
+			}
+		}
+
     /**
      * Sets whether to use a custom epoch definition.
      *
@@ -221,10 +236,10 @@ public class Data {
             throw new RuntimeException("No custom epoch definition loaded");
         }
 
-        if(useCustomEpochDefinition != this.useCustomEpochDefinition) {
-            boolean oldval = this.useCustomEpochDefinition;
-            this.useCustomEpochDefinition = useCustomEpochDefinition;
-            propertyChangeSupport.firePropertyChange("useCustomEpochDefinition", oldval, this.useCustomEpochDefinition);
+        if(useCustomEpochDefinition != this.useCustomEpochDefinition()) {
+            boolean oldval = this.useCustomEpochDefinition();
+            this.epoch_type = EPOCHS_CUSTOM;
+            propertyChangeSupport.firePropertyChange("useCustomEpochDefinition", oldval, useCustomEpochDefinition);
         }
     }
 
