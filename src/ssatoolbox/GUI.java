@@ -1449,7 +1449,11 @@ public class GUI extends javax.swing.JFrame implements Logger {
     }//GEN-LAST:event_rbEpochEquallySizedStateChanged
 
     private void rbUseCustomEpochDefinitionStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbUseCustomEpochDefinitionStateChanged
-        data.setUseCustomEpochDefinition(rbUseCustomEpochDefinition.isSelected());
+        //data.setUseCustomEpochDefinition(rbUseCustomEpochDefinition.isSelected());
+        if(rbUseCustomEpochDefinition.isSelected())
+        {
+            data.setEpochType(Data.EPOCHS_CUSTOM);
+        }
     }//GEN-LAST:event_rbUseCustomEpochDefinitionStateChanged
 
     private void cbMomentMeanStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_cbMomentMeanStateChanged

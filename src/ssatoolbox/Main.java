@@ -158,7 +158,7 @@ public class Main {
             return;
         }
             
-        if(data.getNumberOfEpochs() == -1) {
+        if(data.getEpochType() == Data.EPOCHS_EQUALLY && data.getNumberOfEpochs() == -1) {
             logger.appendToLog("ERROR: Epochs not specified");
             return;
         }
@@ -169,11 +169,13 @@ public class Main {
                 ssa.setLogger(gui);
                 data.setLogger(gui);
 
-                logger.appendToLog("Calculating covariance matrices and means...");
-                data.epochize();
-
-                logger.appendToLog("Running SSA...");
                 gui.setGUIState(GUI.STATE_SSA_RUNNING);
+
+                //logger.appendToLog("Calculating covariance matrices and means...");
+                //data.epochize();
+
+                //logger.appendToLog("Running SSA...");
+                //gui.setGUIState(GUI.STATE_SSA_RUNNING);
 
                 //stop_ssa = false;
 

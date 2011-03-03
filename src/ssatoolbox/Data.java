@@ -74,8 +74,9 @@ public class Data {
     protected SSAMatrix muall; // mean over all epochs
 
     protected int numberOfEqualSizeEpochs = -1;
+    protected int numberOfEpochsHeuristic = -1;
 
-		protected int epoch_type = EPOCHS_EQUALLY;
+		protected int epochType = EPOCHS_EQUALLY;
 
     protected int inputDataformat = -1;
     protected int outputDataformat = -1;
@@ -143,12 +144,12 @@ public class Data {
     }
 
     /**
-     * Returns whether a custom epoch definition will be used.
+     * Returns the currently used epoch type.
      *
-     * @return true if a custom epoch definition will be used, otherwise false
+     * @return one of EPOCHS_EQUALLY, EPOCHS_EQUALLY_HEURISTIC, EPOCHS_CUSTOM
      */
-    public boolean useCustomEpochDefinition() {
-        return epoch_type == EPOCHS_CUSTOM;
+    public int getEpochType() {
+        return epochType;
     }
 
     /**
@@ -165,11 +166,19 @@ public class Data {
      *
      * @return number of epcohs
      */
-    public int getNumberOfEpochs() {
-        if(useCustomEpochDefinition())
-            return customEpochs;
-        else
-            return getNumberOfEqualSizeEpochs();
+    public int getNumberOfEpochs()
+    {
+        switch(getEpochType())
+        {
+            case EPOCHS_CUSTOM:
+                return customEpochs;
+            case EPOCHS_EQUALLY:
+                return getNumberOfEqualSizeEpochs();
+            case EPOCHS_EQUALLY_HEURISTIC:
+                return getNumberOfEpochsHeuristic();
+        }
+
+        return 0;
     }
 
     /**
@@ -177,9 +186,25 @@ public class Data {
      *
      * @param numberOfStationarySources number of stationary sources to be found.
      */
-		public void setNumberOfEpochsByHeuristic(int numberOfStationarySources) {
-			throw new RuntimeException("Not implemented yet!");
-		}
+    public void setNumberOfEpochsByHeuristic(int numberOfStationarySources, boolean useMean, boolean useCovariance)
+    {
+        double minEpochs;
+        if(useMean && useCovariance)
+        {
+            minEpochs = (getNumberOfDimensions() - (double)numberOfStationarySources) / 2.0 + 3.0;
+        }
+        else
+        {
+            // only one moment is considered
+            minEpochs = getNumberOfDimensions() - (double)numberOfStationarySources + 2.0;
+        }
+
+        double maxEpochs = getTotalNumberOfSamples() / (2.0*getNumberOfDimensions());
+
+        // geometric mean
+        numberOfEpochsHeuristic = (int)Math.round(Math.sqrt(minEpochs*maxEpochs));
+        logger.appendToLog("Setting the number of epochs to the geometric mean of " + (int)minEpochs + " and " + (int)maxEpochs + ": " + numberOfEpochsHeuristic);
+    }
 
     /**
      * Set the number of equal size epochs.
@@ -214,24 +239,23 @@ public class Data {
     public boolean hasCustomEpochDefinition() {
         return (getEpochDefinitionFile() != null);
     }
-
-		// TODO document this
-		public int getEpochType() {
-			return epoch_type;
-		}
 	
-		public void setEpochType(int newEpochType) {
-			if(epoch_type != newEpochType) {
-				// TODO implement this. 
-			}
-		}
+    public void setEpochType(int newEpochType)
+    {
+        if(epochType != newEpochType)
+        { 
+            int oldval = getEpochType();
+            this.epochType = newEpochType;
+            propertyChangeSupport.firePropertyChange("epochType", oldval, epochType);
+        }
+    }
 
     /**
      * Sets whether to use a custom epoch definition.
      *
      * @param useCustomEpochDefinition set this to true if you want to use a custom epoch definition.
      */
-    public void setUseCustomEpochDefinition(boolean useCustomEpochDefinition) {
+    /*public void setUseCustomEpochDefinition(boolean useCustomEpochDefinition) {
         if(!hasCustomEpochDefinition() && useCustomEpochDefinition == true) {
             throw new RuntimeException("No custom epoch definition loaded");
         }
@@ -241,7 +265,7 @@ public class Data {
             this.epoch_type = EPOCHS_CUSTOM;
             propertyChangeSupport.firePropertyChange("useCustomEpochDefinition", oldval, useCustomEpochDefinition);
         }
-    }
+    }*/
 
     /**
      * Sets the input data format.
@@ -295,7 +319,7 @@ public class Data {
         propertyChangeSupport.firePropertyChange("hasCustomEpochDefinition", oldHasCustomEpochDef, true);
         propertyChangeSupport.firePropertyChange("epochDefinitionFile", oldEpochDefinitionFile, file);
         
-        setUseCustomEpochDefinition(true);
+        setEpochType(EPOCHS_CUSTOM);
     }
 
     /**
@@ -313,7 +337,7 @@ public class Data {
         this.X = X;
 
         // delete epoch definition
-        setUseCustomEpochDefinition(false);
+        setEpochType(EPOCHS_EQUALLY_HEURISTIC);
         boolean oldHasCustomEpochDef = hasCustomEpochDefinition();
         epochDefinition = null;
         epochDefinitionFile = null;
@@ -342,18 +366,27 @@ public class Data {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
+    public int getNumberOfEpochsHeuristic()
+    {
+        return numberOfEpochsHeuristic;
+    }
+
     /**
      * Calculates the covariance matrices and means for each epoch.
      */
     public void epochize()
     {
-        if(useCustomEpochDefinition())
+        if(getEpochType() == EPOCHS_CUSTOM)
         {
             epochizeCustom(epochDefinition);
         }
-        else
+        else if(getEpochType() == EPOCHS_EQUALLY)
         {
             epochizeEqually(getNumberOfEqualSizeEpochs());
+        }
+        else if(getEpochType() == EPOCHS_EQUALLY_HEURISTIC)
+        {
+            epochizeEqually(getNumberOfEpochsHeuristic());
         }
     }
 

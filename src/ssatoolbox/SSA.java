@@ -225,7 +225,7 @@ public class SSA
                           par.getNumberOfRestarts(),
                           par.isUseMean(),
                           par.isUseCovariance(),
-                          data.useCustomEpochDefinition() ? 0 : data.getNumberOfEqualSizeEpochs(),
+                          data.getEpochType() == Data.EPOCHS_CUSTOM ? 0 : data.getNumberOfEqualSizeEpochs(),
                           data.getTimeseriesFile() == null ? "" : data.getTimeseriesFile().toString(),
                           data.getEpochDefinitionFile() == null ? "" : data.getEpochDefinitionFile().toString());
     }
@@ -240,7 +240,19 @@ public class SSA
      */
     public Results optimize(SSAParameters par, Data data)
     {
+        logger.appendToLog(""); // empty line
+
+        if(data.getEpochType() == Data.EPOCHS_EQUALLY_HEURISTIC)
+        {
+            data.setNumberOfEpochsByHeuristic(par.getNumberOfStationarySources(), par.isUseMean(), par.isUseCovariance());
+        }
+
         checkParameters(par, data);
+
+        logger.appendToLog("Calculating covariance matrices and means...");
+        data.epochize();
+
+        logger.appendToLog("Running SSA...");
 
         if(par.isUseCovariance())
         {
@@ -307,12 +319,14 @@ public class SSA
             // basis for non-stationary subspace
             SSAMatrix Bn = Mix.getRange(0, n, d, n);
 
+            appendToLog("Solved. Objective function value=" + loss);
+
             return new Results(Ps, Pn, Bs, Bn, loss, true, 1,
                               par.getNumberOfStationarySources(),
                               1,
                               par.isUseMean(),
                               par.isUseCovariance(),
-                              data.useCustomEpochDefinition() ? 0 : data.getNumberOfEqualSizeEpochs(),
+                              data.getEpochType() == Data.EPOCHS_CUSTOM ? 0 : data.getNumberOfEqualSizeEpochs(),
                               data.getTimeseriesFile() == null ? "" : data.getTimeseriesFile().toString(),
                               data.getEpochDefinitionFile() == null ? "" : data.getEpochDefinitionFile().toString());
         } else {
