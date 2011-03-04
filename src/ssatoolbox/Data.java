@@ -76,7 +76,7 @@ public class Data {
     protected int numberOfEqualSizeEpochs = -1;
     protected int numberOfEpochsHeuristic = -1;
 
-		protected int epochType = EPOCHS_EQUALLY;
+		protected int epochType = EPOCHS_EQUALLY_HEURISTIC;
 
     protected int inputDataformat = -1;
     protected int outputDataformat = -1;
@@ -204,6 +204,7 @@ public class Data {
         // geometric mean
         numberOfEpochsHeuristic = (int)Math.round(Math.sqrt(minEpochs*maxEpochs));
         logger.appendToLog("Setting the number of epochs to the geometric mean of " + (int)minEpochs + " and " + (int)maxEpochs + ": " + numberOfEpochsHeuristic);
+        logger.appendToLog("Average number of samples/epoch: " + ((double)getTotalNumberOfSamples() / (double)numberOfEpochsHeuristic));
     }
 
     /**

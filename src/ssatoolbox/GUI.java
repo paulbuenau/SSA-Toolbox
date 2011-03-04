@@ -246,7 +246,15 @@ public class GUI extends javax.swing.JFrame implements Logger {
                 setEnableArrayWise(parameterComponents, true);
                 setEnableArrayWise(loadDataMenuItems, true);
                 setEnableArrayWise(saveDataMenuItems, false);
-                rbUseCustomEpochDefinition.setEnabled(data.hasCustomEpochDefinition());            
+                if(data.hasCustomEpochDefinition())
+                {
+                    rbUseCustomEpochDefinition.setEnabled(true);
+                }
+                else
+                {
+                    rbEqualHeuristic.setEnabled(true);
+                }
+                tfNumberOfEpochs.setEnabled(false);
                 btStartStopSSA.setEnabled(true);
                 btStartStopSSA.setText("Start SSA");
                 break;
@@ -255,7 +263,8 @@ public class GUI extends javax.swing.JFrame implements Logger {
                 setEnableArrayWise(parameterComponents, true);
                 setEnableArrayWise(loadDataMenuItems, true);
                 setEnableArrayWise(saveDataMenuItems, true);
-                rbUseCustomEpochDefinition.setEnabled(data.hasCustomEpochDefinition());    
+                if(data.getEpochType() != Data.EPOCHS_EQUALLY) tfNumberOfEpochs.setEnabled(false);
+                //rbUseCustomEpochDefinition.setEnabled(data.hasCustomEpochDefinition());    
                 btStartStopSSA.setEnabled(true);
                 btStartStopSSA.setText("Start SSA");
                 break;
@@ -793,6 +802,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
           		if(rbEpochEquallySized.isSelected()) {
 								data.setEpochType(Data.EPOCHS_EQUALLY);
+                                                                tfNumberOfEpochs.setEnabled(true);
 							} 
             }
         });
@@ -812,6 +822,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
           		if(rbEqualHeuristic.isSelected()) {
 								data.setEpochType(Data.EPOCHS_EQUALLY_HEURISTIC);
+                                                                tfNumberOfEpochs.setEnabled(false);
 							} 
             }
         });
@@ -833,6 +844,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
           		if(rbUseCustomEpochDefinition.isSelected()) {
 								data.setEpochType(Data.EPOCHS_CUSTOM);
+                                                                tfNumberOfEpochs.setEnabled(false);
 							} 
             }
         });
@@ -1357,10 +1369,10 @@ public class GUI extends javax.swing.JFrame implements Logger {
         }
 
 				switch(data.getEpochType()) {
-					case Data.EPOCHS_EQUALLY: rbEpochEquallySized.setSelected(true); break;
-					case Data.EPOCHS_EQUALLY_HEURISTIC: rbEqualHeuristic.setSelected(true); break;
-					case Data.EPOCHS_CUSTOM: rbUseCustomEpochDefinition.setSelected(true); break;
-				}	
+					case Data.EPOCHS_EQUALLY: rbEpochEquallySized.setSelected(true); tfNumberOfEpochs.setEnabled(true); break;
+					case Data.EPOCHS_EQUALLY_HEURISTIC: rbEqualHeuristic.setSelected(true); tfNumberOfEpochs.setEnabled(false); break;
+					case Data.EPOCHS_CUSTOM: rbUseCustomEpochDefinition.setSelected(true); tfNumberOfEpochs.setEnabled(false); break;
+				}
 
         if(data.hasCustomEpochDefinition()) {
             lbCustomEpochDefInfo.setText("Epoch file: " + data.getEpochDefinitionFile().getName());
@@ -1446,6 +1458,10 @@ public class GUI extends javax.swing.JFrame implements Logger {
     }//GEN-LAST:event_tfNumberOfRestartsFocusLost
 
     private void rbEpochEquallySizedStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbEpochEquallySizedStateChanged
+        if(rbEpochEquallySized.isSelected())
+        {
+            data.setEpochType(Data.EPOCHS_EQUALLY);
+        }
     }//GEN-LAST:event_rbEpochEquallySizedStateChanged
 
     private void rbUseCustomEpochDefinitionStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbUseCustomEpochDefinitionStateChanged
