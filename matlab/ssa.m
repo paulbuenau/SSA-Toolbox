@@ -2,7 +2,7 @@ function [Ps, Pn, As, An, loss, iterations, ssa_results] = ssa(X, d, reps, equal
 %SSA Stationary Subspace Analysis
 %usage 
 %  [Ps, Pn, As, An, loss, iterations, ssa_results] 
-%   = ssa(X, d, {reps: 5}, {equal_epochs: 10}, {use_mean: true},
+%   = ssa(X, d, {reps: 5}, {equal_epochs: 0}, {use_mean: true},
 %         {use_covariance: true}, {matrix_library: 'colt'})
 %
 %input
@@ -14,7 +14,8 @@ function [Ps, Pn, As, An, loss, iterations, ssa_results] = ssa(X, d, reps, equal
 %  d              Dimensionality of stationary subspace
 %  reps           Optional: Number of restarts (the one with the lowest
 %                 objective function value is returned). Default: 5
-%  equal_epochs   Optional: Number of equally sized epochs. Default: 10
+%  equal_epochs   Optional: Number of equally sized epochs. equal_epochs=0 means, that
+%                 the number of epochs is chosen by a heuristic. Default: 0 (chose by heuristic)
 %  use_mean       Optional: Set this to false to ignore changes in the mean
 %                 (for example if your dataset ensures you that no changes
 %                 in the mean occur). Default: true
@@ -89,7 +90,7 @@ end
 
 % set default parameters
 if ~exist('reps', 'var') reps = 5; end
-if ~exist('equal_epochs', 'var') equal_epochs = 10; end
+if ~exist('equal_epochs', 'var') equal_epochs = 0; end
 if ~exist('use_mean', 'var') use_mean = true; end
 if ~exist('use_covariance', 'var') use_covariance = true; end
 if ~exist('matrix_library', 'var') matrix_library = 'colt'; end
@@ -105,6 +106,12 @@ else
     fprintf('Error: Unknown matrix library %s.\n', matrix_library);
     return;
 end
+
+% set SSA parameters
+ssaparam.setNumberOfStationarySources(d);
+ssaparam.setNumberOfRestarts(reps);
+ssaparam.setUseMean(use_mean);
+ssaparam.setUseCovariance(use_covariance);
 
 % detect whether to use equal or custom epochization
 if iscell(X)
@@ -127,22 +134,23 @@ if iscell(X)
     end
     fakefile = java.io.File('');
     ssadata.setCustomEpochDefinition(epdef, epochs, min_ep_size, fakefile);
-    ssadata.setUseCustomEpochDefinition(true);
+    ssadata.setEpochType(ssadata.EPOCHS_CUSTOM);
 else
     % epochize equally
     fprintf('No custom epochization found. Using equally sized epochs.\n');
     Xdm = ssatoolbox.SSAMatrix(X);
     ssadata.setTimeSeries(Xdm, []);
-    ssadata.setNumberOfEqualSizeEpochs(equal_epochs);
+    if equal_epochs == 0
+        % use heuristic
+        ssadata.setEpochType(ssadata.EPOCHS_EQUALLY_HEURISTIC);
+    else
+        ssadata.setNumberOfEqualSizeEpochs(equal_epochs);
+        ssadata.setEpochType(ssadata.EPOCHS_EQUALLY);
+    end
 end
 
-ssadata.epochize;
-
-% set SSA parameters
-ssaparam.setNumberOfStationarySources(d);
-ssaparam.setNumberOfRestarts(reps);
-ssaparam.setUseMean(use_mean);
-ssaparam.setUseCovariance(use_covariance);
+% ssadata.epochize; (epochize() is now automatically called from
+% optimize())
 
 % run optimization
 fprintf('Starting optimization...\n\n');
