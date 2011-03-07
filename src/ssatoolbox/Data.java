@@ -185,6 +185,8 @@ public class Data {
      * Set number of equally-sized epochs using a heuristic.
      *
      * @param numberOfStationarySources number of stationary sources to be found.
+     * @param useMean indicates whether the means are used
+     * @param useCovariance indicates whether the covariance matrices are used
      */
     public void setNumberOfEpochsByHeuristic(int numberOfStationarySources, boolean useMean, boolean useCovariance)
     {
@@ -240,7 +242,12 @@ public class Data {
     public boolean hasCustomEpochDefinition() {
         return (getEpochDefinitionFile() != null);
     }
-	
+
+    /**
+     * Sets the epochization type.
+     * 
+     * @param newEpochType one of EPOCHS_EQUALLY, EPOCHS_EQUALLY_HEURISTIC, EPOCHS_CUSTOM
+     */
     public void setEpochType(int newEpochType)
     {
         if(epochType != newEpochType)
@@ -352,7 +359,7 @@ public class Data {
     /**
      * Add PropertyChangeListener.
      *
-     * @param listener
+     * @param listener listener
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(listener);
@@ -361,7 +368,7 @@ public class Data {
     /**
      * Remove PropertyChangeListener.
      *
-     * @param listener
+     * @param listener listener
      */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.removePropertyChangeListener(listener);
