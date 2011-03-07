@@ -1044,12 +1044,14 @@ public class GUI extends javax.swing.JFrame implements Logger {
         panelResults.add(btSaveResults, gridBagConstraints);
 
         combSave.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Save: all results (Matlab)", "Save: all results (CSV)", "Save: stationary sources (CSV)", "Save: non-stationary sources (CSV)", "Save: stationary basis (CSV)", "Save: non-stationary basis (CSV)", "Save: filter for stationary sources (CSV)", "Save: filter for non-stationary sources (CSV)" }));
+				combSave.setMinimumSize(new Dimension(300,30));
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
-        gridBagConstraints.weighty = 1.0;
+				gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 10);
         panelResults.add(combSave, gridBagConstraints);
 
@@ -1121,6 +1123,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.ipady = 200;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.05;
         panelContents.add(panelControl, gridBagConstraints);
 
         panelLog.setLayout(new java.awt.BorderLayout());
@@ -1137,7 +1140,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.2;
+        gridBagConstraints.weighty = 0.1;
         panelContents.add(panelLog, gridBagConstraints);
 
         getContentPane().add(panelContents, java.awt.BorderLayout.CENTER);
