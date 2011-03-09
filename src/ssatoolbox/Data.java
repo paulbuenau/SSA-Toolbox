@@ -76,7 +76,7 @@ public class Data {
     protected int numberOfEqualSizeEpochs = -1;
     protected int numberOfEpochsHeuristic = -1;
 
-		protected int epochType = EPOCHS_EQUALLY_HEURISTIC;
+		protected int epochType = EPOCHS_EQUALLY;
 
     protected int inputDataformat = -1;
     protected int outputDataformat = -1;
@@ -345,7 +345,7 @@ public class Data {
         this.X = X;
 
         // delete epoch definition
-        setEpochType(EPOCHS_EQUALLY_HEURISTIC);
+        setEpochType(EPOCHS_EQUALLY);
         boolean oldHasCustomEpochDef = hasCustomEpochDefinition();
         epochDefinition = null;
         epochDefinitionFile = null;

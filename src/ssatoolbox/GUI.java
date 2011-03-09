@@ -246,15 +246,23 @@ public class GUI extends javax.swing.JFrame implements Logger {
                 setEnableArrayWise(parameterComponents, true);
                 setEnableArrayWise(loadDataMenuItems, true);
                 setEnableArrayWise(saveDataMenuItems, false);
-                if(data.hasCustomEpochDefinition())
+                tfNumberOfEpochs.setEnabled(data.getEpochType() == Data.EPOCHS_EQUALLY);
+                rbUseCustomEpochDefinition.setEnabled(data.hasCustomEpochDefinition()); 
+                /*if(data.hasCustomEpochDefinition())
                 {
                     rbUseCustomEpochDefinition.setEnabled(true);
+                    tfNumberOfEpochs.setEnabled(false);
                 }
                 else
                 {
+                    rbUseCustomEpochDefinition.setEnabled(false);
+                    tfNumberOfEpochs.setEnabled(true);
+                }*/
+                /*else
+                {
                     rbEqualHeuristic.setEnabled(true);
-                }
-                tfNumberOfEpochs.setEnabled(false);
+                }*/
+                //tfNumberOfEpochs.setEnabled(false);
                 btStartStopSSA.setEnabled(true);
                 btStartStopSSA.setText("Start SSA");
                 break;
@@ -263,8 +271,8 @@ public class GUI extends javax.swing.JFrame implements Logger {
                 setEnableArrayWise(parameterComponents, true);
                 setEnableArrayWise(loadDataMenuItems, true);
                 setEnableArrayWise(saveDataMenuItems, true);
-                if(data.getEpochType() != Data.EPOCHS_EQUALLY) tfNumberOfEpochs.setEnabled(false);
-                //rbUseCustomEpochDefinition.setEnabled(data.hasCustomEpochDefinition());    
+                tfNumberOfEpochs.setEnabled(data.getEpochType() == Data.EPOCHS_EQUALLY);
+                rbUseCustomEpochDefinition.setEnabled(data.hasCustomEpochDefinition());    
                 btStartStopSSA.setEnabled(true);
                 btStartStopSSA.setText("Start SSA");
                 break;
@@ -1372,9 +1380,9 @@ public class GUI extends javax.swing.JFrame implements Logger {
         }
 
 				switch(data.getEpochType()) {
-					case Data.EPOCHS_EQUALLY: rbEpochEquallySized.setSelected(true); tfNumberOfEpochs.setEnabled(true); break;
-					case Data.EPOCHS_EQUALLY_HEURISTIC: rbEqualHeuristic.setSelected(true); tfNumberOfEpochs.setEnabled(false); break;
-					case Data.EPOCHS_CUSTOM: rbUseCustomEpochDefinition.setSelected(true); tfNumberOfEpochs.setEnabled(false); break;
+					case Data.EPOCHS_EQUALLY: rbEpochEquallySized.setSelected(true); /*tfNumberOfEpochs.setEnabled(true);*/ break;
+					case Data.EPOCHS_EQUALLY_HEURISTIC: rbEqualHeuristic.setSelected(true); /*tfNumberOfEpochs.setEnabled(false);*/ break;
+					case Data.EPOCHS_CUSTOM: rbUseCustomEpochDefinition.setSelected(true); /*tfNumberOfEpochs.setEnabled(false);*/ break;
 				}
 
         if(data.hasCustomEpochDefinition()) {
@@ -1460,9 +1468,10 @@ public class GUI extends javax.swing.JFrame implements Logger {
         }
     }//GEN-LAST:event_tfNumberOfRestartsFocusLost
 
-    private void rbEpochEquallySizedStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbEpochEquallySizedStateChanged
+    /*private void rbEpochEquallySizedStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbEpochEquallySizedStateChanged
         if(rbEpochEquallySized.isSelected())
         {
+            tfNumberOfEpochs.setEnabled(true);
             data.setEpochType(Data.EPOCHS_EQUALLY);
         }
     }//GEN-LAST:event_rbEpochEquallySizedStateChanged
@@ -1471,9 +1480,10 @@ public class GUI extends javax.swing.JFrame implements Logger {
         //data.setUseCustomEpochDefinition(rbUseCustomEpochDefinition.isSelected());
         if(rbUseCustomEpochDefinition.isSelected())
         {
+            tfNumberOfEpochs.setEnabled(false);
             data.setEpochType(Data.EPOCHS_CUSTOM);
         }
-    }//GEN-LAST:event_rbUseCustomEpochDefinitionStateChanged
+    }//GEN-LAST:event_rbUseCustomEpochDefinitionStateChanged*/
 
     private void cbMomentMeanStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_cbMomentMeanStateChanged
         ssa_parameters.setUseMean(cbMomentMean.isSelected());
