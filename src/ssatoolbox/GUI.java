@@ -628,7 +628,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("SSA");
-        setMinimumSize(new java.awt.Dimension(800, 800));
+        setMinimumSize(new java.awt.Dimension(800, 700));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
@@ -1327,7 +1327,9 @@ public class GUI extends javax.swing.JFrame implements Logger {
         setJMenuBar(jMenuBar2);
 
         java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds((screenSize.width-780)/2, (screenSize.height-668)/2, 780, 668);
+        setBounds((screenSize.width-780)/2, (screenSize.height-668)/2, 500, 500);
+
+				setResizable(true);
     }// </editor-fold>//GEN-END:initComponents
 
     private void rbEpochEquallySizedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbEpochEquallySizedActionPerformed
