@@ -129,7 +129,14 @@ You can also manually invoke the SSA~Toolbox by typing
 \begin{center}
   \texttt{java -jar ssa.jar}
 \end{center}
-on the command line of your operating system. If you want to use the SSA~Toolbox directly 
+on the command line of your operating system.
+
+In some cases, if you want to run SSA on very large data sets, it might be necessary to start the toolbox
+with a higher amount of Java heap space (in those cases the SSA toolbox will inform you
+about this issue). There is a section in the Frequently Asked Questions which explains how to do that
+(see Section~\ref{sec:faq}).
+
+If you want to use the SSA~Toolbox directly 
 from Matlab, you can use the wrapper script \texttt{ssa.m}. Type \texttt{help ssa} on 
 the Matlab command line to find out about the format of its input and output parameters. 
 Note that if you invoke the SSA Toolbox from within Matlab, it will use its
@@ -452,6 +459,7 @@ The bottom panel shows the time courses for the estimated stationary (top) and t
 \FloatBarrier
 
 \section{Frequently Asked Questions}
+\label{sec:faq}
 
 \paragraph{When should I use SSA?} 
 
@@ -494,7 +502,7 @@ This would set the Java heap space to \texttt{512M}. Of course, you can replace 
 desired size.
 
 If you are using the toolbox from within Matlab, you have to increase the Java heap space which Matlab uses.
-The following website explains how to do this:
+The following website explains how to do that:
 \begin{center}
     \url{http://www.mathworks.com/support/solutions/en/data/1-18I2C}
 \end{center}
