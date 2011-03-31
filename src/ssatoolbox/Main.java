@@ -187,6 +187,10 @@ public class Main {
                     logger.appendToLog(ex.getMessage());
                     gui.setGUIState(GUI.STATE_PARAMETRIZATION);
                 }
+                catch(java.lang.OutOfMemoryError e)
+                {
+                    printJavaHeapSpaceError();
+                }
             }
         }).start();
     }
@@ -213,17 +217,24 @@ public class Main {
     public void loadTimeseries(File f)
     {
         String filename = f.getPath().toLowerCase();
-        if(filename.endsWith(".mat"))
-        {
-            loadDataMatlab(f);
+
+        try {
+            if(filename.endsWith(".mat"))
+            {
+                loadDataMatlab(f);
+            }
+            else if(filename.endsWith(".csv"))
+            {
+                loadTimeseriesCSV(f);
+            }
+            else
+            {
+                logger.appendToLog("Error: Unknown file extension.");
+            }
         }
-        else if(filename.endsWith(".csv"))
+        catch(java.lang.OutOfMemoryError e)
         {
-            loadTimeseriesCSV(f);
-        }
-        else
-        {
-            logger.appendToLog("Error: Unknown file extension.");
+            printJavaHeapSpaceError();
         }
     }
 
@@ -370,6 +381,10 @@ public class Main {
         {
             logger.appendToLog("Error converting string to number: " + e);
         }
+        catch(java.lang.OutOfMemoryError e)
+        {
+            printJavaHeapSpaceError();
+        }
 
         // count epochs
         TreeMap<Integer, Integer> count = new TreeMap<Integer, Integer>();
@@ -401,6 +416,10 @@ public class Main {
         {
             logger.appendToLog(e.getMessage());
             return;
+        }
+        catch(java.lang.OutOfMemoryError e)
+        {
+            printJavaHeapSpaceError();
         }
         
         logger.appendToLog("Loaded epoch definition from file " + f.getPath() + ":");
@@ -723,6 +742,20 @@ public class Main {
         }
 
         logger.appendToLog("Results successfully saved.");
-    }    
+    }
+
+    /**
+     * Appends an error message to the logger, which explains how increase the Java heap space.
+     */
+    public void printJavaHeapSpaceError()
+    {
+        logger.appendToLog("");
+        logger.appendToLog("ERROR: Not enough Java heap space.");
+        logger.appendToLog("You can increase the Java heap space by running the SSA toolbox from the command line like this:");
+        logger.appendToLog("");
+        logger.appendToLog("  java -Xmx512M -jar ssa.jar");
+        logger.appendToLog("");
+        logger.appendToLog("This would result in a Java heap space of 512MB. Of course you can replace \"512M\" with your desired size.");
+    }
 }
 

@@ -114,7 +114,8 @@ ssaparam.setUseMean(use_mean);
 ssaparam.setUseCovariance(use_covariance);
 
 % detect whether to use equal or custom epochization
-if iscell(X)
+try
+ if iscell(X)
     % create custom epochization
     fprintf('Custom epochization found...\n');
     Xwoeps = [X{:}];
@@ -135,7 +136,7 @@ if iscell(X)
     fakefile = java.io.File('');
     ssadata.setCustomEpochDefinition(epdef, epochs, min_ep_size, fakefile);
     ssadata.setEpochType(ssadata.EPOCHS_CUSTOM);
-else
+ else
     % epochize equally
     fprintf('No custom epochization found. Using equally sized epochs.\n');
     Xdm = ssatoolbox.SSAMatrix(X);
@@ -147,6 +148,15 @@ else
         ssadata.setNumberOfEqualSizeEpochs(equal_epochs);
         ssadata.setEpochType(ssadata.EPOCHS_EQUALLY);
     end
+ end
+catch
+ e = lasterror;
+ if ~isempty(strfind(e.message, 'OutOfMemoryError'))
+     printJavaHeapSpaceError;
+ else
+     disp(e.message);
+ end
+ return;
 end
 
 % ssadata.epochize; (epochize() is now automatically called from
@@ -156,10 +166,14 @@ end
 fprintf('Starting optimization...\n\n');
 try
 ssaresult = ssaopt.optimize(ssaparam, ssadata);
-catch % me
-    %fprintf(me.getReport);
-    disp(lasterror);
-    return;
+catch
+ e = lasterror;
+ if ~isempty(strfind(e.message, 'OutOfMemoryError'))
+     printJavaHeapSpaceError;
+ else
+     disp(e.message);
+ end
+ return;
 end
 
 % return results
@@ -197,3 +211,9 @@ else
 end
 ssa_results.parameters = parameters;
 ssa_results.description = ['SSA results (' datestr(now) ')'];
+
+function printJavaHeapSpaceError
+    fprintf('ERROR: Not enough Java heap space.\n');
+    fprintf('To increase the Java heap space in Matlab, have a look at this website:\n\n');
+    fprintf('http://www.mathworks.com/support/solutions/en/data/1-18I2C/\n\n');
+    fprintf('In case you are using Matlab 2010a or later,\nthis can be easily done using Matlab''s preferences dialog.\n');
