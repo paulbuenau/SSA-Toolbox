@@ -755,7 +755,7 @@ public class Main {
         logger.appendToLog("");
         logger.appendToLog("  java -Xmx512M -jar ssa.jar");
         logger.appendToLog("");
-        logger.appendToLog("This would result in a Java heap space of 512MB. Of course you can replace \"512M\" with your desired size.");
+        logger.appendToLog("This would result in a Java heap space of 512M. Of course you can replace \"512M\" with your desired size.");
     }
 }
 

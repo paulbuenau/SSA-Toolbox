@@ -484,6 +484,22 @@ to hear from you.
 significance of the SSA solution. However, one could use a test for stationarity on the
 extracted stationary sources to verify the solution, and report the corresponding $p$-values.
 
+\paragraph{The toolbox says that there is not enough Java heap space. How can I solve this issue?}
+You have to increase the Java heap space. If you are using the standalone version of the toolbox, you can
+do this by running it from the command line like this:
+\begin{center}
+\texttt{java -Xmx512M -jar ssa.jar}
+\end{center}
+This would set the Java heap space to \texttt{512M}. Of course, you can replace \texttt{512M} with your
+desired size.
+
+If you are using the toolbox from within Matlab, you have to increase the Java heap space which Matlab uses.
+The following website explains how to do this:
+\begin{center}
+    \url{http://www.mathworks.com/support/solutions/en/data/1-18I2C}
+\end{center}
+In Matlab 2010a and later, this can be easily done from Matlab's preferences dialog.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Developers}
 \label{sec:dev}
