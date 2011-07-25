@@ -171,12 +171,12 @@ public class TestSSA extends TestCase
         double p1 = res.Ps.get(0, 0);
         double p2 = res.Ps.get(0, 1);
         double phi = 180*Math.acos(p1/Math.sqrt(p1*p1 + p2*p2)) / Math.PI;
-        assertEquals(0, phi, 5); // tolerance of 5 degrees
+        assertEquals(0, phi, 10); // tolerance of 10 degrees
 
         // the same with the basis-vector of the non-stationary subspace (correct direction: (0, 1) )
         double b1 = res.Bn.get(0, 0);
         double b2 = res.Bn.get(1, 0);
         double alpha = 180*Math.acos(b2/Math.sqrt(b1*b1 + b2*b2)) / Math.PI;
-        assertEquals(0, alpha, 5); // tolerance of 5 degrees
+        assertEquals(0, alpha, 10); // tolerance of 10 degrees
     }
 }

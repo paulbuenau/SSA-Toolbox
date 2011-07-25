@@ -374,6 +374,11 @@ public class Data {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
+    /**
+     * Returns the number of epochs, which has been determined by the heuristic.
+     *
+     * @return number of epochs
+     */
     public int getNumberOfEpochsHeuristic()
     {
         return numberOfEpochsHeuristic;

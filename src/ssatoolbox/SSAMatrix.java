@@ -50,6 +50,8 @@ public class SSAMatrix
     // matrix variables for the different libraries
     private org.jblas.DoubleMatrix MATRIX_JBLAS; // jBlas
     private cern.colt.matrix.DoubleMatrix2D MATRIX_COLT; // Colt
+
+    private static java.util.Random random = new java.util.Random();
     
     
     /**
@@ -774,15 +776,35 @@ public class SSAMatrix
      */
     public static SSAMatrix rand(int rows, int columns)
     {
-        switch(globalLib)
+        // removed this code; using java.util.Random now, to make it possible to set the random seed
+        /*switch(globalLib)
         {
             case JBLAS:
                 return new SSAMatrix(org.jblas.DoubleMatrix.rand(rows, columns));
             case COLT:
                 return new SSAMatrix(cern.colt.matrix.DoubleFactory2D.dense.random(rows, columns));
+        }*/
+
+        double randMatrix[][] = new double[rows][columns];
+        for(int i = 0; i < rows; i++)
+        {
+            for(int j = 0; j < columns; j++)
+            {
+                randMatrix[i][j] = random.nextDouble();
+            }
         }
         
-        return null; // should not happen
+        return new SSAMatrix(randMatrix); // should not happen
+    }
+
+    /**
+     * Sets the seed of the random number generator.
+     *
+     * @param seed seed
+     */
+    public static void setRandomSeed(long seed)
+    {
+        random.setSeed(seed);
     }
     
     /**
