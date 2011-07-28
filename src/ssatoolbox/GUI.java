@@ -1300,6 +1300,29 @@ public class GUI extends javax.swing.JFrame implements Logger {
 				mnuSettings.add(mnuMatrixLibrary);
 				jMenuBar2.add(mnuSettings);
 
+				// Random seed. 
+				final JFrame me = this;
+				JMenuItem mnuiRandomSeed = new JMenuItem("Random seed");
+				mnuiRandomSeed.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+							  String response = JOptionPane.showInputDialog(me,
+  								"Enter new random seed  (long integer)",
+  								"Enter new random seed ",
+  									JOptionPane.QUESTION_MESSAGE);
+						
+								if(response != null) {
+									try { 
+										long seed = Long.parseLong(response);
+										SSAMatrix.setRandomSeed(seed);
+										appendToLog("Random seed set to " + seed);		
+									} catch(NumberFormatException ex) {
+										appendToLog("Illegal input: '" + response + "'");
+									}
+								}	
+            }
+        });
+
+				mnuSettings.add(mnuiRandomSeed);
 
 				// ------------------------------------					
 
