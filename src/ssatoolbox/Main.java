@@ -69,8 +69,11 @@ public class Main {
     private Data data = new Data();
     private GUI gui = null;
     private Logger logger = null;
+
+    /** Saves the toolbox configuration */
     protected ToolboxConfig toolboxConfig = new ToolboxConfig();
 
+    /** Saves the current SSA version, which is loaded from the package descriptor */
     public String SSA_VERSION = null;
 
     /**

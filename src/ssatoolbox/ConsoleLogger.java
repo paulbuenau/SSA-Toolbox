@@ -42,6 +42,10 @@ package ssatoolbox;
  */
 public class ConsoleLogger implements Logger
 {
+    /**
+     * Creates a new ConsoleLogger.
+     */
+    public ConsoleLogger() { }
     public void appendToLog(String str)
     {
         System.out.println(str);

@@ -40,6 +40,8 @@ package ssatoolbox;
  */
 public class MathFunctions
 {
+    private MathFunctions() { }
+
     /**
      * Calculates the mean of the column vectors of a matrix
      * @param M matrix

@@ -48,43 +48,81 @@ import java.util.TreeMap;
  * @author Jan Saputra Mueller, saputra@cs.tu-berlin.de
  */
 public class Data {
-    public static final int DATA_ORIGIN_CSV_TIMESERIES = 1;
-    public static final int DATA_ORIGIN_MATLAB = 2;
+    //public static final int DATA_ORIGIN_CSV_TIMESERIES = 1;
+    //public static final int DATA_ORIGIN_MATLAB = 2;
 
+    /** Constant for data format "time x channels" */
     public static final int DATAFORMAT_TIME_X_CHANNELS = 1;
+    /** Constant for data format "channels x time" */
     public static final int DATAFORMAT_CHANNELS_X_TIME = 2;
 
+    /** If one eigenvalue of a covariance matrix is smaller than this threshold, we use regularization */
     public static final double REGULARIZATION_THRESH = 0.0000001;
 
-		public static final int EPOCHS_EQUALLY = 1;
-		public static final int EPOCHS_EQUALLY_HEURISTIC = 2;
-		public static final int EPOCHS_CUSTOM = 3;
+    /** Constant for epochization type "equally sized epochs" */
+    public static final int EPOCHS_EQUALLY = 1;
 
+    /** Constant for epochization type "equally sized epochs, number of epochs is chosen by the heuristic" */
+    public static final int EPOCHS_EQUALLY_HEURISTIC = 2;
+
+    /** Constant for epochization type "custom epochs" */
+    public static final int EPOCHS_CUSTOM = 3;
+
+    /** Saves the file, from which the time series has been loaded (if it has been) */
     protected File timeseriesFile = null;
+
+    /** Saves the file, from which the custom epoch definition has been loaded (if it has been)*/
     protected File epochDefinitionFile = null;
 
+    /** Saves the custom epoch definition (if available) */
     protected int[] epochDefinition = null;
-    protected int customEpochs = 0;
-    // data for SSA algorithm
-    protected SSAMatrix X = null;
-    protected SSAMatrix S[]; // covariance matrices
-    protected SSAMatrix mu[]; // means
-    protected SSAMatrix W; // whitening matrix
-    protected SSAMatrix Sall; // covariance matrix over all epochs
-    protected SSAMatrix muall; // mean over all epochs
 
+    /** Saves the number of epochs, if a custom epoch definition is used */
+    protected int customEpochs = 0;
+
+    // data for SSA algorithm
+    /** Saves the time series */
+    protected SSAMatrix X = null;
+    
+    /** Array of covariance matrices */
+    protected SSAMatrix S[];
+    
+    /** Array of means */
+    protected SSAMatrix mu[];
+
+    /** Whitening matrix */
+    protected SSAMatrix W;
+
+    /** Covariance matrix over all epochs */
+    protected SSAMatrix Sall;
+
+    /** Mean over all epochs */
+    protected SSAMatrix muall;
+
+    /** Number of equally sized epochs (if this option is used) */
     protected int numberOfEqualSizeEpochs = -1;
+
+    /** Number of equally sized epochs, chosen by the heuristic (if this option is used) */
     protected int numberOfEpochsHeuristic = -1;
 
-		protected int epochType = EPOCHS_EQUALLY;
+    /** Epochization type, by default "equally sized epochs" */
+    protected int epochType = EPOCHS_EQUALLY;
 
+    /** Saves the input data format ("channels x time" or "time x channels") */
     protected int inputDataformat = -1;
+    
+    /** Saves the output data format ("channels x time" or "time x channels") */
     protected int outputDataformat = -1;
    
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     // handle to logger
     private Logger logger = null;
+
+    /**
+     * Creates a new, empty instance of the class Data.
+     */
+    public Data() { }
 
     /**
      * Returns the input data format.

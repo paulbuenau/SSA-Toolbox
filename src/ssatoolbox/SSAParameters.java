@@ -44,6 +44,12 @@ import java.beans.PropertyChangeSupport;
  */
 public class SSAParameters {
 
+    /**
+     * Creates a new instance of the class SSAParameters.
+     */
+    public SSAParameters() { }
+
+    /** Number of stationary sources */
     protected int numberOfStationarySources = -1;
 
     /**
@@ -90,8 +96,10 @@ public class SSAParameters {
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
-
+    
+    /** Number of restarts */
     protected int numberOfRestarts = 5;
+
     /**
      * Get the value of numberOfRestarts
      *
@@ -115,8 +123,11 @@ public class SSAParameters {
             propertyChangeSupport.firePropertyChange("numberofRestarts", oldval, numberOfRestarts);
         }
     }
-    //protected boolean ignoreChangeInMeans = false;
+    
+    /** Set this to false, if changes in the mean should be ignored */
     protected boolean useMean = true;
+
+    /** Set this to false, if changes in the covariance should be ignored */
     protected boolean useCovariance = true;
 
     /**
@@ -167,6 +178,7 @@ public class SSAParameters {
         }
     }
 
+    /** Saves, whether to do NSA instead of SSA */
     protected boolean NSA = false;
 
     /**
