@@ -66,13 +66,7 @@ whose statistical properties change over time. SSA can helps to detect, characte
 visualize temporal changes in complex high-dimensional data sets.
 
 The SSA Toolbox is written entirely in Java and is thus platform-independent. It has been tested
-successfuly on the following platforms.
-\begin{itemize}
-	\item Microsoft Windows (32 and 64 bit)
-	\item Linux (32 and 64 bit)
-	\item Mac OS X (32 and 64 bit)
-\end{itemize}
-The SSA Toolbox comes with a state-of-the-art native 
+successfuly under Windows, Linux and MacOS. The SSA Toolbox comes with a state-of-the-art native 
 Linear Algebra library (BLAS / LAPACK) that is invoked if the operating system supports 
 it. If not, a purely Java-based library, COLT, will be used that ensures maximum platform-independence. 
 Data and results can imported and exported as comma-separated values (CSV) files, the fail-safe 
@@ -116,7 +110,13 @@ jblas (see \url{http://www.jblas.org}).} are included for several target archite
 The SSA~Toolbox requires the Java Runtime Environment\footnote{See 
 \url{http://www.java.com/getjava}} version 1.5 or later. Most operating systems
 have a Java Runtime Environment pre-installed, you might be able to find out 
-the version by typing \texttt{java -version} on the command line. 
+the version by typing \texttt{java -version} on the command line. The SSA~Toolbox has 
+been tested on the following platforms.
+\begin{itemize}
+	\item Microsoft Windows (32 and 64 bit)
+	\item Linux (32 and 64 bit)
+	\item Mac OS X (32 and 64 bit)
+\end{itemize}
 
 \paragraph{Installation and Running}
 
@@ -577,7 +577,7 @@ This class implements the interface \texttt{Logger}. It writes all messages whic
 %%%%%%%%%%%%%%%%%
 \subsection*{External Dependencies}
 
-The toolbox needs \texttt{JMatIO} (for Matlab files). The class \texttt{SSAMatrix} uses the matrix library \texttt{COLT} or \texttt{jBlas}, depending on which library
+The toolbox needs \texttt{JMatIO} (for Matlab files). The class \texttt{SSAMatrix} uses the matrix library \texttt{Colt} or \texttt{jBlas}, depending on which library
 is currently selected.
 
 %%%%%%%%%%%%%%%%%
