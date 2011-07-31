@@ -1376,7 +1376,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         if(state == GUI.STATE_SSA_RUNNING)
             controller.stopSSA();
         else
-            controller.runSSA();
+            controller.runSSA(true);
 }//GEN-LAST:event_btStartStopSSAActionPerformed
 
     private void jMenuItem14ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem14ActionPerformed

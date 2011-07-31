@@ -42,6 +42,8 @@ public interface Logger
 {
     /**
      * Appends a new message to the log.
+     * 
+     * @param str message
      */
     public void appendToLog(String str);
 }
