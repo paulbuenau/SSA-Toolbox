@@ -2,7 +2,7 @@ function [ X, A, cov_epo, mean_epo ] = ssa_toydata(n, ds, dn, varargin)
 %SSA_TOYDATA Generate toy data for the SSA algorithm.
 %
 %usage 
-%  [ X, A, cov_epo, mean_epo, cov_sources, mean_sources] = ssa_toydata(n, ds, dn, <options>)
+%  [ X, A, cov_epo, mean_epo ] = ssa_toydata(n, ds, dn, <options>)
 %
 %input
 %  n          Number of epochs. 
@@ -11,19 +11,15 @@ function [ X, A, cov_epo, mean_epo ] = ssa_toydata(n, ds, dn, varargin)
 %  <options>  List of key-value pairs to set the following options.
 %    n_samples    Number of samples in each epoch; can be either a vector 
 %                 of length n or a scalar (default: 500)
-%    v_min        Minimum ratio of variance of s/n-sources (default: 1.2) 
-%    v_max        Maximum ratio of variance of s/n-sources (default: 1.4) 
-%    p_nv_larger  Probability that the variance of the n-sources is 
-%                 larger than the variance of the s-sources (default: 0.5)
+%    v_min        Minimum ratio of the variance of s/n-sources (default: 1.2) 
+%    v_max        Maximum ratio of the variance of s/n-sources (default: 1.4) 
 %    corr_min     Minimum canonical correlation between s/n-sources (default: 0)
 %    corr_max     Maximum canonical correlation between s/n-sources (default: 0.5) 
-%    relmean_ns   Non-stationarity in the mean relative to the non-stationarity 
+%    mean_nonstat Non-stationarity in the mean relative to the non-stationarity 
 %                 in the covariance matrix (default: 0) 
-%    rand_corr    True if the cross-covariance between s/n-sources should 
-%                 be randomized  (default: true)
-%    rand_ndir    True if the eigenvectors of the conditional covariance matrix 
-%                 of the n-sources given the s-sources should be randomized
-%                 (default: true) 
+%    rand_ndir    Randomize basis of the non-stationary sources (default: true) 
+%    p_nv_larger  Probability that the variance of the n-sources is 
+%                 larger than the variance of the s-sources (default: 0.5)
 %
 %output 
 %  X                  Cell array of epoch datasets.
@@ -31,32 +27,27 @@ function [ X, A, cov_epo, mean_epo ] = ssa_toydata(n, ds, dn, varargin)
 %  cov_epo,           Covariance matrix and mean of each epoch. These are 
 %    mean_epo         the true moments, from which X has been sampled. 
 %
-%description
-%  This function generates toy data for the SSA algorithm. It computes a set of n 
-%  epoch-mean and epoch-covariance matrices with ds stationary sources and 
-%  dn non-stationary sources. Let Xs and Xn be multivariate random variables for the 
-%  stationary and non-stationary sources in an epoch. The generative model is 
-%  as follows, 
-%      Xs ~ N(0,I)     and     Xn = C*Xs + Xnn 
-%  where Xnn ~ N(mu_n,Sigma_n) an C is a (dn x ds)-matrix that controls the 
-%  (canonical) correlation between s- and n-sources. Hence cov(Xs, Xn)=C' and 
-%  cov(Xn, Xn)=C*C'+Sigma_n. The matrix C is generated randomly as 
-%      C = B1*c*eye(dn,ds)*B2 
-%  where B1 and B2 are random orthogonal matrices (if rand_corr=false B1=B2=I) and c 
-%  is a scalar such that the canonical correlation between Xs and Xn is equal to a 
-%  value chosen uniformly at random from the interval  (corr_min, corr_max). The 
-%  covariance matrix Sigma_n of the conditional Xn|Xs is generated randomly as,
-%      Sigma_n = Bn*diag(v)*Bn'
-%  where the eigenvalues v are drawn uniformly at random from the intervals 
-%  (v_min, v_max) and (1/v_max, 1/v_min). The variances of the n-sources is 
-%  larger than the variances of the s-sources (i.e. v is in the first interval) 
-%  with probability p_nv_larger. The eigenvectors Bn are chosen randomly; if 
-%  rand_ndir=false, then Bn=I. The strength of the non-stationarity in the mean
-%  is parametrized relative to non-stationarity in the covariance matrix. 
-%  That is, the average of ||mu_n||^2 over all epochs is set to 
-%  relmean_ns times the average of log(det(cov([Xs;Xn]))) over all epochs. 
-%  The entries of the mixing matrix A are drawn from (-0.5, 0.5) and its columns 
-%  are normalized to one; if orth_mixing=true then A is a random orthogonal matrix. 
+%description 
+%  See the manual for a complete documentation. Let X_1, ..., X_n be random
+%  variables corresponding the distribution of the data in each of the n epochs.
+%  According to the SSA mixing model, X_i is a mixture of stationary and 
+%  non-stationary sources, 
+%        X_i = A*[ X^s; X^n_i ] 
+%  where the entries of the mixing matrix A are drawn uniformly at random from 
+%  the interval [-0.5, 0.5], and its columns are normalized to one. The distribution 
+%  of the stationary sources are fixed, X^s ~ N(0,I), and the non-stationary sources
+%  are correlated with the s-sources, 
+%        X^n_i = C_i X^s + Y^n_i 
+%  where C_i is a (dn,ds)-matrix such that the canonical correlations between
+%  X_s and X^n_i are from the interval [corr_min, corr_max] (chosen randomly). The 
+%  n-sources conditioned on the s-sources follow a Gaussian distribution, 
+%        Y^n_i ~ N(mu_i,S_i) 
+%  where the eigenvalues v_1, ..., v_dn of S_i are chosen randomly such that each
+%  v_i is smaller or larger than one, both with a ratio that is uniformly distributed
+%  on [v_min, v_max]; the probability that v_i>1 is p_nv_larger. The mean vectors
+%  mu_1, ..., mu_n of the n-sources are chosen randomly such that the sum of their 
+%  squared norms is equal to the sum of the absolute log-determinants of cov(X^n_i) 
+%  over all epochs i, multiplied by mean_nonstat. 
 %
 %example 
 %  [ X, A ] = ssa_toydata(10, 2, 2);  % generate data 
@@ -105,10 +96,9 @@ opt = set_defaults(opt, ...
 						'corr_min', 0, ...
 						'corr_max', 0.5, ...
 						'p_nv_larger', 0.5, ...
-						'rand_corr', true, ...
 						'rand_ndir', true, ...
 						'orth_mixing', false, ...
-						'relmean_ns', 0, ...
+						'mean_nonstat', 0, ...
 						'n_samples', 500 ...
 						 );
 
@@ -142,51 +132,52 @@ corrs = opt.corr_min + (opt.corr_max-opt.corr_min)*rand(1,n);
 
 % Determine the scaling of the cross-covariance; this controls the 
 % canonical correlation between s- and n-sources (corrs).
-cc_scaling = sqrt(mean(E) ./ ( (corrs.^(-2)) - 1));
+cc_scaling = sqrt(E ./ repmat((corrs.^-2) - 1, [dn 1]));
 
 % Set direction of correlations (randomized later, if requested). 
-BCn = eye(dn);
-BCs = eye(ds);
-
-% Set eigenvectors of the conditonal covariance of the n-sources 
-% given the s-sources (randomized later, if requested).
 Bn = eye(dn);
+Bs = eye(ds);
 
 % Compute the source covariance matrices for each epoch. 
 cov_sources = repmat(eye(d), [1 1 n]);
 for i=1:n
-	if opt.rand_corr
-		% Select random direction of correlations. 
-		BCn = randrot(dn);
-		BCs = randrot(ds);
+	if opt.rand_ndir
+		Bn = randrot(dn);
+		Bs = randrot(ds);
 	end
 	
 	% Determine the matrix C which controls the correlation between 
   % s- and n-sources. 
-	C = cc_scaling(i)*BCn*eye(dn, ds)*BCs;
-	cov_sources(1:ds,(ds+1):end, i) = C';
-	cov_sources((ds+1):end,1:ds, i) = C;
-
-	% Determine the covariance matrix of the n-sources. 
-	if opt.rand_ndir
-		Bn = randrot(dn);
+	C = diag(cc_scaling(1:min(ds,dn),i));
+	if ds>dn, C = [ C; zeros(ds-dn, dn) ];
+	else
+		if dn>ds, C = [ C zeros(ds, dn-ds) ]; end
 	end
-	cov_sources((ds+1):end,(ds+1):end, i) = C*C' + Bn*diag(E(:,i))*Bn';
+	C = Bs*C*Bn';
+
+	cov_sources(1:ds,(ds+1):end, i) = C;
+	cov_sources((ds+1):end,1:ds, i) = C';
+	cov_sources((ds+1):end,(ds+1):end, i) = C'*C + Bn*diag(E(:,i))*Bn';
 end
 
-% Compute the mean vectors. 
+% Compute the epoch-means of the n-sources. Scale the the sum of the squared 
+% norms relative to the sum of the log-determinants of the n-sources. 
+
+% Compute the log-determinants of the n-sources. 
 ld = zeros(1, n);
 for i=1:n
-	ld(i) = log(det(cov_sources(:,:,i)));
+	ld(i) = log(det(cov_sources((ds+1):end,(ds+1):end,i)));
 end
 
-% How do we choose them? 
+% Compute mean vectors with random entries in [-0.5, 0.5].
 mean_n = rand(dn, n) - 0.5;
-mean_n = mean_n ./ repmat(sqrt(sum(mean_n.^2)), [dn 1]);
-norm_n = rand(1,n);
-norm_n = norm_n/sum(norm_n)*n*opt.relmean_ns*mean(abs(ld));
-mean_n = mean_n .* repmat(sqrt(norm_n), [dn 1]);
 
+% Scale the squared norm of the mean vectors \mu_1, ..., \mu_n  such that
+%   \sum_{i=1}^n ||\mu_i||^2 = mean_nonstat*\sum_{i=1}^n |log(det(\Sigma_i))|
+% where \Sigma_i is the covarince matrix of the n-sources in the i-th epoch.
+norm_n = rand(1, n);
+norm_n = norm_n/sum(norm_n) * opt.mean_nonstat*sum(abs(ld));
+mean_n = mean_n .* repmat(sqrt(norm_n./sum(mean_n.^2)), [dn 1]);
 mean_sources = [ zeros(ds,n); mean_n ];
 
 % Choose random mixing matrix. 

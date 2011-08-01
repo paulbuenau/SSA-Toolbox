@@ -35,11 +35,12 @@
 \newcommand{\KLD}{D_{\text{KL}}}
 %\DeclareMathOperator*{\KLD}{KL}
 
+\DeclareMathOperator*{\diag}{diag}
 \DeclareMathOperator*{\E}{E}
 \DeclareMathOperator*{\sign}{sign}
 \DeclareMathOperator*{\trace}{tr}
-\DeclareMathOperator*{\Var}{Var}
-\DeclareMathOperator*{\Cov}{Cov}
+\DeclareMathOperator*{\var}{var}
+\DeclareMathOperator*{\cov}{cov}
 \DeclareMathOperator*{\expm}{expm}
 \DeclareMathOperator*{\myspan}{span}
 
@@ -455,71 +456,80 @@ Further details about the toy data generation can be found in the next section.
 \subsection{Toy Data Generation}
 
 The Matlab script \texttt{ssa\_toydata.m} generates synthetic datasets according to the SSA mixing 
-model. A documentation of the signature is available from Matlab help, in this section we describe 
-how the data is generated. 
+model. A documentation of the parameters of this function is available from the Matlab help, in this 
+section we describe how the data is generated. 
 
-The data consists of $n$ epoch data sets with $d_s$ stationary and $d_n$ non-stationary sources. 
-Each epoch is sampled i.i.d.~from a multivariate Gaussian distribution. In each epoch, the distribution 
-of the stationary sources $s^\s(t)$, modeled by the random variable $X^\s$, follow a multivariate normal 
-distribution, $X^\s \sim \N(0,I)$, whereas the marginal distribution of the \n-sources $s^\n(t)$ and their 
-correlation with the \s-sources changes between epochs. The non-stationary sources in the $i$-th epoch, 
-represented by the random variable $X^\n_i$, are generated as a mixture of the \s-sources and another
-multivariate Gaussian, 
+Let $X_1, \ldots, X_n$ be random variables modeling the distribution of the data in each of 
+the $n$ epochs. According to the SSA mixing model (Equation~\ref{eq:mixing_model}), each 
+epoch is a linear mixture of $d$ stationary and $D-d$ non-stationary sources, 
 \begin{align*}
-	X^\n_i = C(c_i) X^\s + Y^\n_i ,
+	X_i = A \begin{bmatrix} X^\s \\ X^\n_i \end{bmatrix}
 \end{align*}
-where $Y \sim \N(\mu_i, \Sigma_i)$ and $C(c_i)$ is a $(d_n \times d_s)$ matrix that controls the canonical 
-correlation between the \s- and the \n-sources. This matrix is computed as,
+where $A$ is the mixing matrix and $X^\s$ and $X^\n_i$ are random variables representing 
+the \s- and the \n-sources in the $i$-th epoch respectively. The entries of $A$ are chosen 
+uniformly at random from $[-0.5, 0.5]$ and its columns are normalized to one. The distribution
+of the \s-sources is the same over all epochs, 
 \begin{align*}
-	C(c_i) = c_i P_i I_{d_n \times d_s} Q_i,
-\end{align*} 
-where $P_i$ and $Q_i$ are randomly chosen orthogonal matrices, $I_{d_n \times d_s}$ is a 
-truncated identity matrix and $c_i \in \R$ is a scalar chosen such that the canonical 
-correlation between $\s$- and $\n$ sources is $\rho_i$, 
-\begin{align*}
-	c_i = \sqrt{\frac{\lambda_\text{min}}{\frac{1}{\rho^2_i}-1}}
+	X^\s \sim \N(0,I), 
 \end{align*}
-where $\lambda_\text{min}$ is the smallest eigenvalue of the covariance matrix $\Sigma_i$ of the 
-conditional $X^\n_i | X^\s$. The canonical correlations $\rho_1, \ldots, \rho_n$ are sampled
-uniformly at random from the interval $[\rho_\text{min}, \rho_\text{max}]$. 
-
-The eigenvalues $\lambda_1, \ldots, \lambda_{d_n}$ of $\Sigma_i$ are sampled randomly such 
-that they are either larger or smaller than one, with a ratio that is distributed uniformly 
-over the interval $[v_\text{min}, v_\text{max}]$. In the first step, each eigenvalue $\lambda_i$ is
-determined to be larger than one with probability $p$ and smaller than one with probability $1-p$. 
-Then, $\lambda_i$ is sampled uniformly at random from the interval $[v_\text{min}, v_\text{max}]$ if 
-$\lambda_i > 1$ or from the interval $[1/v_\text{max}, 1/v_\text{min}]$ if $\lambda_i < 1$. The 
-covariance matrix $\Sigma_i$ is computed as, 
+and the \n-sources are correlated with the \s-sources, 
 \begin{align*}
-	\Sigma_i = B_i \text{diag}(\lambda_1, \ldots, \lambda_{d_n}) B^\top_i,
+	X^\n_i = C_i X^\s + Y^\n_i,  
 \end{align*}
-where $B_i$ is a random orthogonal matrix. 
-
-The strength of the variation in the mean of the non-stationary sources $\mu_i$ across epochs
-is parametrized relative to average deviation of the covariance matrices from the identity. 
-
-
-
-
-
-
-First of all, the entries of the mixing matrix $A$ are sampled 
-uniformly at random from $[-0.5, 0.5]$ and its columns are normalized to one. Then, for each of the $n$ 
-
-
-
-
-
+where $C_i$ is $(D-d \times d)$-matrix and $Y^\n_i \sim \N(\mu_i, \Sigma_i)$ is a
+random variable corresponding to the conditional $X^\n_i | X^s$. The covariance 
+matrix $\Sigma_i$ is generated as, 
+\begin{align*}
+	\Sigma_i = B^\n_i \Lambda_i (B^\n_i)^\top,
+\end{align*}
+where $B^\n_i$ is a random orthogonal matrix and $\Lambda_i$ is a diagonal matrix of 
+the eigenvalues $\lambda_1, \ldots, \lambda_{D-d}$. Each eigenvalue is drawn uniformly
+at random, either from the interval $[v_\text{min}, v_\text{max}]$ (with probability $p$) 
+or from the interval $[1/v_\text{max}, 1/v_\text{min}]$ (with probability $1-p$), where 
+$1 < v_\text{min} < v_\text{max}$. That is, each eigenvalue $\lambda_i$ is either larger 
+or smaller than one, but by the same ratio. For each epoch, the canonical 
+correlation $\rho_i$ is drawn uniformly at random from $[\rho_\text{min}, \rho_\text{max}]$, 
+which determines the scaling of the rows of $C_i$, 
+\begin{align*}
+	C_i = B C' (B^\n_i)^\top, 
+\end{align*}
+where $B$ is a random orthogonal matrix and $C'$ is a $(D-d \times d)$-matrix with 
+non-zero entries only on the diagonal, 
+\begin{align*}
+	(C')_{jj} = \sqrt{ \frac{\lambda_{jj}}{\frac{1}{\rho_i^2 } - 1}} . 
+\end{align*}
+This ensures that the canonical correlation is $\rho_i$ for all principal vectors. 
+Thus the covariance matrix of the sources in the $i$-th epoch is given by, 
+\begin{align*}
+	\cov \left(   
+		\begin{bmatrix} X^\s \\ X^\n_i
+		\end{bmatrix} 
+	\right) = 
+	\begin{bmatrix}
+		I & C^\top_i \\
+		C_i & C_i  C^\top_i + \Sigma_i 
+	\end{bmatrix} .
+\end{align*}
+The strength of the non-stationarity in the mean of the \n-sources is chosen relative to the 
+total non-stationarity $\tilde{\sigma}$ in the covariance matrix which we measure as,
+\begin{align*}
+	\tilde{\sigma} = \sum_{i=1}^n \sum_{j=1}^{D-d} \left|\log \left[ (\Lambda_i)_j \right]\right| .
+\end{align*}
+Similarly, the total non-stationarity in the mean $\tilde{\mu}$ is given by, 
+\begin{align*}
+	\tilde{\mu} = \sum_{i=1}^n \| \mu_i \|^2 . 
+\end{align*}
+Thus we first choose a random set of squared norms $m_1, \ldots, m_n$ such that 
+$\sum_{i=1}^n m_i = \tilde{\sigma} = \tilde{\mu}$, and then a set of mean vectors with random entries 
+drawn uniformly from $[-0.5, 0.5]$ which we rescale such that $\| \mu_i \|^2 = m_i$. 
 
 \subsection{Matlab Demonstration}
-
-\begin{figure}
+\begin{figure}[h]
 \begin{center}
-	\includegraphics[angle=90,width=12.5cm]{ssa_example.pdf}
+	\includegraphics[angle=90,width=10cm]{ssa_example.pdf}
 	\caption{\label{fig:matlab_example}
 		Output of the Matlab example \texttt{ssa\_demo.m}} 
 \end{center}
-
 The plot generated by the example script is shown in Figure~\ref{fig:matlab_example}. The top panel
 shows the two dimensional input time series $x(t)$. Both dimensions (or variables, channels) appear
 non-stationary. The vertical red lines indicate how the time series is segmented into four epochs. 
