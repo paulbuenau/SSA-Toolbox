@@ -10,6 +10,7 @@
 \usepackage{boxedminipage}
 \usepackage{hyperref}
 \usepackage{placeins}
+\usepackage[toc,page]{appendix}
 
 \newcommand{\R}{\ensuremath{\mathds{R}}}
 \newcommand{\C}{\ensuremath{\mathds{C}}}
@@ -36,7 +37,7 @@
 %\DeclareMathOperator*{\KLD}{KL}
 
 \DeclareMathOperator*{\diag}{diag}
-\DeclareMathOperator*{\E}{E}
+\DeclareMathOperator*{\E}{\mathbb{E}}
 \DeclareMathOperator*{\sign}{sign}
 \DeclareMathOperator*{\trace}{tr}
 \DeclareMathOperator*{\var}{var}
@@ -441,7 +442,7 @@ following sections, we describe each of these files.
 The example data sets in the directory \texttt{example\_data} were generated using the Matlab 
 script \texttt{ssa\_toydata.m} using the command-line
 \begin{center}
-	\texttt{[X, A] = ssa\_toydata(10, 2, 2)}; 
+	\texttt{[X, A] = ssa\_toydata(10, 2, 2, 'mean\_nonstat', 0.5)}; 
 \end{center}
 The dataset consists of ten epochs (each 500 samples); it has two stationary and two non-stationary 
 sources. The Matlab file \texttt{example\_data.mat} also contains the true mixing matrix \texttt{A} 
@@ -720,7 +721,63 @@ information on the official SSA homepage:
 \end{center}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 
+\begin{appendices}
+\section{Measuring the Error of SSA}
+
+In order to measure the accuracy of SSA when the true solution is known, we define an error
+measure between the true and the estimated non-stationary subspace. This \textit{subspace error}
+is based on the \textit{principle angles} between two subspace, a measure of the relative position
+of two linear subspaces. Let $U$ and $V$ be two linear subspaces of the vector space $\mathcal{V}$ 
+with $\dim U \leq \dim V$. The first principle angle $\theta_1$ is defined as the smallest 
+angle between any two vectors $u \in U$ and $v \in V$, 
+\begin{align*}
+	\theta_1 = \min \left. \left\{ \frac{ u^\top v }{ \| u \| \| v \| } \right| u \in U, v \in V \right\} = \angle(u_1, v_1),
+\end{align*}
+where the vectors $u_1$ and $v_1$ that minimize the angle are called the principle vectors.
+The remaining principle angles $\theta_2, \ldots, \theta_{\dim U}$ are found recursively in the orthogonal 
+complement of the previous principle vectors, 
+\begin{align*}
+	\theta_{k+1} = \min \left. \left\{ \frac{ u^\top v }{ \| u \| \| v \| } \right| u \in U, u \perp u_1, \ldots, u_k , 
+			v \in V, v \perp v_1, \ldots, v_k \right\} . 
+\end{align*}
+Thus the principle vectors in each subspace are mutually orthogonal. If a principle vector $\theta_k$ is zero 
+then $U$ and $V$ share a common subspace and $u_k,v_k \in U \cap V$. Hence the dimension of the intersection
+of $U$ and $V$ is equivalent to the number of zero principle angles. The principle angles and vectors
+can be found using the singular value decomposition (SVD). Let the columns of the matrices $U'$ and $V'$ be 
+orthonormal bases for the spaces $U$ and $V$ respectively. 
+
+The aim of SSA is to eliminate non-stationary contributions from the estimated stationary sources, 
+i.e.~project orthogonal to the non-stationary subspace. We therefore measure the deviation from the true
+non-stationary subspace, spanned by the columns of $A^\n$, and its estimate, spanned by the columns of
+$\hat{A}^{\n}$, in terms of the principle angles between these two subspaces. If all principle
+angles are zero, SSA has identified the true solution and hence the error is zero. However, for every 
+non-zero principle angle $\theta_k > 0$, the estimated \s-projection $\hat{P}^\s = (\hat{A}^{\n})^\perp$ 
+adds non-stationary contributions to the estimated stationary sources. This affects the mean and the variance 
+of the estimated \s-sources as follows. Let $v_k$ be the principle vector in the true non-stationary space
+corresponding to the non-zero principle angle $\theta_k$ and let $\mu^\n_k(t)$ and $\sigma^{\n2}_k(t)$ be the mean 
+and the variance along that direction respectively. Then $\sin^2 (\theta_k) (\mu_k(t))^2$ will be added to 
+the squared norm of the expectation of the estimated \s-sources, and $\sin^2 (\theta_k) \sigma^2_k(t)$ to the 
+sum of the variances at time point $t$. 
+
+
+\begin{align*}
+	\mathcal{E}(U,V) = 
+\end{align*}
+
+
+
+
+
+
+
+
+\end{appendices}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
 \bibliographystyle{plain}
 \bibliography{ssa.bib}
 

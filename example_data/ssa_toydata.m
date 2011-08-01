@@ -163,20 +163,13 @@ end
 % Compute the epoch-means of the n-sources. Scale the the sum of the squared 
 % norms relative to the sum of the log-determinants of the n-sources. 
 
-% Compute the log-determinants of the n-sources. 
-ld = zeros(1, n);
-for i=1:n
-	ld(i) = log(det(cov_sources((ds+1):end,(ds+1):end,i)));
-end
-
 % Compute mean vectors with random entries in [-0.5, 0.5].
 mean_n = rand(dn, n) - 0.5;
 
-% Scale the squared norm of the mean vectors \mu_1, ..., \mu_n  such that
-%   \sum_{i=1}^n ||\mu_i||^2 = mean_nonstat*\sum_{i=1}^n |log(det(\Sigma_i))|
-% where \Sigma_i is the covarince matrix of the n-sources in the i-th epoch.
+% Scale the sum of the squared norm of the mean vectors \mu_1, ..., \mu_n 
+% relative to the total non-stationarity in the covariance matrix. 
 norm_n = rand(1, n);
-norm_n = norm_n/sum(norm_n) * opt.mean_nonstat*sum(abs(ld));
+norm_n = norm_n/sum(norm_n) * opt.mean_nonstat*sum(sum(abs(log(E))));
 mean_n = mean_n .* repmat(sqrt(norm_n./sum(mean_n.^2)), [dn 1]);
 mean_sources = [ zeros(ds,n); mean_n ];
 
