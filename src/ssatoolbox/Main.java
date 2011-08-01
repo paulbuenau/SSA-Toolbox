@@ -63,81 +63,99 @@ import javax.swing.UIManager;
  * @author Jan Saputra Mueller, saputra@cs.tu-berlin.de
  */
 public class Main {
-    private SSA ssa = new SSA();
-    private SSAParameters ssa_parameters = new SSAParameters();
-    private Results results = null;
-    private Data data = new Data();
+    public SSA ssa = new SSA();
+    public SSAParameters parameters = new SSAParameters();
+    public Results results = null;
+    public Data data = new Data();
     private GUI gui = null;
     private Logger logger = null;
+
+    /** Saves the toolbox configuration */
     protected ToolboxConfig toolboxConfig = new ToolboxConfig();
 
+    /** Saves the current SSA version, which is loaded from the package descriptor */
     public String SSA_VERSION = null;
 
     /**
      * Constructor for class Main.
+     * 
+     * @param startGUI set this to true to start the GUI of the standalone version of the toolbox
+     * @param logger logger to use (is ignored in case startGUI == true)
      */
-    public Main() {
+    public Main(boolean startGUI, Logger logger) {
         Package p = this.getClass().getPackage();
         SSA_VERSION = p.getImplementationVersion();
 
-        data.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent arg0) {                
-                if(arg0.getPropertyName().equals("numberOfEqualSizeEpochs")) {
-                    if(data.getNumberOfEqualSizeEpochs() != -1) {
-                        if(data.getNumberOfEqualSizeEpochs() < 2) {
-                            logger.appendToLog("ERROR: Number of epochs must be greater than 2");
-                            data.setNumberOfEqualSizeEpochs( ((Integer)arg0.getOldValue()).intValue() );
-                        } else {
-                            //checkDeterminacy();
-                        }
-                    }
-                    return;
-                } 
-            }
-        });
-        
-        ssa_parameters.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent arg0) {
-                if(arg0.getPropertyName().equals("numberOfStationarySources")) {
-                    if(ssa_parameters.getNumberOfStationarySources() != -1) {
-                        if(ssa_parameters.getNumberOfStationarySources() >= data.getNumberOfDimensions()) {
-                            logger.appendToLog("ERROR: Number of stationary sources >= number of input dimensions");
-                            ssa_parameters.setNumberOfStationarySources(((Integer)arg0.getOldValue()).intValue());
-                        } else {
-                            //checkDeterminacy();
-                        }
-                    }
-                    return;
-                }
-            }
-        });
+	data.addPropertyChangeListener(new PropertyChangeListener() {
+	    public void propertyChange(PropertyChangeEvent arg0) {                
+		if(arg0.getPropertyName().equals("numberOfEqualSizeEpochs")) {
+		    if(data.getNumberOfEqualSizeEpochs() != -1) {
+			if(data.getNumberOfEqualSizeEpochs() < 2) {
+			    appendToLog("ERROR: Number of epochs must be greater than 2");
+			    data.setNumberOfEqualSizeEpochs( ((Integer)arg0.getOldValue()).intValue() );
+			}
+		    }
+		    return;
+		} 
+	    }
+	});
+    
+	parameters.addPropertyChangeListener(new PropertyChangeListener() {
+	    public void propertyChange(PropertyChangeEvent arg0) {
+		if(arg0.getPropertyName().equals("numberOfStationarySources")) {
+		    if(parameters.getNumberOfStationarySources() != -1) {
+			if(parameters.getNumberOfStationarySources() >= data.getNumberOfDimensions()) {
+			    appendToLog("ERROR: Number of stationary sources >= number of input dimensions");
+			    parameters.setNumberOfStationarySources(((Integer)arg0.getOldValue()).intValue());
+			}
+		    }
+		    return;
+		}
+	    }
+	});
 
-        ssa_parameters.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent arg0) {
-                if(arg0.getPropertyName().equals("useCovariance") ||
-                        arg0.getPropertyName().equals("useMean") ) {
-                    if(ssa_parameters.getNumberOfStationarySources() != -1) {
-                        if(ssa_parameters.getNumberOfStationarySources() >= data.getNumberOfDimensions()) {
-                            logger.appendToLog("ERROR: Number of stationary sources >= number of input dimensions");
-                            ssa_parameters.setNumberOfStationarySources(((Integer)arg0.getOldValue()).intValue());
-                        } else {
-                            //checkDeterminacy();
-                        }
-                    }
-                    return;
-                }
-            }
-        });
+	parameters.addPropertyChangeListener(new PropertyChangeListener() {
+	    public void propertyChange(PropertyChangeEvent arg0) {
+		if(arg0.getPropertyName().equals("useCovariance") ||
+			arg0.getPropertyName().equals("useMean") ) {
+		    if(parameters.getNumberOfStationarySources() != -1) {
+			if(parameters.getNumberOfStationarySources() >= data.getNumberOfDimensions()) {
+			    appendToLog("ERROR: Number of stationary sources >= number of input dimensions");
+			    parameters.setNumberOfStationarySources(((Integer)arg0.getOldValue()).intValue());
+			}
+		    }
+		    return;
+		}
+	    }
+	});
+            
+        if(startGUI)
+        {
+            UIManager.LookAndFeelInfo lif [] =  UIManager.getInstalledLookAndFeels();
 
-         UIManager.LookAndFeelInfo lif [] =  UIManager.getInstalledLookAndFeels();
+            gui = new GUI(this, parameters, data);
+            setLogger(gui);
+            gui.setGUIState(GUI.STATE_NO_DATA);
+            gui.showGUI();
+        }
+        else
+        {
+            setLogger(logger);
+        }
 
-        gui = new GUI(this, ssa_parameters, data);
-        logger = gui;
-        gui.setGUIState(GUI.STATE_NO_DATA);
-        gui.showGUI();
-
-        logger.appendToLog("*** Welcome to the SSA Toolbox (version " + SSA_VERSION + ") ***");
-        logger.appendToLog("Now you might want to load some data (see menu File).");
+        appendToLog("*** Welcome to the SSA Toolbox (version " + SSA_VERSION + ") ***");
+        if(hasGUI())
+        {
+            appendToLog("Now you might want to load some data (see menu File).");
+        }
+    }
+    
+    /**
+     * Returns true, if we the GUI of the standalone version is active.
+     */
+    public boolean hasGUI()
+    {
+        return (gui != null);
     }
 
     /**
@@ -146,53 +164,72 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        new Main();
+        new Main(true, null);
     }
 
     /**
-     * Starts the SSA algorithm in a seperate thread.
+     * Starts the SSA algorithm.
+     *
+     * @param sepThread set this to true to run SSA in a seperate thread.
      */
-    public void runSSA() {
-        if(ssa_parameters.getNumberOfStationarySources() == -1) {
-            logger.appendToLog("ERROR: Number of stationary sources not specified");
+    public void runSSA(boolean sepThread) {
+        if(parameters.getNumberOfStationarySources() == -1) {
+            appendToLog("ERROR: Number of stationary sources not specified");
             return;
         }
             
         if(data.getEpochType() == Data.EPOCHS_EQUALLY && data.getNumberOfEpochs() == -1) {
-            logger.appendToLog("ERROR: Epochs not specified");
+            appendToLog("ERROR: Epochs not specified");
             return;
         }
 
-        (new Thread() {
-            @Override
-            public void run() {
-                ssa.setLogger(gui);
-                data.setLogger(gui);
+        ssa.setLogger(logger);
+        data.setLogger(logger);
 
-                gui.setGUIState(GUI.STATE_SSA_RUNNING);
-
-                //logger.appendToLog("Calculating covariance matrices and means...");
-                //data.epochize();
-
-                //logger.appendToLog("Running SSA...");
-                //gui.setGUIState(GUI.STATE_SSA_RUNNING);
-
-                //stop_ssa = false;
-
-                try {
-                    results = ssa.optimize(ssa_parameters, data);
-                    gui.setGUIState(GUI.STATE_RESULT_AVAILABLE);
+        if(hasGUI())
+        {
+            gui.setGUIState(GUI.STATE_SSA_RUNNING);
+        }
+                    
+        if(sepThread)
+        {
+            (new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        results = ssa.optimize(parameters, data);
+                        if(hasGUI())
+                        {
+                            gui.setGUIState(GUI.STATE_RESULT_AVAILABLE);
+                        }
+                    }
+                    catch(RuntimeException ex) {
+                        appendToLog(ex.getMessage());
+                        if(hasGUI())
+                        {
+                            gui.setGUIState(GUI.STATE_PARAMETRIZATION);
+                        }
+                    }
+                    catch(java.lang.OutOfMemoryError e)
+                    {
+                        printJavaHeapSpaceError();
+                    }
                 }
-                catch(RuntimeException ex) {
-                    logger.appendToLog(ex.getMessage());
-                    gui.setGUIState(GUI.STATE_PARAMETRIZATION);
-                }
-                catch(java.lang.OutOfMemoryError e)
-                {
-                    printJavaHeapSpaceError();
-                }
+            }).start();
+        }
+        else
+        {
+            try {
+                results = ssa.optimize(parameters, data);
             }
-        }).start();
+            catch(RuntimeException ex) {
+                appendToLog(ex.getMessage());
+            }
+            catch(java.lang.OutOfMemoryError e)
+            {
+                printJavaHeapSpaceError();
+            }
+        }
     }
 
     /**
@@ -229,7 +266,7 @@ public class Main {
             }
             else
             {
-                logger.appendToLog("Error: Unknown file extension.");
+                appendToLog("Error: Unknown file extension.");
             }
         }
         catch(java.lang.OutOfMemoryError e)
@@ -245,7 +282,7 @@ public class Main {
      * @param f CSV-file
      */
     public void loadTimeseriesCSV(File f) {
-        logger.appendToLog("Loading data ...");
+        appendToLog("Loading data ...");
 
         // try to open csv-file
         BufferedReader br = null;
@@ -255,7 +292,7 @@ public class Main {
         }
         catch(IOException e)
         {
-            logger.appendToLog("Error opening file: " + e);
+            appendToLog("Error opening file: " + e);
             return;
         }
 
@@ -286,11 +323,11 @@ public class Main {
         }
         catch(IOException e)
         {
-            logger.appendToLog("Error reading file: " + e);
+            appendToLog("Error reading file: " + e);
         }
         catch(NumberFormatException e)
         {
-            logger.appendToLog("Error converting string to number: " + e);
+            appendToLog("Error converting string to number: " + e);
         }
 
         double dataArray[][] = new double[lineList.size()][lineList.getFirst().length];
@@ -316,9 +353,12 @@ public class Main {
             data.setOutputDataformat(Data.DATAFORMAT_TIME_X_CHANNELS);
         }
 
-        logger.appendToLog("Loaded data from file " + f.getPath() + ":");
-        logger.appendToLog("  dimensions=" + data.getNumberOfDimensions() + ",total number of samples=" + data.getTotalNumberOfSamples());
-        gui.setGUIState(GUI.STATE_PARAMETRIZATION);
+        appendToLog("Loaded data from file " + f.getPath() + ":");
+        appendToLog("  dimensions=" + data.getNumberOfDimensions() + ",total number of samples=" + data.getTotalNumberOfSamples());
+        if(hasGUI())
+        {
+            gui.setGUIState(GUI.STATE_PARAMETRIZATION);
+        }
     }
 
     /**
@@ -329,7 +369,7 @@ public class Main {
      * @param f CSV epoch definition file
      */
     public void loadEpochDefinitionCSV(File f) {
-        logger.appendToLog("Loading epoch definition file ...");
+        appendToLog("Loading epoch definition file ...");
 
         // try to open csv-file
         BufferedReader br = null;
@@ -339,7 +379,7 @@ public class Main {
         }
         catch(IOException e)
         {
-            logger.appendToLog("Error opening file: " + e);
+            appendToLog("Error opening file: " + e);
             return;
         }
 
@@ -359,7 +399,7 @@ public class Main {
                 }
                 if(i == data.getTotalNumberOfSamples())
                 {
-                    logger.appendToLog("Error: File contains more epoch belongings than available samples");
+                    appendToLog("Error: File contains more epoch belongings than available samples");
                     return;
                 }
 
@@ -369,17 +409,17 @@ public class Main {
             br.close();
             if(i < data.getTotalNumberOfSamples())
             {
-                logger.appendToLog("Error: File contains less epoch belongings than available samples");
+                appendToLog("Error: File contains less epoch belongings than available samples");
                 return;
             }
         }
         catch(IOException e)
         {
-            logger.appendToLog("Error reading file: " + e);
+            appendToLog("Error reading file: " + e);
         }
         catch(NumberFormatException e)
         {
-            logger.appendToLog("Error converting string to number: " + e);
+            appendToLog("Error converting string to number: " + e);
         }
         catch(java.lang.OutOfMemoryError e)
         {
@@ -414,7 +454,7 @@ public class Main {
         }
         catch(IllegalArgumentException e)
         {
-            logger.appendToLog(e.getMessage());
+            appendToLog(e.getMessage());
             return;
         }
         catch(java.lang.OutOfMemoryError e)
@@ -422,8 +462,8 @@ public class Main {
             printJavaHeapSpaceError();
         }
         
-        logger.appendToLog("Loaded epoch definition from file " + f.getPath() + ":");
-        logger.appendToLog("  number of epochs=" + count.keySet().size()
+        appendToLog("Loaded epoch definition from file " + f.getPath() + ":");
+        appendToLog("  number of epochs=" + count.keySet().size()
                          + ",min. no. samples in epoch=" + minEpochSize
                          + ",max. no. samples in epoch=" + maxEpochSize);
     }
@@ -434,7 +474,7 @@ public class Main {
      * @param f MAT-file
      */
     public void loadDataMatlab(File f) {
-        logger.appendToLog("Loading data from Matlab file ...");
+        appendToLog("Loading data from Matlab file ...");
 
         MatFileReader mfr;
         try
@@ -443,7 +483,7 @@ public class Main {
         }
         catch (IOException e)
         {
-            logger.appendToLog("Error opening file: " + e);
+            appendToLog("Error opening file: " + e);
             return;
         }
 
@@ -451,7 +491,7 @@ public class Main {
         MLArray Xmat = map.get("X");
         if(Xmat == null)
         {
-            logger.appendToLog("Error: No timeseries found in file (i.e. no variable X)");
+            appendToLog("Error: No timeseries found in file (i.e. no variable X)");
             return;
         }
 
@@ -471,8 +511,8 @@ public class Main {
                     data.setInputDataformat(Data.DATAFORMAT_TIME_X_CHANNELS);
                     data.setOutputDataformat(Data.DATAFORMAT_TIME_X_CHANNELS);
                 }
-                logger.appendToLog("Loaded data from file " + f.getPath() + ":");
-                logger.appendToLog("  dimensions=" + data.getNumberOfDimensions() + ",total number of samples=" + data.getTotalNumberOfSamples());
+                appendToLog("Loaded data from file " + f.getPath() + ":");
+                appendToLog("  dimensions=" + data.getNumberOfDimensions() + ",total number of samples=" + data.getTotalNumberOfSamples());
                 break;
             case MLArray.mxCELL_CLASS:
                 MLCell mlc = (MLCell)Xmat;
@@ -486,7 +526,7 @@ public class Main {
                 {
                     if(mlc.get(i).getType() != MLArray.mxDOUBLE_CLASS)
                     {
-                        logger.appendToLog("Error: Cell array X has to contain only real-valued matrices");
+                        appendToLog("Error: Cell array X has to contain only real-valued matrices");
                         return;
                     }
                     if(i == 0)
@@ -523,7 +563,7 @@ public class Main {
 
                         if(nextX.getRows() != dim)
                         {
-                            logger.appendToLog("Error: All samples in X must have the same dimension");
+                            appendToLog("Error: All samples in X must have the same dimension");
                             return;
                         }
                         timeSeries = SSAMatrix.concatHorizontally(timeSeries, nextX);
@@ -548,24 +588,27 @@ public class Main {
                 }
                 catch(IllegalArgumentException e)
                 {
-                    logger.appendToLog(e.getMessage());
-                    logger.appendToLog("Loaded data only from file " + f.getPath() + ":");
-                    logger.appendToLog("  dimensions=" + data.getNumberOfDimensions() + ",total number of samples="
+                    appendToLog(e.getMessage());
+                    appendToLog("Loaded data only from file " + f.getPath() + ":");
+                    appendToLog("  dimensions=" + data.getNumberOfDimensions() + ",total number of samples="
                                 + data.getTotalNumberOfSamples());
                     return;
                 }
-                logger.appendToLog("Loaded data and epoch definition from file " + f.getPath() + ":");
-                logger.appendToLog("  dimensions=" + data.getNumberOfDimensions() + ",total number of samples="
+                appendToLog("Loaded data and epoch definition from file " + f.getPath() + ":");
+                appendToLog("  dimensions=" + data.getNumberOfDimensions() + ",total number of samples="
                                 + data.getTotalNumberOfSamples() + ",number of epochs=" + mlc.getSize()
                                 + ",min. no. samples in epoch=" + minEpochSize
                                 + ",max. no. samples in epoch=" + maxEpochSize);
                 break;
             default:
-                logger.appendToLog("Error: Variable X is not a real-valued matrix or a cell array");
+                appendToLog("Error: Variable X is not a real-valued matrix or a cell array");
                 return;
         }
-
-        gui.setGUIState(GUI.STATE_PARAMETRIZATION);
+        
+        if(hasGUI())
+        {
+            gui.setGUIState(GUI.STATE_PARAMETRIZATION);
+        }
     }
 
     /**
@@ -576,7 +619,7 @@ public class Main {
      */
     private void saveCSV(SSAMatrix M, File f)
     {
-        logger.appendToLog("Saving...");
+        appendToLog("Saving...");
 
         PrintWriter pw;
         try
@@ -585,7 +628,7 @@ public class Main {
         }
         catch(IOException e)
         {
-            logger.appendToLog("Error opening file: " + e);
+            appendToLog("Error opening file: " + e);
             return;
         }
 
@@ -604,7 +647,7 @@ public class Main {
 
         pw.close();
 
-        logger.appendToLog("Saving successful.");
+        appendToLog("Saving successful.");
     }
 
     /**
@@ -613,7 +656,7 @@ public class Main {
      * @param f file to save to
      */
     public void saveStationarySourcesCSV(File f) {
-        logger.appendToLog("Extracting stationary signal...");
+        appendToLog("Extracting stationary signal...");
         SSAMatrix ss;
         if(data.getOutputDataformat() == Data.DATAFORMAT_CHANNELS_X_TIME)
         {
@@ -632,7 +675,7 @@ public class Main {
      * @param f file to save to
      */
     public void saveNonstationarySourcesCSV(File f) {
-        logger.appendToLog("Extracting non-stationary signal...");
+        appendToLog("Extracting non-stationary signal...");
         SSAMatrix nss;
         if(data.getOutputDataformat() == Data.DATAFORMAT_CHANNELS_X_TIME)
         {
@@ -687,7 +730,7 @@ public class Main {
      * @param f file to save to
      */
     public void saveResultMatlab(File f) {
-        logger.appendToLog("Saving results...");
+        appendToLog("Saving results...");
         LinkedList<MLArray> list = new LinkedList<MLArray>();
 
         MLStructure mls = new MLStructure("ssa_results", new int[]{1,1});
@@ -737,11 +780,34 @@ public class Main {
         } 
         catch(IOException e)
         {
-            logger.appendToLog("Error saving results: " + e);
+            appendToLog("Error saving results: " + e);
             return;
         }
 
-        logger.appendToLog("Results successfully saved.");
+        appendToLog("Results successfully saved.");
+    }
+    
+    /**
+     * Appends a message to the log.
+     *
+     * @param s message to append
+     */
+    public void appendToLog(String s)
+    {
+        if(logger != null)
+        {
+            logger.appendToLog(s);
+        }
+    }
+    
+    /**
+     * Sets which logger to use.
+     *
+     * @param logger logger
+     */
+    public void setLogger(Logger logger)
+    {
+        this.logger = logger;
     }
 
     /**
@@ -749,13 +815,13 @@ public class Main {
      */
     public void printJavaHeapSpaceError()
     {
-        logger.appendToLog("");
-        logger.appendToLog("ERROR: Not enough Java heap space.");
-        logger.appendToLog("You can increase the Java heap space by running the SSA toolbox from the command line like this:");
-        logger.appendToLog("");
-        logger.appendToLog("  java -Xmx512M -jar ssa.jar");
-        logger.appendToLog("");
-        logger.appendToLog("This would result in a Java heap space of 512M. Of course you can replace \"512M\" with your desired size.");
+        appendToLog("");
+        appendToLog("ERROR: Not enough Java heap space.");
+        appendToLog("You can increase the Java heap space by running the SSA toolbox from the command line like this:");
+        appendToLog("");
+        appendToLog("  java -Xmx512M -jar ssa.jar");
+        appendToLog("");
+        appendToLog("This would result in a Java heap space of 512M. Of course you can replace \"512M\" with your desired size.");
     }
 }
 

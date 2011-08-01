@@ -38,21 +38,48 @@ package ssatoolbox;
  * @author Jan Saputra Mueller, saputra@cs.tu-berlin.de
  */
 public class Results {
-    // results
-    public SSAMatrix Ps, Pn;
-    public SSAMatrix Bs, Bn;
+    /** Projection matrix to estimated stationary subspace */
+    public SSAMatrix Ps;
+    
+    /** Projection matrix to estimated non-stationary subspace */
+    public SSAMatrix Pn;
+
+    /** Matrix whose columns span the estimated stationary subspace */
+    public SSAMatrix Bs;
+
+    /** Matrix whose columns span the estimated non-stationary subspace */
+    public SSAMatrix Bn;
+
+    /** Loss of the found solution */
     public double loss;
+
+    /** Number of iterations needed */
     public int iterations;
+
+    /** True, if the SSA algorithm converged */
     public boolean converged;
 
     // used parameters
-    public int d; // number of stationary sources
-    public int reps; // number of repetitions
+    /** Number of stationary sources which has been used */
+    public int d;
+
+    /** Number of repetitions which has been used */
+    public int reps;
+
+    /** Indicates, whether changes in the mean were considered */
     public boolean useMean;
+
+    /** Indicates, whether changes in the covariance were considered */
     public boolean useCovariance;
-    public int equalEpochs; // number of equal epochs; 0 in case of custom epochs
-    public String inputFile; // file from which the data was loaded
-    public String epochFile; // custom epochization file (if used)
+
+    /** Number of equally sized epochs, or zero if a custom epochization has been used */
+    public int equalEpochs;
+
+    /** File, from which the time series has been loaded (if avavilable) */
+    public String inputFile;
+
+    /** File, from which the custom epochization has been loaded (if available) */
+    public String epochFile;
 
     /**
      * Constructs a new Result object.

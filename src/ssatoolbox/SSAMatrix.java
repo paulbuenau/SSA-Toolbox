@@ -40,7 +40,10 @@ package ssatoolbox;
  */
 public class SSAMatrix
 {
+    /** Constant for the library jBlas */
     public static final int JBLAS = 0;
+
+    /** Constant for the library COLT */
     public static final int COLT = 1;
     
     private static int globalLib = COLT; // global variable indicates which matrix library is used for *all* matrices

@@ -54,6 +54,11 @@ public class SSA
     private volatile boolean stopped = false;
 
     /**
+     * Creates a new instance of the class SSA.
+     */
+    public SSA() { }
+
+    /**
      * Checks whether the parameters for SSA are valid, and throws an exception if they are not.
      *
      * @param par class containing the SSA parameters

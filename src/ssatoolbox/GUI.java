@@ -73,9 +73,16 @@ public class GUI extends javax.swing.JFrame implements Logger {
     private static final String FILESEL_MATCSV_FILTER = "Matlab (*.mat) or CSV file (*.csv)";
     private static final String FILESEL_SAVEDIR_FILTER = "Directories only";
 
+    /** Constant for GUI state "No data loaded" */
     public static final int STATE_NO_DATA = 0;
+
+    /** Constant for GUI state "SSA is running" */
     public static final int STATE_SSA_RUNNING = 1;
+
+    /** Constant for GUI state "Parametrization of SSA" */
     public static final int STATE_PARAMETRIZATION = 2;
+
+    /** Constant for GUI state "SSA finished, results are available" */
     public static final int STATE_RESULT_AVAILABLE = 3;
 
     private Main controller = null;
@@ -152,7 +159,13 @@ public class GUI extends javax.swing.JFrame implements Logger {
     }
 
 
-    /** Creates new form MainFrame */
+    /**
+     * Creates a new GUI window.
+     *
+     * @param c controller
+     * @param p instance of SSAParameters
+     * @param d instance of Data
+     */
     public GUI(Main c, SSAParameters p, Data d) {
         controller = c;
         ssa_parameters = p;
@@ -1363,7 +1376,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         if(state == GUI.STATE_SSA_RUNNING)
             controller.stopSSA();
         else
-            controller.runSSA();
+            controller.runSSA(true);
 }//GEN-LAST:event_btStartStopSSAActionPerformed
 
     private void jMenuItem14ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem14ActionPerformed

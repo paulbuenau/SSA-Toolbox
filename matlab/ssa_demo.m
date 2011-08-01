@@ -82,8 +82,8 @@ Xmixed = A * X;
 %%%%%%%%%%%%%%%%%%%%
 % run SSA
 %%%%%%%%%%%%%%%%%%%%
-% 1 stationary source, 5 repetitions, 4 equally-sized epochs
-[est_Ps, est_Pn, est_As, est_An, loss, iterations, ssa_results] = ssa(Xmixed, 1, 5, 4);
+% 1 stationary source, 5 repetitions, 4 equally-sized epochs, fixed random seed
+[est_Ps, est_Pn, est_As, est_An, loss, iterations, ssa_results] = ssa(Xmixed, 1, 'reps', 5, 'equal_epochs', 4, 'random_seed', 12345);
 
 % project to stationary and non-stationary subspace
 Xest_s = est_Ps * Xmixed; 
