@@ -78,9 +78,11 @@
 
 		<target name="dist" depends="jar,manual">
       <copy file="matlab/ssa.m" todir="dist" />
-      <copy file="matlab/ssa_example.m" todir="dist" />
-      <copy file="matlab/ssa_toydata.m" todir="dist" />
-      <copy file="QUICKSTART" todir="dist" />
+      <copy file="matlab/ssa_demo.m" todir="dist" />
+  		<copy todir="dist/example_data">
+					<fileset dir="example_data" />
+			</copy>
+    	<copy file="QUICKSTART" todir="dist" />
 		</target>
 
     <target name="distarchives" depends="dist">

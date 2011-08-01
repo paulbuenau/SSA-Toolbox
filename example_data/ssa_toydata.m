@@ -110,7 +110,7 @@ corrs = opt.corr_min + (opt.corr_max-opt.corr_min)*rand(1,n);
 
 % Determine the scaling of the cross-covariance; this controls the 
 % canonical correlation between s- and n-sources (corrs).
-cc_scaling = sqrt(min(E) ./ ( (corrs.^(-2)) - 1));
+cc_scaling = sqrt(mean(E) ./ ( (corrs.^(-2)) - 1));
 
 % Set direction of correlations (randomized later, if requested). 
 BCn = eye(dn);

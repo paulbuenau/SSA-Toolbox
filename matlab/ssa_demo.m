@@ -1,5 +1,5 @@
-function ssa_example
-%SSA_EXAMPLE        SSA example on synthetic data.
+function ssa_demonstration
+%SSA_DEMO        SSA demonstration on synthetic data.
 %
 %Shows an example of SSA on synthetic data with one stationary and one non-stationary source.
 %The upper panel shows the two input signals. Note that due to the mixing, both input signals
