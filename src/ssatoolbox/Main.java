@@ -34,6 +34,7 @@ package ssatoolbox;
 
 import com.jmatio.io.*;
 import com.jmatio.types.*;
+import gnu.getopt.*;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -163,8 +164,188 @@ public class Main {
      *
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        new Main(true, null);
+    public static void main(String[] args)
+    {
+        if(args.length == 0)
+        {
+            new Main(true, null);
+        }
+        else
+        {
+            ConsoleLogger cl = new ConsoleLogger();
+            Main ssaMain = new Main(false, cl);
+
+            String inputFile = null;
+            int d = -1;
+            int reps = 5;
+            String epochFile = null;
+            int equalEpochs = -1;
+            boolean useMean = true;
+            boolean useCovariance = true;
+            long randomSeed = 0;
+            boolean useJBlas = false;
+
+            // Parse the command line using java-getopt.
+            // i: input data (time series)
+            // d: number of stationary sources
+            // r: number of restarts
+            // e: custom epochization
+            // n: number of epochs
+            // m: use mean
+            // c: use covariance
+            // s: random seed
+            // j: use jBlas
+            Getopt g = new Getopt("ssa.jar", args, "i:d:r:e:n:m:c:s:j:");
+            int c;
+            String arg;
+            while((c = g.getopt()) != -1)
+            {
+                arg = g.getOptarg();
+
+                switch(c)
+                {
+                    case 'i':
+                        inputFile = arg;
+                        break;
+                    case 'd':
+                        try
+                        {
+                            d = Integer.parseInt(arg);
+                        }
+                        catch(NumberFormatException e)
+                        {
+                            ssaMain.appendToLog("Argument of option -d has to be a number.");
+                            return;
+                        }
+                        break;
+                    case 'r':
+                        try
+                        {
+                            reps = Integer.parseInt(arg);
+                        }
+                        catch(NumberFormatException e)
+                        {
+                            ssaMain.appendToLog("Argument of option -r has to be a number.");
+                            return;
+                        }
+                        break;
+                    case 'e':
+                        epochFile = arg;
+                        break;
+                    case 'n':
+                        try
+                        {
+                            equalEpochs = Integer.parseInt(arg);
+                        }
+                        catch(NumberFormatException e)
+                        {
+                            ssaMain.appendToLog("Argument of option -r has to be a number.");
+                            return;
+                        }
+                        break;
+                    case 'm':
+                        if(arg.equals("0")) useMean = false;
+                        else if(arg.equals("1")) useMean = true;
+                        else
+                        {
+                            ssaMain.appendToLog("Argument of option -m has to be 0 or 1.");
+                            return;
+                        }
+                        break;
+                    case 'c':
+                        if(arg.equals("0")) useCovariance = false;
+                        else if(arg.equals("1")) useCovariance = true;
+                        else
+                        {
+                            ssaMain.appendToLog("Argument of option -c has to be 0 or 1.");
+                            return;
+                        }
+                        break;
+                    case 's':
+                        try
+                        {
+                            randomSeed = Long.parseLong(arg);
+                        }
+                        catch(NumberFormatException e)
+                        {
+                            ssaMain.appendToLog("Argument of option -s has to be a number.");
+                            return;
+                        }
+                        break;
+                    case 'j':
+                        if(arg.equals("0")) useJBlas = false;
+                        else if(arg.equals("1")) useJBlas = true;
+                        else
+                        {
+                            ssaMain.appendToLog("Argument of option -j has to be 0 or 1.");
+                            return;
+                        }
+                        break;
+                }
+            }
+
+            if(useJBlas)
+            {
+                SSAMatrix.setGlobalLib(SSAMatrix.JBLAS);
+                ssaMain.appendToLog("Using jBlas as library instead of Colt.");
+            }
+
+            if(inputFile != null)
+            {
+                ssaMain.loadTimeseries(new java.io.File(inputFile));
+            }
+            else
+            {
+                ssaMain.appendToLog("An input file has to be passed using the option -i.");
+                return;
+            }
+
+            if(d > -1)
+            {
+                ssaMain.parameters.setNumberOfStationarySources(d);
+            }
+            else
+            {
+                ssaMain.appendToLog("You have to specify the number of stationary sources using the option -d");
+                return;
+            }
+
+            if(reps > 0)
+            {
+                ssaMain.parameters.setNumberOfRestarts(reps);
+            }
+            else
+            {
+                ssaMain.appendToLog("The number of restarts specified by the option -r has to be a positive number.");
+                return;
+            }
+
+            ssaMain.parameters.setUseMean(useMean);
+            ssaMain.parameters.setUseCovariance(useCovariance);
+
+            if(equalEpochs > -1)
+            {
+                ssaMain.data.setNumberOfEqualSizeEpochs(equalEpochs);
+                ssaMain.data.setEpochType(Data.EPOCHS_EQUALLY);
+            }
+            else if(epochFile != null)
+            {
+                ssaMain.loadEpochDefinitionCSV(new java.io.File(epochFile));
+                ssaMain.data.setEpochType(Data.EPOCHS_CUSTOM);
+            }
+            else if(!ssaMain.data.hasCustomEpochDefinition())
+            {
+                ssaMain.data.setEpochType(Data.EPOCHS_EQUALLY_HEURISTIC);
+            }
+
+            if(randomSeed > 0)
+            {
+                SSAMatrix.setRandomSeed(randomSeed);
+                ssaMain.appendToLog("Random seed set to " + randomSeed + ".");
+            }
+
+            ssaMain.runSSA(false);
+        }
     }
 
     /**
