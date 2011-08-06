@@ -514,9 +514,9 @@ Thus the covariance matrix of the sources in the $i$-th epoch is given by,
 The strength of the non-stationarity in the mean of the \n-sources is chosen relative to the 
 total non-stationarity $\tilde{\sigma}$ in the covariance matrix which we measure as,
 \begin{align*}
-	\tilde{\sigma} = \sum_{i=1}^n \sum_{j=1}^{D-d} \left|\log \left[ (\Lambda_i)_j \right]\right| .
+	\tilde{\sigma} = \sum_{i=1}^n \sum_{j=1}^{D-d} \left|\log \left[ (\Lambda_i)_{jj} \right]\right| .
 \end{align*}
-Similarly, the total non-stationarity in the mean $\tilde{\mu}$ is given by, 
+Similarly, we quantify the total non-stationarity in the mean $\tilde{\mu}$ as, 
 \begin{align*}
 	\tilde{\mu} = \sum_{i=1}^n \| \mu_i \|^2 . 
 \end{align*}
@@ -608,6 +608,54 @@ server, which is the primary location of the source code:
 	\texttt{https://github.com/paulbuenau/SSA-Toolbox}
 \end{center}
 On github you will always find the latest, probably unreleased version of the SSA Toolbox.
+
+%%%%%%%%%%%%%%%%%
+\subsection*{Example}
+
+The code of the SSA Toolbox can be used as a library from other applications. Below you can can find a 
+simple example which shows how to load data, parametrize the SSA algorithm, apply it and save the
+results to a file.
+ 
+\bigskip
+
+\begin{boxedminipage}{12cm}
+\small
+\begin{verbatim}
+public class SSAJavaExample
+{
+    public static void main(String args[])
+    {
+        // create a console logger for writing log messages
+        ssatoolbox.ConsoleLogger cl = new ssatoolbox.ConsoleLogger();
+
+        // create instance of SSA main class.
+        ssatoolbox.Main ssaMain = new ssatoolbox.Main(false, cl);
+
+        // load data from CSV-file
+        ssaMain.loadTimeseries(new java.io.File("data.csv"));
+
+        // set SSA parameters 
+        ssaMain.parameters.setNumberOfStationarySources(3);
+
+        // set epochization type
+        ssaMain.data.setEpochType(
+        	ssatoolbox.Data.EPOCHS_EQUALLY_HEURISTIC);
+
+        // Run SSA (*not* using a separate thread!)
+        ssaMain.runSSA(false);
+
+        // save stationary sources
+        ssaMain.saveStationarySourcesCSV(
+        		new java.io.File("stationary.csv"));
+
+        // save non-stationary sources
+        ssaMain.saveNonstationarySourcesCSV(
+        	new java.io.File("non-stationary.csv"));
+    }
+}
+\end{verbatim}
+\end{boxedminipage}
+
 
 %%%%%%%%%%%%%%%%%
 \subsection*{Class Structure}
@@ -724,14 +772,16 @@ information on the official SSA homepage:
 \newpage
 
 \begin{appendices}
+
 \section{Measuring the Error of SSA}
 
-In order to measure the accuracy of SSA when the true solution is known, we define an error
-measure between the true and the estimated non-stationary subspace. This \textit{subspace error}
-is based on the \textit{principle angles} between two subspace, a measure of the relative position
-of two linear subspaces. Let $U$ and $V$ be two linear subspaces of the vector space $\mathcal{V}$ 
-with $\dim U \leq \dim V$. The first principle angle $\theta_1$ is defined as the smallest 
-angle between any two vectors $u \in U$ and $v \in V$, 
+In order to assess the accuracy of the solution found by SSA when the true mixing matrix $A$ 
+is known, we need to adopt an error measure. Since only the non-stationary subspace (spanned 
+by the columns of $A^\n$) is identifiable, we measure the deviation between the true and the
+estimated \n-space. To that end, we define a \textit{subspace error} based on the 
+\textit{principle angles} between two subspaces. Let $U$ and $V$ be two linear subspaces of the 
+vector space $\mathcal{V}$ with $\dim U \leq \dim V$. The first principle angle $\theta_1$ is 
+defined as the smallest angle between any two vectors $u \in U$ and $v \in V$, 
 \begin{align*}
 	\theta_1 = \min \left. \left\{ \frac{ u^\top v }{ \| u \| \| v \| } \right| u \in U, v \in V \right\} = \angle(u_1, v_1),
 \end{align*}
@@ -746,32 +796,25 @@ Thus the principle vectors in each subspace are mutually orthogonal. If a princi
 then $U$ and $V$ share a common subspace and $u_k,v_k \in U \cap V$. Hence the dimension of the intersection
 of $U$ and $V$ is equivalent to the number of zero principle angles. The principle angles and vectors
 can be found using the singular value decomposition (SVD). Let the columns of the matrices $U'$ and $V'$ be 
-orthonormal bases for the spaces $U$ and $V$ respectively. 
+orthonormal bases for the spaces $U$ and $V$ respectively. From the singular value decomposition 
+$\hat{U} \Sigma \hat{V}^\top = (U')^\top V'$ we obtain the principle angles from the singular values, 
+$\cos \theta_k = \Sigma_{kk}$ and the principle vectors are the columns of $\hat{U}$ and $\hat{V}$. 
 
-The aim of SSA is to eliminate non-stationary contributions from the estimated stationary sources, 
-i.e.~project orthogonal to the non-stationary subspace. We therefore measure the deviation from the true
-non-stationary subspace, spanned by the columns of $A^\n$, and its estimate, spanned by the columns of
-$\hat{A}^{\n}$, in terms of the principle angles between these two subspaces. If all principle
-angles are zero, SSA has identified the true solution and hence the error is zero. However, for every 
-non-zero principle angle $\theta_k > 0$, the estimated \s-projection $\hat{P}^\s = (\hat{A}^{\n})^\perp$ 
-adds non-stationary contributions to the estimated stationary sources. This affects the mean and the variance 
-of the estimated \s-sources as follows. Let $v_k$ be the principle vector in the true non-stationary space
-corresponding to the non-zero principle angle $\theta_k$ and let $\mu^\n_k(t)$ and $\sigma^{\n2}_k(t)$ be the mean 
-and the variance along that direction respectively. Then $\sin^2 (\theta_k) (\mu_k(t))^2$ will be added to 
-the squared norm of the expectation of the estimated \s-sources, and $\sin^2 (\theta_k) \sigma^2_k(t)$ to the 
-sum of the variances at time point $t$. 
-
-
+In order to quantify the difference between the true and the estimated stationary subspace 
+(spanned by the columns of $\hat{A}^\n$), we define the subspace error given the principle 
+angles $\theta_1, \ldots, \theta_{D-d}$ as 
 \begin{align*}
-	\mathcal{E}(U,V) = 
+	\mathcal{E}(\hat{A}^\n , A^\n ) = \frac{1}{D-d} \sum_{i=1}^{D-d} \sin^2 (\theta_i) .
 \end{align*}
+This error is zero when the true subspaces are identical and one if they are orthogonal to 
+each other. The subspace error can be interpreted in terms of the sources. It is the 
+average percentage of the signal power which a non-stationary sources loses if it is projected 
+from the true onto the estimated non-stationary sources. Conversely, for the estimated stationary
+sources $\hat{s}^\n(t) = \hat{P}^\s x(t)$ this means that $\mathcal{E}(\hat{A}^\n , A^\n )$ 
+is the average percentage of non-stationary signal power that they contain. 
 
-
-
-
-
-
-
+The SSA Toolbox comes with a Matlab function \texttt{subspace\_error} that computes the subspace
+error between two subspaces spanned by the columns of two matrices. 
 
 \end{appendices}
 
