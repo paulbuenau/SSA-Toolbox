@@ -1605,16 +1605,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
 
         if(f != null) {
             // Save all results to chosen directory.
-
-            final String absPath = f.getAbsolutePath() + File.separator;
-            controller.saveStationarySourcesCSV(new File(absPath + "stationary_sources.csv"));
-            controller.saveNonstationarySourcesCSV(new File(absPath + "nonstationary_sources.csv"));
-
-            controller.saveStationaryBasisCSV(new File(absPath + "stationary_basis.csv"));
-            controller.saveNonstationaryBasisCSV(new File(absPath + "nonstationary_basis.csv"));
-            
-            controller.saveStationaryProjectionCSV(new File(absPath + "stationary_projection.csv"));
-            controller.saveNonstationaryProjectionCSV(new File(absPath + "nonstationary_projection.csv"));
+            controller.saveAllToCSV(f);
         }
     }
 

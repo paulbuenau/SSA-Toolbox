@@ -184,6 +184,7 @@ public class Main {
             boolean useCovariance = true;
             long randomSeed = 0;
             boolean useJBlas = false;
+            String outputFile = null;
 
             // Parse the command line using java-getopt.
             // i: input data (time series)
@@ -195,7 +196,8 @@ public class Main {
             // c: use covariance
             // s: random seed
             // j: use jBlas
-            Getopt g = new Getopt("ssa.jar", args, "i:d:r:e:n:m:c:s:j:");
+            // o: output file
+            Getopt g = new Getopt("ssa.jar", args, "i:d:r:e:n:m:c:s:j:o:");
             int c;
             String arg;
             while((c = g.getopt()) != -1)
@@ -281,6 +283,9 @@ public class Main {
                             return;
                         }
                         break;
+                    case 'o':
+                        outputFile = arg;
+                        break;
                 }
             }
 
@@ -297,6 +302,12 @@ public class Main {
             else
             {
                 ssaMain.appendToLog("An input file has to be passed using the option -i.");
+                return;
+            }
+
+            if(outputFile == null)
+            {
+                ssaMain.appendToLog("An output file has to be passed using the option -o.");
                 return;
             }
 
@@ -345,6 +356,18 @@ public class Main {
             }
 
             ssaMain.runSSA(false);
+
+            if(outputFile.toLowerCase().endsWith(".mat"))
+            {
+                // output to *.mat file
+                ssaMain.saveResultMatlab(new java.io.File(outputFile));
+            }
+            else
+            {
+                // output to multiple *.csv files, using outputFile as a prefix
+                if(outputFile.endsWith(File.separator)) outputFile = outputFile.substring(0, outputFile.length() - 1);
+                ssaMain.saveAllToCSV(new java.io.File(outputFile));
+            }
         }
     }
 
@@ -903,6 +926,27 @@ public class Main {
      */
     public void saveNonstationaryProjectionCSV(File f) {
         saveCSV(results.Pn, f);
+    }
+
+    /**
+     * Save all results to CSV-files.
+     * This method creates multiple CSV-files containing the results of SSA.
+     * The filenames are stationary_sources.csv, nonstationary_sources.csv,
+     * stationary_basis.csv, nonstationary_basis.csv, stationary_projection.csv,
+     * nonstationary_projection.csv.
+     *
+     * @param f path to directory where the files should be saved
+     */
+    public void saveAllToCSV(File f) {
+        final String absPath = f.getAbsolutePath() + File.separator;
+        saveStationarySourcesCSV(new File(absPath + "stationary_sources.csv"));
+        saveNonstationarySourcesCSV(new File(absPath + "nonstationary_sources.csv"));
+
+        saveStationaryBasisCSV(new File(absPath + "stationary_basis.csv"));
+        saveNonstationaryBasisCSV(new File(absPath + "nonstationary_basis.csv"));
+            
+        saveStationaryProjectionCSV(new File(absPath + "stationary_projection.csv"));
+        saveNonstationaryProjectionCSV(new File(absPath + "nonstationary_projection.csv"));
     }
 
    /**
