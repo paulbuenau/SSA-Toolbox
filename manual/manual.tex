@@ -237,10 +237,11 @@ Figure~\ref{fig:ex_timeseries} for an example time series file.
 -0.58832,0.059281
 2.1832,-0.095648
 -0.1364,-0.83235
+...
 \end{verbatim}
 \end{boxedminipage}
 \caption{
-Timeseries in CSV format with two channels and five time points. 
+The first five time points of a timeseries in CSV format with two channels. 
 The first line is a comment for documentation purposes.
 \label{fig:ex_timeseries}
 }
@@ -262,12 +263,12 @@ an example CSV file for a segmentation of the time series into custom epochs.
 1
 2
 2
+...
 \end{verbatim}
 \end{boxedminipage}
 \caption{
-Custom epoch definition for the time series shown in Figure~\ref{fig:ex_timeseries}. 
-The first three time points belong to the same epoch and the last two time points form the
-second epoch.
+Custom epoch definition for the first five time points of the time series shown in Figure~\ref{fig:ex_timeseries}. 
+The first three time points belong to the same epoch and the last two time points form the second epoch.
 \label{fig:ex_segmentation}
 }
 \end{figure}
@@ -292,7 +293,7 @@ X =
     0.1253   -0.5883
     0.2877    2.1832
    -1.1465   -0.1364
-
+    ...
 \end{verbatim}
 \end{boxedminipage}
 \caption{Timeseries in Matlab with two channels and five time points.
@@ -359,8 +360,12 @@ non-stationary sources $D-d$, there may exist spurious stationary components tha
 the solution non-identifiable, i.e. components which appear stationary on the
 limited amount of observed data but which are in fact non-stationary.
 Informally speaking, spurious stationary components occur when the amount of 
-observed variation in the distributions (i.e. the number of epochs) is insufficient 
-to eliminate seemingly stationary directions in the non-stationary subspace. 
+observed variation in the distributions (i.e. the number of distinct epochs)
+ is insufficient to eliminate seemingly stationary directions in the non-stationary subspace. 
+For example, if you think of two covariance matrices $\Sigma_1, \Sigma_2 \in \R^{2 \times 2}$ in two-dimension, 
+then one can always find a one-dimensional subspace on which the projected variances 
+agree, unless $\Sigma_1 - \Sigma_2$ has an indefinite spectrum (i.e.~the contour plot
+of one covariance matrix is strictly contained in the other). 
 
 It can be shown \cite{PRL:SSA:2009} that there exist no spurious stationary directions
 if the number of epochs $N$ is at least 
@@ -446,13 +451,14 @@ script \texttt{ssa\_toydata.m} using the command-line
 \end{center}
 The dataset consists of ten epochs (each 500 samples); it has two stationary and two non-stationary 
 sources. The Matlab file \texttt{example\_data.mat} also contains the true mixing matrix \texttt{A} 
-so that you can assess the quality of the found solution using the subspace angle between the true
+so that you can assess the quality of the found solution using the subspace error between the true
 and the estimated basis of the non-stationary spaces as follows:
 \begin{center}
-	\texttt{subspace(ssa\_results.An, A(:,3:4))*180/pi}  
+	\texttt{subspace\_error(ssa\_results.An, A(:,3:4))}  
 \end{center}
-The comma-separated values file \texttt{example\_data.csv} contains the same data as the Matlab file. 
-Further details about the toy data generation can be found in the next section. 
+A description of this error measure can be found in Appendix~\ref{app:error_measure}. The comma-separated 
+values file \texttt{example\_data.csv} contains the same data as the Matlab file. Further details about 
+the toy data generation can be found in the next section. 
 
 \subsection{Toy Data Generation}
 
@@ -549,7 +555,6 @@ The bottom panel shows the time courses for the estimated stationary (top) and t
 \label{sec:faq}
 
 \paragraph{When should I use SSA?} 
-
 SSA can be applied whenever a multivariate dataset, that has a temporal structure is conceivable 
 generated as a mixture of stationary and non-stationary components, where the non-stationary 
 effects are visible in changes of the mean and covariance matrix. 
@@ -571,9 +576,8 @@ are dual to the basis of the stationary subspace. If we could identify the stati
 find the non-stationary sources by projecting orthogonal to it.
 
 \paragraph{I would like to use the Toolbox from Python/Octave/or any other environment, is this possible?} 
-The SSA Toolbox can be used from any environment that can invoke Java code. If you have found a way
-to use the SSA Java libraries from a new programming language or environment, we would very much like
-to hear from you.
+The SSA Toolbox can be used directly from any environment that can invoke Java code, such as 
+e.g.~Matlab. Based on the command-line interface, future releases will include wrappers for R and Python. 
 
 \paragraph{Can I get a $p$-value for my result?} So far there is no method to establish the 
 significance of the SSA solution. However, one could use a test for stationarity on the
@@ -774,6 +778,7 @@ information on the official SSA homepage:
 \begin{appendices}
 
 \section{Measuring the Error of SSA}
+\label{app:error_measure}
 
 In order to assess the accuracy of the solution found by SSA when the true mixing matrix $A$ 
 is known, we need to adopt an error measure. Since only the non-stationary subspace (spanned 
