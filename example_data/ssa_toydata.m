@@ -50,9 +50,9 @@ function [ X, A, cov_epo, mean_epo ] = ssa_toydata(n, ds, dn, varargin)
 %  over all epochs i, multiplied by mean_nonstat. 
 %
 %example 
-%  [ X, A ] = ssa_toydata(10, 2, 2);  % generate data 
+%  [ X, A ] = ssa_toydata(10, 2, 2); % generate data 
 %  [ Ps, Pn, As, An ] = ssa(X, 2);   % apply SSA 
-%  subspace(An, A(:,[3 4]))*180/pi   % measure the error in degrees
+%  subspace_error(An, A(:,[3 4]))    % measure the error
 % 
 %author 
 %  paul.buenau@tu-berlin.de
