@@ -177,31 +177,5 @@ public class SSAParameters {
             propertyChangeSupport.firePropertyChange("useCovariance", oldval, useCovariance);
         }
     }
-
-    /** Saves, whether to do NSA instead of SSA */
-    protected boolean NSA = false;
-
-    /**
-     * Returns whether "Non-Stationary Subspace Analysis" (NSA) is done instead of SSA.
-     * (This is never the case at the moment.)
-     */
-    public boolean isNSA()
-    {
-        return NSA;
-    }
-
-    /**
-     * Sets whether to do "Non-Stationary Subspace Analysis" (NSA).
-     * (Not in use at the moment.)
-     */
-    public void setNSA(boolean NSA)
-    {
-        if(NSA != this.NSA)
-        {
-            boolean oldval = this.NSA;
-            this.NSA = NSA;
-            propertyChangeSupport.firePropertyChange("NSA", oldval, NSA);
-        }
-    }
 }
 

@@ -97,18 +97,29 @@ public class SSA
      *
      * @param par class containing the SSA parameters
      * @param data class containing the data
+     * @param optNSources optimize the n-sources instead of the s-sources
+     * @param init initialization rotation matrix for the gradient descent *in whitening coordinates*! (Should be normally null!)
      * @return Results object
      */
-    public Results optimizeOnce(SSAParameters par, Data data)
+    public Results optimizeOnce(SSAParameters par, Data data, boolean optNSources, SSAMatrix init)
     {
         SSAMatrix S[] = new SSAMatrix[data.S.length];
         SSAMatrix mu[] = new SSAMatrix[data.mu.length];
 
         int n = data.S[0].getRows();
-        int d = par.isNSA() ? (n - par.getNumberOfStationarySources()) : par.getNumberOfStationarySources();
+        int d = optNSources ? (n - par.getNumberOfStationarySources()) : par.getNumberOfStationarySources();
 
-        // start with whitening + random rotation
-        SSAMatrix B = MathFunctions.randRot(n).mmuli(data.W);
+        SSAMatrix B;
+        if(init == null)
+        {
+            // start with whitening + random rotation
+            B = MathFunctions.randRot(n).mmuli(data.W);
+        }
+        else
+        {
+            // start with given initialization matrix
+            B = init;
+        }
 
         // apply initialization matrix to covariance matrices and means
         for(int i = 0; i < data.S.length; i++)
@@ -132,8 +143,8 @@ public class SSA
             loss = ret[0].get(0, 0);
             grad = ret[1];
 
-            // do NSA instead of SSA?
-            if(par.isNSA())
+            // optimize n-sources?
+            if(optNSources)
             {
                 // simply change sign of loss and gradient
                 loss = -loss;
@@ -166,7 +177,7 @@ public class SSA
                                         S, mu, M, false,
                                         par.isUseMean());
                 lossNew = ret[0].get(0, 0);
-                if(par.isNSA())
+                if(optNSources)
                 {
                     lossNew = -lossNew;
                 }
@@ -212,8 +223,8 @@ public class SSA
         // basis for non-stationary subspace
         SSAMatrix Bn = Mix.getRange(0, n, d, n);
 
-        // do NSA instead of SSA?
-        if(par.isNSA())
+        // do optimization of n-sources instead of s-sources?
+        if(optNSources)
         {
             // exchange stationary <-> non-stationary
             SSAMatrix buf = Ps;
@@ -261,16 +272,19 @@ public class SSA
 
         if(par.isUseCovariance())
         {
-            // optimization by gradient decent
-            Results opt = new Results(null, null, null, null, Double.POSITIVE_INFINITY, false, 0, 0, 0, false, false, 0, null, null);
+            // optimization by gradient descent
 
             stopped = false;
+
+            // optimization of the s-sources
+            Results optSSrc = new Results(null, null, null, null, Double.POSITIVE_INFINITY, false, 0, 0, 0, false, false, 0, null, null);
+            appendToLog("Optimizing the stationarity of the s-sources...");
             for(int i = 0; i < par.getNumberOfRestarts(); i++)
             {
-                Results buf = optimizeOnce(par, data);
-                if(buf.loss < opt.loss)
+                Results buf = optimizeOnce(par, data, false, null);
+                if(buf.loss < optSSrc.loss)
                 {
-                    opt = buf;
+                    optSSrc = buf;
                 }
                 if(logger != null)
                 {
@@ -279,11 +293,41 @@ public class SSA
                 }
                 if(stopped)
                 {
-                    break;
+                    return optSSrc;
                 }
             }
 
-            return opt;
+            // optimization of the n-sources
+            Results optNSrc = new Results(null, null, null, null, Double.POSITIVE_INFINITY, false, 0, 0, 0, false, false, 0, null, null);
+            appendToLog("Optimizing the non-stationarity of the n-sources...");
+            for(int i = 0; i < par.getNumberOfRestarts(); i++)
+            {
+                Results buf;
+                if(i == 0)
+                {
+                    buf = optimizeOnce(par, data, true, SSAMatrix.concatVertically(optSSrc.Pn, optSSrc.Ps));
+                }
+                else
+                {
+                    buf = optimizeOnce(par, data, true, null);
+                }
+
+                if(buf.loss < optNSrc.loss)
+                {
+                    optNSrc = buf;
+                }
+                if(logger != null)
+                {
+                    // show progress
+                    appendToLog("Repetition " + (i+1) + ": iterations=" + buf.iterations + ", min. objective function value=" + buf.loss);
+                }
+                if(stopped)
+                {
+                    return optNSrc;
+                }
+            }
+
+            return optNSrc;
         }
         else if(par.isUseMean()) {
             // use only mean; SSA as an eigenvalue problem
@@ -342,7 +386,7 @@ public class SSA
     /**
      * Computes the objective function (and optionally the gradient)
      *
-     * @param d number of stationary sources/non-stationary sources (depends on whether SSA or NSA is done)
+     * @param d number of stationary sources
      * @param S array with covariance matrices over all epochs
      * @param mu array with means over all epochs
      * @param M antisymmetric matrix such that the current rotation matrix is exp(M) (if M == null a zero matrix is assumed)
@@ -352,7 +396,7 @@ public class SSA
      * @return array of matrices: 1x1 matrix with the loss at exp(M) at index 0 and optionally
      *         the gradient at exp(M) w.r.t. M at index 1 (only if calcGradient was set to true) and exp(M) at index 2
      */
-    public SSAMatrix[] objectiveFunction(    int d,
+    public SSAMatrix[] objectiveFunction(       int d,
                                                 SSAMatrix S[],
                                                 SSAMatrix mu[],
                                                 SSAMatrix M,
