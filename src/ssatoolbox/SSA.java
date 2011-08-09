@@ -323,11 +323,32 @@ public class SSA
                 }
                 if(stopped)
                 {
-                    return optNSrc;
+                    break;
                 }
             }
 
-            return optNSrc;
+            // now put results of both optimizations together
+            int n = data.S[0].getRows();
+            SSAMatrix Mix = SSAMatrix.solve(SSAMatrix.concatVertically(optSSrc.Ps, optNSrc.Pn), SSAMatrix.eye(n));
+            // basis for stationary subspace
+            SSAMatrix Bs = Mix.getRange(0, n, 0, optSSrc.d);
+            // basis for non-stationary subspace
+            SSAMatrix Bn = Mix.getRange(0, n, optSSrc.d, n);
+            Results opt = new Results(optSSrc.Ps,
+                                      optNSrc.Pn,
+                                      Bs,
+                                      Bn,
+                                      optSSrc.loss,
+                                      optSSrc.converged,
+                                      optSSrc.iterations,
+                                      optSSrc.d,
+                                      optSSrc.reps,
+                                      optSSrc.useMean,
+                                      optSSrc.useCovariance,
+                                      optSSrc.equalEpochs,
+                                      optSSrc.inputFile,
+                                      optSSrc.epochFile);
+             return opt;
         }
         else if(par.isUseMean()) {
             // use only mean; SSA as an eigenvalue problem
