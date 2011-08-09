@@ -988,6 +988,12 @@ public class Main {
         mlsparam.setField("eq_epochs", new MLDouble("eq_epochs", new double[][]{{results.equalEpochs}}));
 
         mls.setField("parameters", mlsparam);
+        
+        mls.setField("loss_s", new MLDouble("loss_s", new double[][]{{results.loss_s}}));
+        mls.setField("loss_n", new MLDouble("loss_n", new double[][]{{results.loss_n}}));
+        mls.setField("iterations_s", new MLDouble("iterations_s", new double[][]{{results.iterations_s}}));
+        mls.setField("iterations_n", new MLDouble("iterations_n", new double[][]{{results.iterations_n}}));
+
         mls.setField("description", new MLChar("description", "SSA results (" + new Date() + ")"));
         
         list.add(mls);

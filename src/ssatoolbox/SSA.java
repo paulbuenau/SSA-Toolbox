@@ -236,6 +236,7 @@ public class SSA
         }
 
         //return new SSAMatrix[]{Ps, Pn, Mix, new SSAMatrix(new double[]{matLoss}), new SSAMatrix(new double[]{converged})};
+
         return new Results(Ps, Pn, Bs, Bn, Math.min(loss, lossNew), converged, i,
                           par.getNumberOfStationarySources(),
                           par.getNumberOfRestarts(),
@@ -338,9 +339,9 @@ public class SSA
                                       optNSrc.Pn,
                                       Bs,
                                       Bn,
-                                      optSSrc.loss,
+                                      0,
                                       optSSrc.converged,
-                                      optSSrc.iterations,
+                                      0,
                                       optSSrc.d,
                                       optSSrc.reps,
                                       optSSrc.useMean,
@@ -348,6 +349,10 @@ public class SSA
                                       optSSrc.equalEpochs,
                                       optSSrc.inputFile,
                                       optSSrc.epochFile);
+             opt.loss_s = optSSrc.loss;
+             opt.loss_n = optNSrc.loss;
+             opt.iterations_s = optSSrc.iterations;
+             opt.iterations_n = optNSrc.iterations;
              return opt;
         }
         else if(par.isUseMean()) {

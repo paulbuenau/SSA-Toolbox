@@ -53,8 +53,20 @@ public class Results {
     /** Loss of the found solution */
     public double loss;
 
+    /** Loss of the found solution for the s-source optimization */
+    public double loss_s = 0;
+
+    /** Loff of the found solution for the n-source optimization */
+    public double loss_n = 0;
+
     /** Number of iterations needed */
     public int iterations;
+
+    /** Number of iterations needed for the s-source optimization */
+    public int iterations_s;
+
+    /** Number of iterations needed for the n-source optimization */
+    public int iterations_n;
 
     /** True, if the SSA algorithm converged */
     public boolean converged;

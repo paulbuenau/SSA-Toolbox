@@ -1,4 +1,4 @@
-function [Ps, Pn, As, An, loss, iterations, ssa_results] = ssa(X, d, varargin)
+function [Ps, Pn, As, An, ssa_results] = ssa(X, d, varargin)
 %SSA Stationary Subspace Analysis
 %usage 
 %  [Ps, Pn, As, An, loss, iterations, ssa_results] 
@@ -28,12 +28,10 @@ function [Ps, Pn, As, An, loss, iterations, ssa_results] = ssa(X, d, varargin)
 %                     
 %
 %output
-%  Ps         Projection matrix to stationary subspace (d x D)
-%  Pn         Projection matrix to non-stationary subspace ((D-d) x D)
-%  As         Basis of stationary subspace (D x d)
-%  An         Basis of non-stationary subspace (D x (D-d))
-%  loss           Objective function value
-%  iterations     Number of iterations until convergence
+%  Ps             Projection matrix to stationary subspace (d x D)
+%  Pn             Projection matrix to non-stationary subspace ((D-d) x D)
+%  As             Basis of stationary subspace (D x d)
+%  An             Basis of non-stationary subspace (D x (D-d))
 %  ssa_results    SSA results structure as described in the manual
 %
 %author
@@ -202,8 +200,6 @@ Ps = ssaresult.Ps.getArray;
 Pn = ssaresult.Pn.getArray;
 As = ssaresult.Bs.getArray;
 An = ssaresult.Bn.getArray;
-loss = ssaresult.loss;
-iterations = ssaresult.iterations;
 
 % ssa_results structure as described in the manual
 ssa_results = struct;
@@ -231,6 +227,11 @@ else
     parameters.eq_epochs = opt.equal_epochs;
 end
 ssa_results.parameters = parameters;
+ssa_results.loss_s = ssaresult.loss_s;
+ssa_results.loss_n = ssaresult.loss_n;
+ssa_results.iterations_s = ssaresult.iterations_s;
+ssa_results.iterations_n = ssaresult.iterations_n;
+
 ssa_results.description = ['SSA results (' datestr(now) ')'];
 
 function printJavaHeapSpaceError
