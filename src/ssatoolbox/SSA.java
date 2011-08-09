@@ -138,10 +138,11 @@ public class SSA
         {
             // get current objective function value and gradient
             SSAMatrix ret[] = objectiveFunction( d,
-                                                    S, mu, null, true,
+                                                    S, mu, data.epochSizes, null, true,
                                                     par.isUseMean());
-            loss = ret[0].get(0, 0);
-            grad = ret[1];
+            loss = normalizeObjectiveFunction(ret[0].get(0, 0), S.length, d);
+            //loss = ret[0].get(0, 0);
+            grad = normalizeGradient(ret[1], ret[0].get(0, 0), S.length, d);
 
             // optimize n-sources?
             if(optNSources)
@@ -174,9 +175,10 @@ public class SSA
             {
                 SSAMatrix M = search.mul(t);
                 ret = objectiveFunction(d,
-                                        S, mu, M, false,
+                                        S, mu, data.epochSizes, M, false,
                                         par.isUseMean());
-                lossNew = ret[0].get(0, 0);
+                lossNew = normalizeObjectiveFunction(ret[0].get(0, 0), S.length, d);
+                //lossNew = ret[0].get(0, 0);
                 if(optNSources)
                 {
                     lossNew = -lossNew;
@@ -425,11 +427,13 @@ public class SSA
     public SSAMatrix[] objectiveFunction(       int d,
                                                 SSAMatrix S[],
                                                 SSAMatrix mu[],
+                                                int epochSizes[],
                                                 SSAMatrix M,
                                                 boolean calcGradient,
                                                 boolean useMean)
     {
-        double loss = 0.0;
+        //double loss = 0.0;
+        double loss = (double)(S.length * d);
         SSAMatrix gradient = null;
 
         // rotated covariance matrices and means
@@ -472,19 +476,23 @@ public class SSA
             Snew[i] = RSRtcomplete;
             munew[i] = Rmucomplete;
 
-            loss += -Math.log(MathFunctions.det(RSRt));
+            double add = -Math.log(MathFunctions.det(RSRt));
+            //loss += -Math.log(MathFunctions.det(RSRt));
             if(useMean)
             {
-                loss +=  Rmu.mul(Rmu).sum();
+                //loss += Rmu.mul(Rmu).sum();
+                add += Rmu.mul(Rmu).sum();
             }
+            loss += ((double)epochSizes[i]) * add;
 
             // calculate gradient if needed
             if(calcGradient)
             {
-                gradient.subi(MathFunctions.inv(RSRt).mmul(RS));
+                //gradient.subi(MathFunctions.inv(RSRt).mmul(RS));
+                gradient.subi(MathFunctions.inv(RSRt).mmul(RS).muli((double)epochSizes[i]));
                 if(useMean)
                 {
-                    gradient.addi(Rmu.mmul(mu[i].transpose()));
+                    gradient.addi(Rmu.mmul(mu[i].transpose()).muli((double)epochSizes[i]));
                 }
             }
         }
@@ -503,6 +511,33 @@ public class SSA
             // return loss and gradient
             return new SSAMatrix[]{new SSAMatrix(new double[][]{{loss}}), gradient, Rcomplete};
         }
+    }
+
+    /**
+     * Normalizes the objective function value.
+     *
+     * @param loss objective function value as calculated by objectiveFunction()
+     * @param numberOfEpochs number of epochs
+     * @param d number of stationary sources
+     */
+    public double normalizeObjectiveFunction(double loss, int numberOfEpochs, int d)
+    {
+        int k = (numberOfEpochs*d*(d + 3)) / 2;
+        return Math.sqrt(2.0 * loss) - Math.sqrt(2.0*((double)k) - 1.0);
+    }
+
+    /**
+     * Normalizes the gradient.
+     *
+     * @param grad gradient as calculated by objectiveFunction()
+     * @param loss objective function value as calculated by objectiveFunction()
+     * @param numberOfEpochs number of epochs
+     * @param d number of stationary sources
+     */
+    public SSAMatrix normalizeGradient(SSAMatrix grad, double loss, int numberOfEpochs, int d)
+    {
+        int k = (numberOfEpochs*d*(d + 3)) / 2;
+        return grad.div(Math.sqrt(2.0*loss));
     }
 
     /**

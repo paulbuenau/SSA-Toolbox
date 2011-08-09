@@ -90,6 +90,9 @@ public class Data {
     /** Array of means */
     protected SSAMatrix mu[];
 
+    /** Number of data points in the epochs */
+    protected int epochSizes[];
+
     /** Whitening matrix */
     protected SSAMatrix W;
 
@@ -452,6 +455,7 @@ public class Data {
         {
             SSAMatrix S[] = new SSAMatrix[epochs];
             SSAMatrix mu[] = new SSAMatrix[epochs];
+            int epochSizes[] = new int[epochs];
             int epochSize = X.getColumns() / epochs;
 
             for(int i = 0; i < epochs; i++)
@@ -459,9 +463,10 @@ public class Data {
                 SSAMatrix epoch = X.getRange(0, X.getRows(), i*epochSize, (i+1)*epochSize);
                 mu[i] = MathFunctions.mean(epoch);
                 S[i] = MathFunctions.cov(epoch, mu[i]);
+                epochSizes[i] = epochSize;
             }
 
-            initializeSSA(S, mu);
+            initializeSSA(S, mu, epochSizes);
         }
     }
 
@@ -483,8 +488,9 @@ public class Data {
             }
         }
 
-        mu = new SSAMatrix[map.size()];
-        S = new SSAMatrix[map.size()];
+        SSAMatrix mu[] = new SSAMatrix[map.size()];
+        SSAMatrix S[] = new SSAMatrix[map.size()];
+        int epochSizes[] = new int[map.size()];
 
         Iterator<LinkedList<Integer>> it = map.values().iterator();
         int i = 0;
@@ -494,10 +500,11 @@ public class Data {
             SSAMatrix samples = X.getColumns(toIntArray(ep));
             mu[i] = MathFunctions.mean(samples);
             S[i] = MathFunctions.cov(samples, mu[i]);
+            epochSizes[i] = samples.getColumns();
             i++;
         }
 
-        initializeSSA(S, mu);
+        initializeSSA(S, mu, epochSizes);
     }
 
     private int[] toIntArray(LinkedList<Integer> l)
@@ -517,8 +524,9 @@ public class Data {
      *
      * @param S array of covariance matrices over all epochs
      * @param mu array of means over all epochs
+     * @param epochSizes number of data points in the epochs
      */
-    private void initializeSSA(SSAMatrix S[], SSAMatrix mu[])
+    private void initializeSSA(SSAMatrix S[], SSAMatrix mu[], int epochSizes[])
     {
         // check whether regularization is necessary
         double smallestEig = Double.POSITIVE_INFINITY;
@@ -542,19 +550,23 @@ public class Data {
         Sall = SSAMatrix.zeros(S[0].getRows(), S[0].getColumns());
         //muall = SSAMatrix.zeros(1, mu[0].getRows());
         muall = SSAMatrix.zeros(mu[0].getRows(), 1);
+        int M = 0; // total number of samples in the epochs
         for(int i = 0; i < S.length; i++)
         {
-            
-            Sall.addi(S[i]);
+            //Sall.addi(S[i]);
+            Sall.addi(S[i].mul((double)epochSizes[i] - 1.0));
             muall.addi(mu[i]);
+            M += epochSizes[i];
         }
-        Sall.divi(S.length);
-        muall.divi(mu.length);
+        //Sall.divi(S.length);
+        Sall.divi((double)M);
+        muall.divi((double)mu.length);
         // calculate whitening matrix
         W = MathFunctions.whitening(Sall);
 
         this.S = S;
         this.mu = mu;
+        this.epochSizes = epochSizes;
     }
 
     /**
