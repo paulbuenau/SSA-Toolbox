@@ -64,15 +64,15 @@
 This is the manual for the SSA Toolbox, an efficient open-source implementation of the 
 Stationary Subspace Analysis~\cite{PRL:SSA:2009} algorithm. Stationary Subspace Analysis (SSA)
 is a general purpose algorithm for the explorative analysis of non-stationary data, i.e.~data
-whose statistical properties change over time. SSA can helps to detect, characterize and 
+whose statistical properties change over time. SSA can help to detect, characterize and 
 visualize temporal changes in complex high-dimensional data sets.
 
 The SSA Toolbox is written entirely in Java and is thus platform-independent. It has been tested
 successfuly under Windows, Linux and MacOS. The SSA Toolbox comes with a state-of-the-art native 
 Linear Algebra library (BLAS / LAPACK) that is invoked if the operating system supports 
 it. If not, a purely Java-based library, COLT, will be used that ensures maximum platform-independence. 
-Data and results can imported and exported as comma-separated values (CSV) files, the fail-safe 
-format of last resort, and through Matlab's proprietory mat files, a de-facto standard in the 
+Data and results can be imported and exported as comma-separated values \texttt{.csv} files, the fail-safe 
+format of last resort, and through Matlab's proprietary \texttt{.mat} files, a de-facto standard in the 
 Machine Learning community.
 
 The source code of the SSA Toolbox is fully documented (using the JavaDoc standard) and accompanied
@@ -83,7 +83,9 @@ including a high-level overview of the class structure.
  
 There are three ways to use the SSA Toolbox
 \begin{enumerate}
-	\item As a standalone application with a graphical user interface. 
+	\item As a standalone application with a graphical user interface.
+
+	\item As a standalone application from the command line.
 	 
 	\item From within Matlab, using the wrapper script \texttt{ssa.m}. 
 
@@ -144,6 +146,33 @@ the Matlab command line to find out about the format of its input and output par
 Note that if you invoke the SSA Toolbox from within Matlab, it will use its
 internal JVM unless you specify an external JVM, e.g. using the environment
 variable \texttt{MATLAB\_JAVA} under Linux.
+
+You can also use the toolbox from the command line.
+In this case, you have to pass options after \texttt{java -jar ssa.jar}. The following table
+shows the available options:\\
+
+
+\begin{tabular}{cp{10cm}}
+ \textbf{Option} & \textbf{Meaning/Argument}\\
+ -i & Input file (in \texttt{.csv} or \texttt{.mat} format). Required.\\
+ -o & Output file or directory. If it ends with \texttt{.mat} a Matlab file will be created,
+      otherwise \texttt{.csv} files are created in the specified directory. Required.\\
+ -d & Number of stationary sources. Required.\\
+ -r & Number of restarts. Optional. Default: 5\\
+ -n & Number of equally-sized epochs. Optional. If this option is not specified, and no custom
+      epochization has been given, a heuristic is used to determine the number of epochs.\\
+ -e & Epochization file in \texttt{.csv} format. Optional.\\
+ -m & Use the means during optimization. Has to be 0 or 1. Optional. Default: 1\\
+ -c & Use the covariances during optimization. Has to be 0 or 1. Optional. Default: 1\\
+ -s & Random seed. Optional.\\
+ -j & Use jBlas instead of Colt. Has to be 0 or 1. Optional. Default: 0\\
+\end{tabular}
+\\
+
+For example, the following line would run SSA on the example data set:\\
+
+\texttt{java -jar ssa.jar -i example\_data/example\_data.mat -d 2 -o results.mat}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Stationary Subspace Analysis in Brief}
@@ -416,14 +445,18 @@ See Figure~\ref{fig:ex_matlab_res} for an example.
 \begin{verbatim}
 >> ssa_results = 
 
-         Ps: [3x6 double]
-         Pn: [3x6 double]
-         As: [6x3 double]
-         An: [6x3 double]
-      s_src: [3x10000 double]
-      n_src: [3x10000 double]
-     parameters: [1x1 struct]
-    description: 'SSA results (Thu Jun 10 12:58:23 CEST 2010)'
+          Ps: [3x6 double]
+          Pn: [3x6 double]
+          As: [6x3 double]
+          An: [6x3 double]
+       s_src: [3x10000 double]
+       n_src: [3x10000 double]
+  parameters: [1x1 struct]
+      loss_s: 0.0816
+      loss_n: -3.5174
+iterations_s: 13
+iterations_n: 10
+ description: 'SSA results (Thu Jun 10 12:58:23 CEST 2010)'
 \end{verbatim}
 \end{boxedminipage}
 \caption{
