@@ -322,7 +322,7 @@ public class SSA
                 if(logger != null)
                 {
                     // show progress
-                    appendToLog("Repetition " + (i+1) + ": iterations=" + buf.iterations + ", min. objective function value=" + buf.loss);
+                    appendToLog("Repetition " + (i+1) + ": iterations=" + buf.iterations + ", max. objective function value=" + -buf.loss);
                 }
                 if(stopped)
                 {
@@ -352,7 +352,7 @@ public class SSA
                                       optSSrc.inputFile,
                                       optSSrc.epochFile);
              opt.loss_s = optSSrc.loss;
-             opt.loss_n = optNSrc.loss;
+             opt.loss_n = -optNSrc.loss;
              opt.iterations_s = optSSrc.iterations;
              opt.iterations_n = optNSrc.iterations;
              return opt;

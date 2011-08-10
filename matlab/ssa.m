@@ -1,8 +1,7 @@
 function [Ps, Pn, As, An, ssa_results] = ssa(X, d, varargin)
 %SSA Stationary Subspace Analysis
 %usage 
-%  [Ps, Pn, As, An, loss, iterations, ssa_results] 
-%   = ssa(X, d, <options>)
+%  [Ps, Pn, As, An, ssa_results] = ssa(X, d, <options>)
 %
 %input
 %  <no input>     Show version information
