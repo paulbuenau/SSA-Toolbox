@@ -555,12 +555,15 @@ public class Data {
         {
             //Sall.addi(S[i]);
             Sall.addi(S[i].mul((double)epochSizes[i] - 1.0));
-            muall.addi(mu[i]);
+            //muall.addi(mu[i]);
+            muall.addi(mu[i].mul((double)epochSizes[i]));
             M += epochSizes[i];
         }
         //Sall.divi(S.length);
         Sall.divi((double)M);
-        muall.divi((double)mu.length);
+        //muall.divi((double)mu.length);
+        muall.divi((double)M);
+
         // calculate whitening matrix
         W = MathFunctions.whitening(Sall);
 
