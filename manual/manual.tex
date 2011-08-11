@@ -851,8 +851,13 @@ The likelihood ratio test statistic $\Lambda(\mathcal{X})$ is,
 %  }
 \end{align}
 where $L_{H_0}(\mathcal{X})$ is the likelihood of the data set under the simpler null model and 
-$L_A(\mathcal{X})$ is the likelihood of the data set under the more complex alternative model. Under the 
-null hypothesis $H_0$, this test statistic is approximately $\chi^2$ distributed with 
+$L_A(\mathcal{X})$ is the likelihood of the data set under the more complex alternative model. In order
+to find the estimated stationary sources $\hat{s}^\s(t)$, the SSA algorithm minimizes the test 
+statistic $\Lambda(\mathcal{X})$, i.e.~it maximizes the $p$-value to not reject the null 
+hypothesis of stationarity. Conversely, to estimate the most non-stationary sources  
+$\hat{s}^\n(t)$, we maximize $\Lambda(\mathcal{X})$ and thereby minimize the $p$-value.
+
+Under the null hypothesis $H_0$, the test statistic $\Lambda(\mathcal{X})$ is approximately $\chi^2$ distributed with 
 $k = \frac{1}{2} N d_n (d_n+3)$ degrees of freedom. It can be shown that 
 $\sqrt{2 \Lambda(\mathcal{X})}$ converges (faster) to a Gaussian distribution 
 with mean $\mu_0 = \sqrt{2 k - 1}$ and unit standard deviation $\sigma_0 = 1$. We therefore
@@ -878,23 +883,23 @@ multivariate Gaussian distribution. We have centered and whitened the data set s
 \end{align*}
 The log-likelihood under $H_0$ is given by, 
 \begin{align*}
-	\log L_{H_0}(\mathcal{X}) & = \sum_{i=1}^n \sum_{x \in \mathcal{T}_i} \log p_{\mathcal{N}}(x ; 0, I) \\
- & = -\frac{1}{2} \sum_{i=1}^n N_i d \log (2\pi) + \sum_{x \in \mathcal{T}_i} x^\top x \\
- &  = -\frac{1}{2} \sum_{i=1}^n N_i d \log (2\pi) + \trace \left[  \left( \sum_{x \in \mathcal{T}_i} x^\top x - \emu_i \emu^\top_i  \right)+ N_i \emu_i \emu^\top_i \right] \\
- & =  -\frac{1}{2} \sum_{i=1}^n N_i d \log (2\pi) + N_i \emu^\top_i \emu_i  + \trace \left[ (N_i-1) \esi_i \right] \\
- & =  -\frac{1}{2} \sum_{i=1}^n \left( N_i d \log (2\pi) + N_i \emu^\top_i \emu_i \right) + \left(\sum_{i=1}^n (N_i - 1)\right)  \trace\left[ I \right] \\
- & =  -\frac{1}{2} \sum_{i=1}^n  N_i d \log (2\pi) + N_i \emu^\top_i \emu_i + (N_i - 1) d . 
+	\log L_{H_0}(\mathcal{X}) & = \sum_{i=1}^N \sum_{x \in \mathcal{T}_i} \log p_{\mathcal{N}}(x ; 0, I) \\
+ & = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi) + \sum_{x \in \mathcal{T}_i} x^\top x \\
+ &  = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi) + \trace \left[  \left( \sum_{x \in \mathcal{T}_i} x^\top x - \emu_i \emu^\top_i  \right)+ N_i \emu_i \emu^\top_i \right] \\
+ & =  -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi) + N_i \emu^\top_i \emu_i  + \trace \left[ (N_i-1) \esi_i \right] \\
+ & =  -\frac{1}{2} \sum_{i=1}^N \left( N_i d \log (2\pi) + N_i \emu^\top_i \emu_i \right) + \left(\sum_{i=1}^n (N_i - 1)\right)  \trace\left[ I \right] \\
+ & =  -\frac{1}{2} \sum_{i=1}^N  N_i d \log (2\pi) + N_i \emu^\top_i \emu_i + (N_i - 1) d . 
 \end{align*}
 The log-likelihood under $H_A$ is given by, 
 \begin{align*} 
-	\log L_{H_A}(\mathcal{X}) & = \sum_{i=1}^n \sum_{x \in \mathcal{T}_i} \log p_{\mathcal{N}}(x ; \emu_i, \esi_i) \\
-& = -\frac{1}{2} \sum_{i=1}^n N_i d \log (2\pi)  + N_i \log \det \esi_i + \sum_{x \in \mathcal{T}_i} (x-\emu_i)^\top \esi_i^{-1} (x-\emu_i) \\
-& = -\frac{1}{2} \sum_{i=1}^n N_i d \log (2\pi)  + N_i \log \det \esi_i + 
+	\log L_{H_A}(\mathcal{X}) & = \sum_{i=1}^N \sum_{x \in \mathcal{T}_i} \log p_{\mathcal{N}}(x ; \emu_i, \esi_i) \\
+& = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi)  + N_i \log \det \esi_i + \sum_{x \in \mathcal{T}_i} (x-\emu_i)^\top \esi_i^{-1} (x-\emu_i) \\
+& = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi)  + N_i \log \det \esi_i + 
 		\trace\left[ \sum_{x \in \mathcal{T}_i} (x-\emu_i) (x-\emu_i)^\top \esi_i^{-1} \right] \\
-& = -\frac{1}{2} \sum_{i=1}^n N_i d \log (2\pi) + N_i \log \det \esi_i - N_i \trace \left[ \emu_i \emu^\top_i \right]
+& = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi) + N_i \log \det \esi_i - N_i \trace \left[ \emu_i \emu^\top_i \right]
 		+ \trace\left[ \left(\sum_{x \in \mathcal{T}_i} x x^\top\right)  \esi_i^{-1}  \right] \\
-& = -\frac{1}{2} \sum_{i=1}^n N_i d \log (2\pi) + N_i \log \det \esi_i + \trace\left[  (N_i-1) \esi_i \esi_i^{-1} \right] \\
-& = -\frac{1}{2} \sum_{i=1}^n N_i d \log (2\pi) + N_i \log \det \esi_i + (N_i-1) d .
+& = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi) + N_i \log \det \esi_i + \trace\left[  (N_i-1) \esi_i \esi_i^{-1} \right] \\
+& = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi) + N_i \log \det \esi_i + (N_i-1) d .
 \end{align*}
 Thus the test statistic, and the SSA objective function, is given by 
 \begin{align*}
