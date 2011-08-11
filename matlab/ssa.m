@@ -73,16 +73,18 @@ basedir = fileparts(mfilename('fullpath'));
 javaclasspath({[basedir filesep 'ssa.jar']});
 
 % instantiate classes
-ssadata = ssatoolbox.Data;
-ssaparam = ssatoolbox.SSAParameters;
-ssaopt = ssatoolbox.SSA;
+%ssadata = ssatoolbox.Data;
+%ssaparam = ssatoolbox.SSAParameters;
+%ssaopt = ssatoolbox.SSA;
 cl = ssatoolbox.ConsoleLogger;
-ssaopt.setLogger(cl);
-ssadata.setLogger(cl);
+%ssaopt.setLogger(cl);
+%ssadata.setLogger(cl);
+ssamain = ssatoolbox.Main(false, cl);
+ssamain.toolboxMode = ssatoolbox.Main.TOOLBOX_MODE_MATLAB;
 
 % no parameter?
 if ~exist('X', 'var')
-    version = ssadata.getClass.getPackage.getImplementationVersion;
+    version = ssamain.data.getClass.getPackage.getImplementationVersion;
     fprintf(['SSA Toolbox version ' char(version) '\n']);
     fprintf('This software is distributed under the BSD license. See COPYING for details.\n');
     return;
@@ -102,11 +104,6 @@ opt = set_defaults(opt, ...
 						'matrix_library', 'colt', ...
 						'random_seed', 0 ...
 						 );
-% if ~exist('reps', 'var') reps = 5; end
-% if ~exist('equal_epochs', 'var') equal_epochs = 0; end
-% if ~exist('use_mean', 'var') use_mean = true; end
-% if ~exist('use_covariance', 'var') use_covariance = true; end
-% if ~exist('matrix_library', 'var') matrix_library = 'colt'; end
 
 if strcmp(opt.matrix_library, 'colt')
     fprintf('Using Colt library...\n');
@@ -120,17 +117,6 @@ else
     return;
 end
 
-% set random seed
-if opt.random_seed ~= 0
-    ssatoolbox.SSAMatrix.setRandomSeed(opt.random_seed);
-end
-
-% set SSA parameters
-ssaparam.setNumberOfStationarySources(d);
-ssaparam.setNumberOfRestarts(opt.reps);
-ssaparam.setUseMean(opt.use_mean);
-ssaparam.setUseCovariance(opt.use_covariance);
-
 % detect whether to use equal or custom epochization
 try
  if iscell(X)
@@ -138,7 +124,7 @@ try
     fprintf('Custom epochization found...\n');
     Xwoeps = [X{:}];
     Xdm = ssatoolbox.SSAMatrix(Xwoeps);
-    ssadata.setTimeSeries(Xdm, []);
+    ssamain.data.setTimeSeries(Xdm, []);
     epdef = zeros(1, size(X, 2));
     epochs = length(X);
     min_ep_size = Inf;
@@ -152,19 +138,19 @@ try
         end
     end
     fakefile = java.io.File('');
-    ssadata.setCustomEpochDefinition(epdef, epochs, min_ep_size, fakefile);
-    ssadata.setEpochType(ssadata.EPOCHS_CUSTOM);
+    ssamain.data.setCustomEpochDefinition(epdef, epochs, min_ep_size, fakefile);
+    ssamain.data.setEpochType(ssamain.data.EPOCHS_CUSTOM);
  else
     % epochize equally
     fprintf('No custom epochization found. Using equally sized epochs.\n');
     Xdm = ssatoolbox.SSAMatrix(X);
-    ssadata.setTimeSeries(Xdm, []);
+    ssamain.data.setTimeSeries(Xdm, []);
     if opt.equal_epochs == 0
         % use heuristic
-        ssadata.setEpochType(ssadata.EPOCHS_EQUALLY_HEURISTIC);
+        ssamain.data.setEpochType(ssamain.data.EPOCHS_EQUALLY_HEURISTIC);
     else
-        ssadata.setNumberOfEqualSizeEpochs(opt.equal_epochs);
-        ssadata.setEpochType(ssadata.EPOCHS_EQUALLY);
+        ssamain.data.setNumberOfEqualSizeEpochs(opt.equal_epochs);
+        ssamain.data.setEpochType(ssamain.data.EPOCHS_EQUALLY);
     end
  end
 catch
@@ -177,13 +163,22 @@ catch
  return;
 end
 
-% ssadata.epochize; (epochize() is now automatically called from
-% optimize())
+% set random seed
+if opt.random_seed ~= 0
+    ssatoolbox.SSAMatrix.setRandomSeed(opt.random_seed);
+end
+
+% set SSA parameters
+ssamain.parameters.setNumberOfStationarySources(d);
+ssamain.parameters.setNumberOfRestarts(opt.reps);
+ssamain.parameters.setUseMean(opt.use_mean);
+ssamain.parameters.setUseCovariance(opt.use_covariance);
 
 % run optimization
-fprintf('Starting optimization...\n\n');
+%fprintf('Starting optimization...\n\n');
 try
-ssaresult = ssaopt.optimize(ssaparam, ssadata);
+%ssaresult = ssaopt.optimize(ssaparam, ssadata);
+ret = ssamain.runSSA(false);
 catch
  e = lasterror;
  if ~isempty(strfind(e.message, 'OutOfMemoryError'))
@@ -194,11 +189,15 @@ catch
  return;
 end
 
+if ret == false
+    return;
+end
+
 % return results
-Ps = ssaresult.Ps.getArray;
-Pn = ssaresult.Pn.getArray;
-As = ssaresult.Bs.getArray;
-An = ssaresult.Bn.getArray;
+Ps = ssamain.results.Ps.getArray;
+Pn = ssamain.results.Pn.getArray;
+As = ssamain.results.Bs.getArray;
+An = ssamain.results.Bn.getArray;
 
 % ssa_results structure as described in the manual
 ssa_results = struct;
@@ -226,10 +225,10 @@ else
     parameters.eq_epochs = opt.equal_epochs;
 end
 ssa_results.parameters = parameters;
-ssa_results.loss_s = ssaresult.loss_s;
-ssa_results.loss_n = ssaresult.loss_n;
-ssa_results.iterations_s = ssaresult.iterations_s;
-ssa_results.iterations_n = ssaresult.iterations_n;
+ssa_results.loss_s = ssamain.results.loss_s;
+ssa_results.loss_n = ssamain.results.loss_n;
+ssa_results.iterations_s = ssamain.results.iterations_s;
+ssa_results.iterations_n = ssamain.results.iterations_n;
 
 ssa_results.description = ['SSA results (' datestr(now) ')'];
 

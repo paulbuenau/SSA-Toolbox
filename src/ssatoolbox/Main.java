@@ -77,6 +77,12 @@ public class Main {
     /** Saves the current SSA version, which is loaded from the package descriptor */
     public String SSA_VERSION = null;
 
+    public static final int TOOLBOX_MODE_OTHER = 0;
+    public static final int TOOLBOX_MODE_STANDALONE = 1;
+    public static final int TOOLBOX_MODE_MATLAB = 2;
+
+    public int toolboxMode = TOOLBOX_MODE_OTHER;
+
     /**
      * Constructor for class Main.
      * 
@@ -132,6 +138,7 @@ public class Main {
             
         if(startGUI)
         {
+            toolboxMode = TOOLBOX_MODE_STANDALONE;
             UIManager.LookAndFeelInfo lif [] =  UIManager.getInstalledLookAndFeels();
 
             gui = new GUI(this, parameters, data);
@@ -174,6 +181,7 @@ public class Main {
         {
             ConsoleLogger cl = new ConsoleLogger();
             Main ssaMain = new Main(false, cl);
+            ssaMain.toolboxMode = TOOLBOX_MODE_STANDALONE;
 
             String inputFile = null;
             int d = -1;
@@ -355,7 +363,12 @@ public class Main {
                 ssaMain.appendToLog("Random seed set to " + randomSeed + ".");
             }
 
-            ssaMain.runSSA(false);
+            boolean ret = ssaMain.runSSA(false);
+            if(!ret)
+            {
+                // running was not successful
+                return;
+            }
 
             if(outputFile.toLowerCase().endsWith(".mat"))
             {
@@ -376,15 +389,15 @@ public class Main {
      *
      * @param sepThread set this to true to run SSA in a seperate thread.
      */
-    public void runSSA(boolean sepThread) {
+    public boolean runSSA(boolean sepThread) {
         if(parameters.getNumberOfStationarySources() == -1) {
             appendToLog("ERROR: Number of stationary sources not specified");
-            return;
+            return false;
         }
             
         if(data.getEpochType() == Data.EPOCHS_EQUALLY && data.getNumberOfEpochs() == -1) {
             appendToLog("ERROR: Epochs not specified");
-            return;
+            return false;
         }
 
         ssa.setLogger(logger);
@@ -432,8 +445,11 @@ public class Main {
             catch(java.lang.OutOfMemoryError e)
             {
                 printJavaHeapSpaceError();
+                return false;
             }
         }
+
+        return true;
     }
 
     /**
@@ -1046,13 +1062,27 @@ public class Main {
      */
     public void printJavaHeapSpaceError()
     {
-        appendToLog("");
-        appendToLog("ERROR: Not enough Java heap space.");
-        appendToLog("You can increase the Java heap space by running the SSA toolbox from the command line like this:");
-        appendToLog("");
-        appendToLog("  java -Xmx512M -jar ssa.jar");
-        appendToLog("");
-        appendToLog("This would result in a Java heap space of 512M. Of course you can replace \"512M\" with your desired size.");
+        if(toolboxMode == TOOLBOX_MODE_STANDALONE)
+        {
+            appendToLog("");
+            appendToLog("ERROR: Not enough Java heap space.");
+            appendToLog("You can increase the Java heap space by running the SSA toolbox from the command line like this:");
+            appendToLog("");
+            appendToLog("  java -Xmx512M -jar ssa.jar");
+            appendToLog("");
+            appendToLog("This would result in a Java heap space of 512M. Of course you can replace \"512M\" with your desired size.");
+        }
+        else if(toolboxMode == TOOLBOX_MODE_MATLAB)
+        {
+            appendToLog("");
+            appendToLog("ERROR: Not enough Java heap space.");
+            appendToLog("To increase the Java heap space in Matlab, have a look at this website:");
+            appendToLog("");
+            appendToLog("http://www.mathworks.com/support/solutions/en/data/1-18I2C/");
+            appendToLog("");
+            appendToLog("In case you are using Matlab 2010a or later,");
+            appendToLog("this can be easily done using Matlab''s preferences dialog.");
+        }
     }
 }
 
