@@ -128,6 +128,23 @@ public class SSA
             mu[i] = B.mmul(data.mu[i].sub(data.muall));
         }
 
+        int k; // degrees of freedom of chi^2 distribution
+        if(par.isUseMean() && par.isUseCovariance())
+        {
+            // use both means and covariances
+            k = (S.length*d*(d+3)) / 2;
+        }
+        else if(par.isUseCovariance())
+        {
+            // use only covariances
+            k = (S.length*d*(d+1)) / 2;
+        }
+        else
+        {
+            // use only means
+            k = S.length*d;
+        }
+
         // Optimization loop
         SSAMatrix grad, gradOld = null;
         SSAMatrix alpha, alphaOld = null;
@@ -140,9 +157,9 @@ public class SSA
             SSAMatrix ret[] = objectiveFunction( d,
                                                     S, mu, data.epochSizes, null, true,
                                                     par.isUseMean());
-            loss = normalizeObjectiveFunction(ret[0].get(0, 0), S.length, d);
+            loss = normalizeObjectiveFunction(ret[0].get(0, 0), k);
             //loss = ret[0].get(0, 0);
-            grad = normalizeGradient(ret[1], ret[0].get(0, 0), S.length, d);
+            grad = normalizeGradient(ret[1], ret[0].get(0, 0));
 
             // optimize n-sources?
             if(optNSources)
@@ -177,7 +194,7 @@ public class SSA
                 ret = objectiveFunction(d,
                                         S, mu, data.epochSizes, M, false,
                                         par.isUseMean());
-                lossNew = normalizeObjectiveFunction(ret[0].get(0, 0), S.length, d);
+                lossNew = normalizeObjectiveFunction(ret[0].get(0, 0), k);
                 //lossNew = ret[0].get(0, 0);
                 if(optNSources)
                 {
@@ -373,7 +390,7 @@ public class SSA
                 // whiten means
                 mu[i] = data.W.mmul(data.mu[i].sub(data.muall));
                 // add mu'*mu to H
-                H.addi(mu[i].mmul(mu[i].transpose()));
+                H.addi(mu[i].mmul(mu[i].transpose()).muli(data.epochSizes[i]));
             }
 
             // solve eigenvalue problem
@@ -381,9 +398,16 @@ public class SSA
             // the eigenvectors are in the columns and are our projection directions; we need them
             // in the rows in our projection matrices
             SSAMatrix B = E[0].transpose();
-            // loss is the sum of the eigenvalues for the stationary subspace
-            //double loss = E[1].diag().getRowRange(0, d, 0).sum();
-            double loss = E[1].diag().getRange(0, d, 0, 1).sum();
+            // loss_s is the sum of the eigenvalues for the stationary subspace
+            SSAMatrix diag = E[1].diag();
+            double loss_s = diag.getRange(0, d, 0, 1).sum();
+            // loss_n is the sum of the eigenvalues for the non-stationary subspace
+            double loss_n = diag.getRange(d, n, 0, 1).sum();
+            // Now normalize losses
+            int k_s = data.S.length * d; // degrees of freedom of chi^2 distribution
+            int k_n = data.S.length * (n - d);
+            loss_s = normalizeObjectiveFunction(loss_s, k_s);
+            loss_n = normalizeObjectiveFunction(loss_n, k_n);
 
             // projection matrix for stationary subspace
             SSAMatrix Ps = B.getRange(0, d, 0, n);
@@ -396,9 +420,11 @@ public class SSA
             // basis for non-stationary subspace
             SSAMatrix Bn = Mix.getRange(0, n, d, n);
 
-            appendToLog("Solved. Objective function value=" + loss);
+            appendToLog("Solved.");
+            appendToLog("Objective function value for the s-sources=" + loss_s);
+            appendToLog("Objective function value for the n-sources=" + loss_n);
 
-            return new Results(Ps, Pn, Bs, Bn, loss, true, 1,
+            Results results =  new Results(Ps, Pn, Bs, Bn, 0, true, 1,
                               par.getNumberOfStationarySources(),
                               1,
                               par.isUseMean(),
@@ -406,7 +432,13 @@ public class SSA
                               data.getEpochType() == Data.EPOCHS_CUSTOM ? 0 : data.getNumberOfEqualSizeEpochs(),
                               data.getTimeseriesFile() == null ? "" : data.getTimeseriesFile().toString(),
                               data.getEpochDefinitionFile() == null ? "" : data.getEpochDefinitionFile().toString());
-        } else {
+            results.loss_s = loss_s;
+            results.loss_n = loss_n;
+            
+            return results;
+        } 
+        else 
+        {
             throw new RuntimeException("ERROR: Both mean and covariance matrix deactivated, please choose at least one.");
         }
     }
@@ -432,8 +464,7 @@ public class SSA
                                                 boolean calcGradient,
                                                 boolean useMean)
     {
-        //double loss = 0.0;
-        double loss = (double)(S.length * d);
+        double loss = 0.0;
         SSAMatrix gradient = null;
 
         // rotated covariance matrices and means
@@ -517,12 +548,10 @@ public class SSA
      * Normalizes the objective function value.
      *
      * @param loss objective function value as calculated by objectiveFunction()
-     * @param numberOfEpochs number of epochs
-     * @param d number of stationary sources
+     * @param k degrees of freedom of chi^2 distribution
      */
-    public double normalizeObjectiveFunction(double loss, int numberOfEpochs, int d)
+    public double normalizeObjectiveFunction(double loss, int k)
     {
-        int k = (numberOfEpochs*d*(d + 3)) / 2;
         return Math.sqrt(2.0 * loss) - Math.sqrt(2.0*((double)k) - 1.0);
     }
 
@@ -531,12 +560,9 @@ public class SSA
      *
      * @param grad gradient as calculated by objectiveFunction()
      * @param loss objective function value as calculated by objectiveFunction()
-     * @param numberOfEpochs number of epochs
-     * @param d number of stationary sources
      */
-    public SSAMatrix normalizeGradient(SSAMatrix grad, double loss, int numberOfEpochs, int d)
+    public SSAMatrix normalizeGradient(SSAMatrix grad, double loss)
     {
-        int k = (numberOfEpochs*d*(d + 3)) / 2;
         return grad.div(Math.sqrt(2.0*loss));
     }
 

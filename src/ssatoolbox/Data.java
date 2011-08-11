@@ -560,7 +560,7 @@ public class Data {
             M += epochSizes[i];
         }
         //Sall.divi(S.length);
-        Sall.divi((double)M);
+        Sall.divi((double)(M - S.length));
         //muall.divi((double)mu.length);
         muall.divi((double)M);
 

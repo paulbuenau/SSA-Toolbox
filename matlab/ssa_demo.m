@@ -1,4 +1,4 @@
-function ssa_demonstration
+function ssa_demo
 %SSA_DEMO        SSA demonstration on synthetic data.
 %
 %Shows an example of SSA on synthetic data with one stationary and one non-stationary source.
