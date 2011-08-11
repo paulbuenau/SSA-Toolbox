@@ -596,7 +596,8 @@ effects are visible in changes of the mean and covariance matrix.
 
 \paragraph{How do I determine the number of stationary sources?} To date, there exists no automatic
 selection procedure. In practice, one can apply SSA for several numbers of stationary sources and inspect
-the result, e.g.~visually or using appropriate statistical hypothesis tests.
+the result, e.g.~visually or using appropriate statistical hypothesis tests. See 
+Appendix~\ref{app:objfunval} on the interpretation of the value of the objective function to that end. 
 
 \paragraph{Why is it not possible to identify the non-stationary sources and what does this mean?} 
 The true non-stationary sources cannot be identified because adding stationary components to a 
@@ -612,9 +613,8 @@ find the non-stationary sources by projecting orthogonal to it.
 The SSA Toolbox can be used directly from any environment that can invoke Java code, such as 
 e.g.~Matlab. Based on the command-line interface, future releases will include wrappers for R and Python. 
 
-\paragraph{Can I get a $p$-value for my result?} So far there is no method to establish the 
-significance of the SSA solution. However, one could use a test for stationarity on the
-extracted stationary sources to verify the solution, and report the corresponding $p$-values.
+\paragraph{Can I get a $p$-value for my result?} The objective function value is an approximate
+$p$-value for a stationarity test, see Appendix~\ref{app:objfunval}. 
 
 \paragraph{The toolbox says that there is not enough Java heap space. How can I solve this issue?}
 You have to increase the Java heap space. If you are using the standalone version of the toolbox, you can
@@ -810,11 +810,109 @@ information on the official SSA homepage:
 
 \begin{appendices}
 
+\section{Interpreting the objective function value}
+\label{app:objfunval}
+
+\newcommand{\emu}{\hat{\mu}}
+\newcommand{\esi}{\hat{\Sigma}}
+
+In practice, in order to assess a demixing found by the SSA algorithm, we need an interpretable 
+measure of  stationarity resp.~non-stationarity of the estimated stationary sources $\hat{s}^\s(t)$
+and the estimated non-stationary sources $\hat{s}^\n(t)$. To that end, we can interpret 
+the SSA objective function from an hypothesis testing point of view. The SSA objective function 
+is equivalent to the likelihood-ratio test statistic for comparing two models for the data: 
+all epochs follow a multivariate standard normal distribution (null hypothesis $H_0$) vs.~the 
+more complex model where every epoch has a different mean and covariance matrix 
+(alternative hypothesis $H_A$). This also suggests a procedure for determining the number of 
+the stationary sources: we increase the number of stationary sources as long as the stationarity 
+test on the estimated \s-sources is not rejected.
+
+More formally, let $X_1, \ldots, X_N$ be $d$-variate random variables
+modeling the distribution of the data in the $N$ epochs. Formally, the hypothesis can 
+be written as follows.
+\begin{align*}
+	& H_0 : X_1, \ldots, X_N \sim \mathcal{N}(0, I) \\
+	& H_A : X_1 \sim \mathcal{N}(\mu_1, \Sigma_1), \ldots, X_N \sim \mathcal{N}(\mu_N, \Sigma_N)
+\end{align*}
+In other words, the statistical test tells us whether we 
+should reject the simple model $H_0$ in favor of the more complex model $H_A$. This decision 
+is based on the value of the test statistics, whose distribution is known under the null hypothesis 
+$H_0$. Since $H_0$ is a special case of $H_A$ and since the parameter estimates are obtained by 
+Maximum Likelihood, we can use the likelihood ratio test statistic $\Lambda$,
+which is the ratio of the likelihood of the data under $H_0$ and $H_A$, where the parameters are
+their maximum likelihood estimates. 
+The likelihood ratio test statistic $\Lambda(\mathcal{X})$ is, 
+\begin{align} 
+\label{eq:teststat}
+  \Lambda(\mathcal{X}) = -2 \log \frac{L_{H_0}(\mathcal{X})}{ L_A(\mathcal{X})},
+%  \frac{ \prod_{x \in \mathcal{X}} p_{\mathcal{N}}(x ; 0, I)  } 
+%  { 
+%  	\prod_{i=1}^N \prod_{x \in \mathcal{T}_i} p_{\mathcal{N}}(x ; \emu^\n_i , \esi^\n_i) 
+%  }
+\end{align}
+where $L_{H_0}(\mathcal{X})$ is the likelihood of the data set under the simpler null model and 
+$L_A(\mathcal{X})$ is the likelihood of the data set under the more complex alternative model. In order
+to find the estimated stationary sources $\hat{s}^\s(t)$, the SSA algorithm minimizes the test 
+statistic $\Lambda(\mathcal{X})$, i.e.~it maximizes the $p$-value to not reject the null 
+hypothesis of stationarity. Conversely, to estimate the most non-stationary sources  
+$\hat{s}^\n(t)$, we maximize $\Lambda(\mathcal{X})$ and thereby minimize the $p$-value.
+
+Under the null hypothesis $H_0$, the test statistic $\Lambda(\mathcal{X})$ is approximately $\chi^2$ distributed with 
+$k = \frac{1}{2} N d_n (d_n+3)$ degrees of freedom. It can be shown that 
+$\sqrt{2 \Lambda(\mathcal{X})}$ converges (faster) to a Gaussian distribution 
+with mean $\mu_0 = \sqrt{2 k - 1}$ and unit standard deviation $\sigma_0 = 1$. We therefore
+report the normalized objective function value, 
+\begin{align*}
+	\Lambda'(\mathcal{X}) = \sqrt{2 \Lambda(\mathcal{X})} - \sqrt{2 k - 1}, 
+\end{align*}
+both for the estimated stationary and the estimated non-stationary sources. We can thus 
+derive approximate $p$-values for the stationarity test from the value of $\Lambda'(\mathcal{X})$ 
+and the standard normal distribution. 
+
+\subsection{Derivation of the test statistic}
+
+In this section we note the mathematical details for deriving the value of the test statistic (Equation~\ref{eq:teststat}). 
+Let $\mathcal{X} \subset \R^{d}$ be the data set which is divided into $N$ epochs 
+$\mathcal{T}_1 \cup \cdots \cup \mathcal{T}_n = \mathcal{X}$ with corresponding sample 
+sizes $N_i = | \mathcal{T}_i |$ for $1 \leq i \leq N$ and let $\emu_1, \ldots, \emu_N \in \R^d$  
+and $\esi_1, \ldots, \esi_N \in \R^{d \times d}$ be estimates of the epoch mean and epoch covariance matrices 
+respectively. Let $p_{\mathcal{N}}(x ; \mu, \Sigma)$ be the probability density function of the 
+multivariate Gaussian distribution. We have centered and whitened the data set such that,
+\begin{align*}
+	\sum_{i=1}^N \frac{N_i}{\sum_{j=1}^N N_j} \emu_i = 0 \; \text{ and } \; \sum_{i=1}^N \frac{N_i-1}{\sum_{j=1}^N (N_j -1)} \esi_i = I . 
+\end{align*}
+The log-likelihood under $H_0$ is given by, 
+\begin{align*}
+	\log L_{H_0}(\mathcal{X}) & = \sum_{i=1}^N \sum_{x \in \mathcal{T}_i} \log p_{\mathcal{N}}(x ; 0, I) \\
+ & = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi) + \sum_{x \in \mathcal{T}_i} x^\top x \\
+ &  = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi) + \trace \left[  \left( \sum_{x \in \mathcal{T}_i} x^\top x - \emu_i \emu^\top_i  \right)+ N_i \emu_i \emu^\top_i \right] \\
+ & =  -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi) + N_i \emu^\top_i \emu_i  + \trace \left[ (N_i-1) \esi_i \right] \\
+ & =  -\frac{1}{2} \sum_{i=1}^N \left( N_i d \log (2\pi) + N_i \emu^\top_i \emu_i \right) + \left(\sum_{i=1}^n (N_i - 1)\right)  \trace\left[ I \right] \\
+ & =  -\frac{1}{2} \sum_{i=1}^N  N_i d \log (2\pi) + N_i \emu^\top_i \emu_i + (N_i - 1) d . 
+\end{align*}
+The log-likelihood under $H_A$ is given by, 
+\begin{align*} 
+	\log L_{H_A}(\mathcal{X}) & = \sum_{i=1}^N \sum_{x \in \mathcal{T}_i} \log p_{\mathcal{N}}(x ; \emu_i, \esi_i) \\
+& = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi)  + N_i \log \det \esi_i + \sum_{x \in \mathcal{T}_i} (x-\emu_i)^\top \esi_i^{-1} (x-\emu_i) \\
+& = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi)  + N_i \log \det \esi_i + 
+		\trace\left[ \sum_{x \in \mathcal{T}_i} (x-\emu_i) (x-\emu_i)^\top \esi_i^{-1} \right] \\
+& = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi) + N_i \log \det \esi_i - N_i \trace \left[ \emu_i \emu^\top_i \right]
+		+ \trace\left[ \left(\sum_{x \in \mathcal{T}_i} x x^\top\right)  \esi_i^{-1}  \right] \\
+& = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi) + N_i \log \det \esi_i + \trace\left[  (N_i-1) \esi_i \esi_i^{-1} \right] \\
+& = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi) + N_i \log \det \esi_i + (N_i-1) d .
+\end{align*}
+Thus the test statistic, and the SSA objective function, is given by 
+\begin{align*}
+ \Lambda(\mathcal{X}) & = -2 ( \log L_{H_0} - \log L_{H_A} ) \\
+ 						& = \sum_{i=1}^N N_i \left(-\log \det\esi_i + \emu_i^\top \emu_i \right) . 
+\end{align*}
+
 \section{Measuring the Error of SSA}
 \label{app:error_measure}
 
-In order to assess the accuracy of the solution found by SSA when the true mixing matrix $A$ 
-is known, we need to adopt an error measure. Since only the non-stationary subspace (spanned 
+In the case where the true solution (the mixing matrix $A$) is known, e.g.~in simulations 
+on synthetic data, we may want to measure the accuracy of the demixing estimated by the 
+SSA algorithm. Since only the non-stationary subspace (spanned 
 by the columns of $A^\n$) is identifiable, we measure the deviation between the true and the
 estimated \n-space. To that end, we define a \textit{subspace error} based on the 
 \textit{principle angles} between two subspaces. Let $U$ and $V$ be two linear subspaces of the 
