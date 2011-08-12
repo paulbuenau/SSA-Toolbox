@@ -20,6 +20,7 @@ function [ X, A, cov_epo, mean_epo ] = ssa_toydata(n, ds, dn, varargin)
 %    rand_ndir    Randomize basis of the non-stationary sources (default: true) 
 %    p_nv_larger  Probability that the variance of the n-sources is 
 %                 larger than the variance of the s-sources (default: 0.5)
+%    s_var        Scaling of the source variance (default: 1)
 %
 %output 
 %  X                  Cell array of epoch datasets.
@@ -99,7 +100,8 @@ opt = set_defaults(opt, ...
 						'rand_ndir', true, ...
 						'orth_mixing', false, ...
 						'mean_nonstat', 0, ...
-						'n_samples', 500 ...
+						'n_samples', 500, ...
+					  's_var', 1 ...
 						 );
 
 d = ds + dn;
@@ -107,7 +109,7 @@ d = ds + dn;
 % Check parameters.
 assert(opt.p_nv_larger >= 0 && opt.p_nv_larger <= 1);
 assert(opt.v_max > opt.v_min && opt.v_min > 1);
-assert(opt.corr_min >= 0 && opt.corr_max > opt.corr_min);
+assert(opt.corr_min >= 0 && opt.corr_max > opt.corr_min && opt.corr_max <= 1);
 assert(n > 0);
 assert(ds >= 0 && dn >= 0 && d>0);
 assert(length(opt.n_samples) == 1 || length(opt.n_samples) == n);
@@ -158,6 +160,9 @@ for i=1:n
 	cov_sources(1:ds,(ds+1):end, i) = C;
 	cov_sources((ds+1):end,1:ds, i) = C';
 	cov_sources((ds+1):end,(ds+1):end, i) = C'*C + Bn*diag(E(:,i))*Bn';
+
+	% Overall scaling of the variance. 
+	cov_sources(:,:,i) = sqrt(opt.s_var)*cov_sources(:,:,i);
 end
 
 % Compute the epoch-means of the n-sources. Scale the the sum of the squared 
