@@ -69,8 +69,8 @@ visualize temporal changes in complex high-dimensional data sets.
 
 The SSA Toolbox is written entirely in Java and is thus platform-independent. It has been tested
 successfuly under Windows, Linux and MacOS. The SSA Toolbox comes with a state-of-the-art native 
-Linear Algebra library (BLAS / LAPACK) that is invoked if the operating system supports 
-it. If not, a purely Java-based library, COLT, will be used that ensures maximum platform-independence. 
+Linear Algebra library (BLAS,LAPACK). For maximum platform independence, the user can also 
+choose the purely Java-based library COLT.  
 Data and results can be imported and exported as comma-separated values \texttt{.csv} files, the fail-safe 
 format of last resort, and through Matlab's proprietary \texttt{.mat} files, a de-facto standard in the 
 Machine Learning community.
@@ -81,7 +81,7 @@ github\footnote{See \url{http://https://github.com/paulbuenau/SSA-Toolbox}}, a h
 the git versioning system. Section~\ref{sec:dev} contains further information for developers, 
 including a high-level overview of the class structure.
  
-There are three ways to use the SSA Toolbox
+There are four ways to use the SSA Toolbox
 \begin{enumerate}
 	\item As a standalone application with a graphical user interface.
 
@@ -215,8 +215,8 @@ and the estimated stationary and non-stationary sources are thus given by
 \end{align}
 respectively.
 Note that only the $\s$-projection and the $\n$-space are uniquely identifiable.
-$\hat P^{\n}$ is chosen such that it is orthogonal to $\hat P^{\s}$ and 
-$\hat A^{\s}$ is orthogonal to $\hat A^{\n}$.
+The projection to the \n-sources $\hat P^{\n}$ is found by maximizing the non-stationarity
+of the estimated \n-sources.
 
 The SSA Toolbox allows for input and output in (time $\times$ channel) and 
 (channel $\times$ time) format. Note that the above definitions of sources, 
@@ -452,8 +452,8 @@ See Figure~\ref{fig:ex_matlab_res} for an example.
        s_src: [3x10000 double]
        n_src: [3x10000 double]
   parameters: [1x1 struct]
-      loss_s: 0.0816
-      loss_n: -3.5174
+      loss_s: -1.2789
+      loss_n: 73.2571
 iterations_s: 13
 iterations_n: 10
  description: 'SSA results (Thu Jun 10 12:58:23 CEST 2010)'
@@ -594,10 +594,10 @@ effects are visible in changes of the mean and covariance matrix.
 
 \paragraph{Can I use SSA on a univariate time series?} No. 
 
-\paragraph{How do I determine the number of stationary sources?} To date, there exists no automatic
+\paragraph{How do I determine the number of stationary sources?} To date, there exists no \textit{automatic}
 selection procedure. In practice, one can apply SSA for several numbers of stationary sources and inspect
-the result, e.g.~visually or using appropriate statistical hypothesis tests. See 
-Appendix~\ref{app:objfunval} on the interpretation of the value of the objective function to that end. 
+the result, e.g.~visually or using appropriate statistical hypothesis tests. Moreover, the value of the 
+objective function can be used as a guideline, see Appendix~\ref{app:objfunval}.
 
 \paragraph{Why is it not possible to identify the non-stationary sources and what does this mean?} 
 The true non-stationary sources cannot be identified because adding stationary components to a 
@@ -749,8 +749,17 @@ This class implements the interface \texttt{Logger}. It writes all messages whic
 %%%%%%%%%%%%%%%%%
 \subsection*{External Dependencies}
 
-The toolbox needs \texttt{JMatIO} (for Matlab files). The class \texttt{SSAMatrix} uses the matrix library \texttt{Colt} or \texttt{jBlas}, depending on which library
-is currently selected.
+All necessary libraries are included in the distribution archive. These are the following. 
+\begin{itemize}
+	\item \texttt{JMatIO} for reading and writing Matlab files;
+	
+ 	\item \texttt{COLT} and \texttt{jblas} for matrix computations; and
+
+	\item \texttt{java-getopt} for evaluation command-line arguments.	
+
+\end{itemize}
+
+
 
 %%%%%%%%%%%%%%%%%
 \subsection*{Unit Tests}
@@ -858,7 +867,7 @@ hypothesis of stationarity. Conversely, to estimate the most non-stationary sour
 $\hat{s}^\n(t)$, we maximize $\Lambda(\mathcal{X})$ and thereby minimize the $p$-value.
 
 Under the null hypothesis $H_0$, the test statistic $\Lambda(\mathcal{X})$ is approximately $\chi^2$ distributed with 
-$k = \frac{1}{2} N d_n (d_n+3)$ degrees of freedom. It can be shown that 
+$k = \frac{1}{2} N d (d+3)$ degrees of freedom. It can be shown that 
 $\sqrt{2 \Lambda(\mathcal{X})}$ converges (faster) to a Gaussian distribution 
 with mean $\mu_0 = \sqrt{2 k - 1}$ and unit standard deviation $\sigma_0 = 1$. We therefore
 report the normalized objective function value, 

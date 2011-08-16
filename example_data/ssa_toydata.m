@@ -233,8 +233,6 @@ function opt = propertylist2struct(varargin)
 %   See also SET_DEFAULTS
 %
 
-% Copyright Fraunhofer FIRST.IDA (2004)
-
 if nargin==0,
   % Return an empty struct without identification tag
   opt= [];
@@ -298,7 +296,6 @@ function [opt, isdefault]= set_defaults(opt, varargin)
 %
 % $Id$
 % 
-% Copyright (C) Fraunhofer FIRST
 % Authors: Frank Meinecke (meinecke@first.fhg.de)
 %          Benjamin Blankertz (blanker@first.fhg.de)
 %          Pavel Laskov (laskov@first.fhg.de)
@@ -380,9 +377,6 @@ function t = ispropertystruct(opts)
 %   
 %   See also PROPERTYLIST2STRUCT
 %
-
-% Copyright Fraunhofer FIRST.IDA (2004)
-% $Id: ispropertystruct.m,v 1.1 2004/08/16 11:52:17 neuro_toolbox Exp $
 
 error(nargchk(1, 1, nargin));
 % Currently, we do not check the version number. Existence of the field

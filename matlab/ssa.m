@@ -24,6 +24,7 @@ function [Ps, Pn, As, An, ssa_results] = ssa(X, d, varargin)
 %                     Default: 'colt'
 %    random_seed     Random seed, to make runs repeatable.
 %                     Default: 0 (which means: no fixed random seed)
+%    quiet           Set this to true in order to suppress all output. Default: false
 %                     
 %
 %output
@@ -72,13 +73,24 @@ function [Ps, Pn, As, An, ssa_results] = ssa(X, d, varargin)
 basedir = fileparts(mfilename('fullpath'));
 javaclasspath({[basedir filesep 'ssa.jar']});
 
+% set default parameters
+opt = propertylist2struct(varargin{:});
+opt = set_defaults(opt, ...
+						'reps', 5, ...
+					    'equal_epochs', 0, ...
+						'use_mean', true, ...
+						'use_covariance', true, ...
+						'matrix_library', 'colt', ...
+						'random_seed', 0,  ...
+					  'quiet', false ...
+						 );
+
 % instantiate classes
-%ssadata = ssatoolbox.Data;
-%ssaparam = ssatoolbox.SSAParameters;
-%ssaopt = ssatoolbox.SSA;
-cl = ssatoolbox.ConsoleLogger;
-%ssaopt.setLogger(cl);
-%ssadata.setLogger(cl);
+if ~opt.quiet
+	cl = ssatoolbox.ConsoleLogger;
+else
+	cl = ssatoolbox.QuietLogger;
+end
 ssamain = ssatoolbox.Main(false, cl);
 ssamain.toolboxMode = ssatoolbox.Main.TOOLBOX_MODE_MATLAB;
 
@@ -91,37 +103,27 @@ if ~exist('X', 'var')
 end
 
 if ~exist('d', 'var')
-    fprint('You have to specify the number of stationary sources\n');
+    error('You have to specify the number of stationary sources\n');
 end
 
-% set default parameters
-opt = propertylist2struct(varargin{:});
-opt = set_defaults(opt, ...
-						'reps', 5, ...
-					    'equal_epochs', 0, ...
-						'use_mean', true, ...
-						'use_covariance', true, ...
-						'matrix_library', 'colt', ...
-						'random_seed', 0 ...
-						 );
-
 if strcmp(opt.matrix_library, 'colt')
-    fprintf('Using Colt library...\n');
+    if ~opt.quiet, fprintf('Using Colt library...\n'); end
     ssatoolbox.SSAMatrix.setGlobalLib(ssatoolbox.SSAMatrix.COLT);
 elseif strcmp(opt.matrix_library, 'jblas')
-    fprintf('Using jBlas library...\n');
-    fprintf('If you get problems with jBlas, try the Colt library.\n');
+    if ~opt.quiet
+			fprintf('Using jBlas library...\n'); 
+    	fprintf('If you get problems with jBlas, try the Colt library.\n');
+		end
     ssatoolbox.SSAMatrix.setGlobalLib(ssatoolbox.SSAMatrix.JBLAS);
 else
-    fprintf('Error: Unknown matrix library %s.\n', opt.matrix_library);
-    return;
+    error('Error: Unknown matrix library %s.\n', opt.matrix_library);
 end
 
 % detect whether to use equal or custom epochization
 try
  if iscell(X)
     % create custom epochization
-    fprintf('Custom epochization found...\n');
+    if ~opt.quiet, fprintf('Custom epochization found...\n'); end
     Xwoeps = [X{:}];
     Xdm = ssatoolbox.SSAMatrix(Xwoeps);
     ssamain.data.setTimeSeries(Xdm, []);
@@ -142,7 +144,7 @@ try
     ssamain.data.setEpochType(ssamain.data.EPOCHS_CUSTOM);
  else
     % epochize equally
-    fprintf('No custom epochization found. Using equally sized epochs.\n');
+    if ~opt.quiet, fprintf('No custom epochization found. Using equally sized epochs.\n'); end
     Xdm = ssatoolbox.SSAMatrix(X);
     ssamain.data.setTimeSeries(Xdm, []);
     if opt.equal_epochs == 0
@@ -175,7 +177,6 @@ ssamain.parameters.setUseMean(opt.use_mean);
 ssamain.parameters.setUseCovariance(opt.use_covariance);
 
 % run optimization
-%fprintf('Starting optimization...\n\n');
 try
 %ssaresult = ssaopt.optimize(ssaparam, ssadata);
 ret = ssamain.runSSA(false);
@@ -257,8 +258,6 @@ function opt = propertylist2struct(varargin)
 %   See also SET_DEFAULTS
 %
 
-% Copyright Fraunhofer FIRST.IDA (2004)
-
 if nargin==0,
   % Return an empty struct without identification tag
   opt= [];
@@ -322,7 +321,6 @@ function [opt, isdefault]= set_defaults(opt, varargin)
 %
 % $Id$
 % 
-% Copyright (C) Fraunhofer FIRST
 % Authors: Frank Meinecke (meinecke@first.fhg.de)
 %          Benjamin Blankertz (blanker@first.fhg.de)
 %          Pavel Laskov (laskov@first.fhg.de)
@@ -404,9 +402,6 @@ function t = ispropertystruct(opts)
 %   
 %   See also PROPERTYLIST2STRUCT
 %
-
-% Copyright Fraunhofer FIRST.IDA (2004)
-% $Id: ispropertystruct.m,v 1.1 2004/08/16 11:52:17 neuro_toolbox Exp $
 
 error(nargchk(1, 1, nargin));
 % Currently, we do not check the version number. Existence of the field
