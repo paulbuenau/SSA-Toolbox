@@ -140,6 +140,16 @@ cc_scaling = sqrt(E ./ repmat((corrs.^-2) - 1, [dn 1]));
 Bn = eye(dn);
 Bs = eye(ds);
 
+% Choose random mixing matrix. 
+if opt.orth_mixing
+	% Random orthonormal. 
+	A = randrot(d);
+else
+	% With random entries, normalized. 
+	A = rand(d,d) - 0.5;
+	A = A*diag(sum(A.^2).^-0.5);
+end
+
 % Compute the source covariance matrices for each epoch. 
 cov_sources = repmat(eye(d), [1 1 n]);
 for i=1:n
@@ -162,38 +172,45 @@ for i=1:n
 	cov_sources((ds+1):end,(ds+1):end, i) = C'*C + Bn*diag(E(:,i))*Bn';
 
 	% Overall scaling of the variance. 
-	cov_sources(:,:,i) = sqrt(opt.s_var)*cov_sources(:,:,i);
+	cov_sources(:,:,i) = opt.s_var*cov_sources(:,:,i);
+end
+
+% Mix the covariance matrices. 
+cov_epo = zeros(d, d, n);
+for i=1:n
+	cov_epo(:,:,i) = A*cov_sources(:,:,i)*A';
+end
+
+% Now compute the level of non-stationarity in the covariance matrices. 
+W = sqrtm(inv(mean(cov_epo, 3)));
+cov_nonstat = 0;
+for i=1:n 
+	[foo, eigvals] = eig(W*cov_epo(:,:,i)*W');
+	cov_nonstat = cov_nonstat + sum(abs(log(diag(eigvals))));
 end
 
 % Compute the epoch-means of the n-sources. Scale the the sum of the squared 
-% norms relative to the sum of the log-determinants of the n-sources. 
-
-% Compute mean vectors with random entries in [-0.5, 0.5].
-mean_n = rand(dn, n) - 0.5;
+% norms relative to sum of the absolute log-eigenvalues. 
 
 % Scale the sum of the squared norm of the mean vectors \mu_1, ..., \mu_n 
 % relative to the total non-stationarity in the covariance matrix. 
 norm_n = rand(1, n);
-norm_n = norm_n/sum(norm_n) * opt.mean_nonstat*sum(sum(abs(log(E))));
-mean_n = mean_n .* repmat(sqrt(norm_n./sum(mean_n.^2)), [dn 1]);
-mean_sources = [ zeros(ds,n); mean_n ];
+norm_n = norm_n/sum(norm_n) * opt.mean_nonstat*cov_nonstat;
 
-% Choose random mixing matrix. 
-if opt.orth_mixing
-	% Random orthonormal. 
-	A = randrot(d);
-else
-	% With random entries, normalized. 
-	A = rand(d,d) - 0.5;
-	A = A*diag(sum(A.^2).^-0.5);
+% Compute mean vectors with random entries in [-0.5, 0.5].
+mean_n = rand(dn, n) - 0.5;
+
+Q = (W*A)'*(W*A);
+Q = Q(ds+1:end,ds+1:end);
+
+for i=1:n
+	mean_n(:,i) = sqrt(norm_n(i))/sqrt(mean_n(:,i)'*Q*mean_n(:,i))*mean_n(:,i);
 end
 
-% Apply the mixing matrix the source mean and covariance. 
-cov_epo = zeros(d, d, n);
+mean_sources = [ zeros(ds,n); mean_n ];
 mean_epo = zeros(d, n);
 
 for i=1:n
-	cov_epo(:,:,i) = A*cov_sources(:,:,i)*A';
 	mean_epo(:,i) = A*mean_sources(:,i);
 end
 
@@ -202,6 +219,21 @@ X = cell(1, n);
 for i=1:n
 	X{i} = mvnrnd(mean_epo(:,i)', cov_epo(:,:,i), opt.n_samples(i))';
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function h = plot_cov(C, col) 
+
+[V,D] = eig(C);
+
+N = 500;
+alpha = linspace(0,2*pi,N);
+
+c = 1;
+
+E = [ cos(alpha)*sqrt(D(1,1)); sin(alpha)*sqrt(D(2,2)) ];
+XY = V*E;
+
+h = plot(XY(1,:), XY(2,:), col);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [ R ] = randrot(d)
