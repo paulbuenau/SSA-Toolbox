@@ -518,16 +518,17 @@ and the \n-sources are correlated with the \s-sources,
 \end{align*}
 where $C_i$ is $(D-d \times d)$-matrix and $Y^\n_i \sim \N(\mu_i, \Sigma_i)$ is a
 random variable corresponding to the conditional $X^\n_i | X^s$. The covariance 
-matrix $\Sigma_i$ is generated as, 
+matrix $\Sigma^\n_i$ is generated as, 
 \begin{align*}
-	\Sigma_i = B^\n_i \Lambda_i (B^\n_i)^\top,
+	\Sigma^\n_i = B^\n_i \Lambda_i (B^\n_i)^\top,
 \end{align*}
 where $B^\n_i$ is a random orthogonal matrix and $\Lambda_i$ is a diagonal matrix of 
-the eigenvalues $\lambda_1, \ldots, \lambda_{D-d}$. Each eigenvalue is drawn uniformly
-at random, either from the interval $[v_\text{min}, v_\text{max}]$ (with probability $p$) 
-or from the interval $[1/v_\text{max}, 1/v_\text{min}]$ (with probability $1-p$), where 
-$1 < v_\text{min} < v_\text{max}$. That is, each eigenvalue $\lambda_i$ is either larger 
-or smaller than one, but by the same ratio. For each epoch, the canonical 
+the eigenvalues $\lambda_1, \ldots, \lambda_{D-d}$. The log eigenvalues are drawn such that they 
+are uniformly distributed, either on the interval $[ \log v_\text{min}, \log v_\text{max}]$ (with probability $p$) 
+or on the interval $[- \log v_\text{max}, - \log v_\text{min}]$ (with probability $1-p$), where 
+$1 < v_\text{min} < v_\text{max}$. 
+
+For each epoch, the canonical 
 correlation $\rho_i$ is drawn uniformly at random from $[\rho_\text{min}, \rho_\text{max}]$, 
 which determines the scaling of the rows of $C_i$, 
 \begin{align*}
@@ -541,27 +542,41 @@ non-zero entries only on the diagonal,
 This ensures that the canonical correlation is $\rho_i$ for all principal vectors. 
 Thus the covariance matrix of the sources in the $i$-th epoch is given by, 
 \begin{align*}
-	\cov \left(   
+	\Sigma_i = \cov \left(   
 		\begin{bmatrix} X^\s \\ X^\n_i
 		\end{bmatrix} 
 	\right) = 
 	\begin{bmatrix}
 		I & C^\top_i \\
-		C_i & C_i  C^\top_i + \Sigma_i 
+		C_i & C_i  C^\top_i + \Sigma^\n_i 
 	\end{bmatrix} .
 \end{align*}
 The strength of the non-stationarity in the mean of the \n-sources is chosen relative to the 
-total non-stationarity $\tilde{\sigma}$ in the covariance matrix which we measure as,
+total non-stationarity $\tilde{\sigma}$ in the covariance matrix which we measure 
+as the the sum of the absolute log eigenvalues of the whitened covariance matrices as follows.  
+Let $\Sigma'_i = A \Sigma_i A^\top$ be the covariance matrix of the mixed sources. The whitening matrix 
+$W$ of the average covariance matrix is given by, 
 \begin{align*}
-	\tilde{\sigma} = \sum_{i=1}^n \sum_{j=1}^{D-d} \left|\log \left[ (\Lambda_i)_{jj} \right]\right| .
+	W = \left[ \frac{1}{n} \sum_{i=1}^n \Sigma'_i \right]^{-\frac{1}{2}} .
 \end{align*}
-Similarly, we quantify the total non-stationarity in the mean $\tilde{\mu}$ as, 
+Let $W \Sigma'_i W^\top = U \Lambda' U^\top$ be the eigenvalue decomposition of the whitened covariance
+matrix of the $i$-th epoch, where $\Lambda'$ is the diagonal matrix of eigenvalues. The total 
+non-stationarity $\tilde{\sigma}$ in the covariance matrix is measured as,  
 \begin{align*}
-	\tilde{\mu} = \sum_{i=1}^n \| \mu_i \|^2 . 
+	\tilde{\sigma} = \sum_{i=1}^n \sum_{j=1}^{D} \left|\log (\Lambda'_i)_{jj} \right| .
+\end{align*}
+The total non-stationarity in the mean  $\tilde{\mu}$ is measured as the sum of the squared norms 
+of the epoch mean vectors $\mu'_1, \ldots, \mu'_n$ in the whitened basis, 
+\begin{align*}
+	\tilde{\mu} = \sum_{i=1}^n \| W \mu'_i \|^2 . 
 \end{align*}
 Thus we first choose a random set of squared norms $m_1, \ldots, m_n$ such that 
-$\sum_{i=1}^n m_i = \tilde{\sigma} = \tilde{\mu}$, and then a set of mean vectors with random entries 
-drawn uniformly from $[-0.5, 0.5]$ which we rescale such that $\| \mu_i \|^2 = m_i$. 
+$\sum_{i=1}^n m_i = \tilde{\sigma} = \tilde{\mu}$, and then a set of mean vectors 
+$\mu_1, \ldots, \mu_n$ of the sources where the first $d$ entries (corresponding to the \s-sources) 
+are zero and the last $D-d$ entries are drawn uniformly from $[-0.5, 0.5]$. These source
+mean vectors are then rescaled such that that $\| W A \mu_i \|^2 = m_i$ for each epoch. 
+
+\clearpage
 
 \subsection{Matlab Demonstration}
 \begin{figure}[h]
