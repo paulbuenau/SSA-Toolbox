@@ -71,9 +71,12 @@ public class SSA
             // mean + covariance
             if(data.getNumberOfEpochs() <=  (data.getNumberOfDimensions() - par.getNumberOfStationarySources())/2 + 2)
             {
-                throw new IllegalArgumentException("Too few epochs specified; there may be spurious stationary directions.\nYou need to have at least "
+                if(!par.isIgnoreDeterminacy())
+                {
+                    throw new IllegalArgumentException("Too few epochs specified; there may be spurious stationary directions.\nYou need to have at least "
                                                  +  ((data.getNumberOfDimensions() - par.getNumberOfStationarySources())/2 + 3) 
                                                  + " distinct epochs to guarantee determinacy of the solution.");
+                }
             }
         }
         else if( (par.isUseMean() && !par.isUseCovariance()) || (!par.isUseMean() && par.isUseCovariance()) )
@@ -81,9 +84,12 @@ public class SSA
             // mean only or covariance only
             if(data.getNumberOfEpochs() <= (data.getNumberOfDimensions() - par.getNumberOfStationarySources()) + 1)
             {
-                throw new IllegalArgumentException("Too few epochs specified; there may be spurious stationary directions.\nYou need to have at least "
+                if(!par.isIgnoreDeterminacy())
+                {
+                    throw new IllegalArgumentException("Too few epochs specified; there may be spurious stationary directions.\nYou need to have at least "
                                                  +  ((data.getNumberOfDimensions() - par.getNumberOfStationarySources()) + 2)
                                                  + " distinct epochs to guarantee determinacy of the solution.");
+                }
             }
         }
         else

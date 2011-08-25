@@ -11,20 +11,23 @@ function [Ps, Pn, As, An, ssa_results] = ssa(X, d, varargin)
 %                    and n_i the number of samples in epoch i
 %  d              Dimensionality of stationary subspace
 %  <options>      List of key-value pairs to set the following options.
-%    reps            Number of restarts (the one with the lowest
-%                     objective function value is returned). Default: 5
-%    equal_epochs    Number of equally sized epochs. equal_epochs=0 means, that
-%                     the number of epochs is chosen by a heuristic. Default: 0 (chose by heuristic)
-%    use_mean        Set this to false to ignore changes in the mean
-%                     (for example if your dataset ensures you that no changes
-%                     in the mean occur). Default: true
-%    use_covariance  Set this to false to ignore changes in the
-%                     covariance matrices. Default: true
-%    matrix_library  matrix library to use. Has to be 'colt' or 'jblas'.
-%                     Default: 'colt'
-%    random_seed     Random seed, to make runs repeatable.
-%                     Default: 0 (which means: no fixed random seed)
-%    quiet           Set this to true in order to suppress all output. Default: false
+%    reps                Number of restarts (the one with the lowest
+%                         objective function value is returned). Default: 5
+%    equal_epochs        Number of equally sized epochs. equal_epochs=0 means, that
+%                         the number of epochs is chosen by a heuristic. Default: 0 (chose by heuristic)
+%    use_mean            Set this to false to ignore changes in the mean
+%                         (for example if your dataset ensures you that no changes
+%                         in the mean occur). Default: true
+%    use_covariance      Set this to false to ignore changes in the
+%                         covariance matrices. Default: true
+%    matrix_library      matrix library to use. Has to be 'colt' or 'jblas'.
+%                         Default: 'colt'
+%    random_seed         Random seed, to make runs repeatable.
+%                         Default: 0 (which means: no fixed random seed)
+%    quiet               Set this to true in order to suppress all output.
+%                         Default: false
+%    ignore_determinacy  Set this to true, if the determinacy bounds should
+%                         be ignored. Default: false
 %                     
 %
 %output
@@ -82,7 +85,8 @@ opt = set_defaults(opt, ...
 						'use_covariance', true, ...
 						'matrix_library', 'colt', ...
 						'random_seed', 0,  ...
-					  'quiet', false ...
+					    'quiet', false, ...
+                        'ignore_determinacy', false ...
 						 );
 
 % instantiate classes
@@ -175,6 +179,7 @@ ssamain.parameters.setNumberOfStationarySources(d);
 ssamain.parameters.setNumberOfRestarts(opt.reps);
 ssamain.parameters.setUseMean(opt.use_mean);
 ssamain.parameters.setUseCovariance(opt.use_covariance);
+ssamain.parameters.setIgnoreDeterminacy(opt.ignore_determinacy);
 
 % run optimization
 try

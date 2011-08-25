@@ -177,5 +177,30 @@ public class SSAParameters {
             propertyChangeSupport.firePropertyChange("useCovariance", oldval, useCovariance);
         }
     }
+
+    /**
+     * Saves, wether to ignore the determinacy bounds.
+     */
+    protected boolean ignoreDeterminacy = false;
+    
+    /**
+     * Set whether to ignore the determinacy bounds.
+     *
+     * @param ignoreDeterminacy
+     */
+    public void setIgnoreDeterminacy(boolean ignoreDeterminacy)
+    {
+        this.ignoreDeterminacy = ignoreDeterminacy;
+    }
+
+    /**
+     * Returns whether the determinacy bounds are ignored.
+     *
+     * @return true, if determinacy bounds are ignored
+     */
+    public boolean isIgnoreDeterminacy()
+    {
+        return ignoreDeterminacy;
+    }
 }
 
