@@ -246,8 +246,8 @@ public class Data {
 
         // geometric mean
         numberOfEpochsHeuristic = (int)Math.round(Math.sqrt(minEpochs*maxEpochs));
-        logger.appendToLog("Setting the number of epochs to the geometric mean of " + (int)minEpochs + " and " + (int)maxEpochs + ": " + numberOfEpochsHeuristic);
-        logger.appendToLog("Average number of samples/epoch: " + ((double)getTotalNumberOfSamples() / (double)numberOfEpochsHeuristic));
+        appendToLog("Setting the number of epochs to the geometric mean of " + (int)minEpochs + " and " + (int)maxEpochs + ": " + numberOfEpochsHeuristic);
+        appendToLog("Average number of samples/epoch: " + ((double)getTotalNumberOfSamples() / (double)numberOfEpochsHeuristic));
     }
 
     /**

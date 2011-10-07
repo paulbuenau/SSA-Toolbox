@@ -282,7 +282,7 @@ public class SSA
      */
     public Results optimize(SSAParameters par, Data data)
     {
-        logger.appendToLog(""); // empty line
+        appendToLog(""); // empty line
 
         if(data.getEpochType() == Data.EPOCHS_EQUALLY_HEURISTIC)
         {
@@ -291,10 +291,10 @@ public class SSA
 
         checkParameters(par, data);
 
-        logger.appendToLog("Calculating covariance matrices and means...");
+        appendToLog("Calculating covariance matrices and means...");
         data.epochize();
 
-        logger.appendToLog("Running SSA...");
+        appendToLog("Running SSA...");
 
         if(par.isUseCovariance())
         {
