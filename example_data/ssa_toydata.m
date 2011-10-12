@@ -1,8 +1,8 @@
-function [ X, A, cov_epo, mean_epo ] = ssa_toydata(n, ds, dn, varargin)
+function [ X, A, cov_sources, mean_sources ] = ssa_toydata2(n, ds, dn, varargin)
 %SSA_TOYDATA Generate toy data for the SSA algorithm.
 %
 %usage 
-%  [ X, A, cov_epo, mean_epo ] = ssa_toydata(n, ds, dn, <options>)
+%  [ X, A, cov_sources, mean_sources ] = ssa_toydata2(n, ds, dn, <options>)
 %
 %input
 %  n          Number of epochs. 
@@ -11,8 +11,8 @@ function [ X, A, cov_epo, mean_epo ] = ssa_toydata(n, ds, dn, varargin)
 %  <options>  List of key-value pairs to set the following options.
 %    n_samples    Number of samples in each epoch; can be either a vector 
 %                 of length n or a scalar (default: 500)
-%    v_min        Minimum ratio of the variance of s/n-sources (default: 1.2) 
-%    v_max        Maximum ratio of the variance of s/n-sources (default: 1.4) 
+%    min_n_logvar Minimum absolute log-variance of the n-sources (default: 0) 
+%    n_logvar     Mean absolute log-variance above min_n_logvar of the n-sources (default: 1)
 %    corr_min     Minimum canonical correlation between s/n-sources (default: 0)
 %    corr_max     Maximum canonical correlation between s/n-sources (default: 0.5) 
 %    mean_nonstat Non-stationarity in the mean relative to the non-stationarity 
@@ -27,28 +27,6 @@ function [ X, A, cov_epo, mean_epo ] = ssa_toydata(n, ds, dn, varargin)
 %  A                  Mixing matrix. 
 %  cov_epo,           Covariance matrix and mean of each epoch. These are 
 %    mean_epo         the true moments, from which X has been sampled. 
-%
-%description 
-%  See the manual for a complete documentation. Let X_1, ..., X_n be random
-%  variables corresponding the distribution of the data in each of the n epochs.
-%  According to the SSA mixing model, X_i is a mixture of stationary and 
-%  non-stationary sources, 
-%        X_i = A*[ X^s; X^n_i ] 
-%  where the entries of the mixing matrix A are drawn uniformly at random from 
-%  the interval [-0.5, 0.5], and its columns are normalized to one. The distribution 
-%  of the stationary sources are fixed, X^s ~ N(0,I), and the non-stationary sources
-%  are correlated with the s-sources, 
-%        X^n_i = C_i X^s + Y^n_i 
-%  where C_i is a (dn,ds)-matrix such that the canonical correlations between
-%  X_s and X^n_i are from the interval [corr_min, corr_max] (chosen randomly). The 
-%  n-sources conditioned on the s-sources follow a Gaussian distribution, 
-%        Y^n_i ~ N(mu_i,S_i) 
-%  where the eigenvalues v_1, ..., v_dn of S_i are chosen randomly such that each
-%  v_i is smaller or larger than one, both with a ratio that is uniformly distributed
-%  on [v_min, v_max]; the probability that v_i>1 is p_nv_larger. The mean vectors
-%  mu_1, ..., mu_n of the n-sources are chosen randomly such that the sum of their 
-%  squared norms is equal to the sum of the absolute log-determinants of cov(X^n_i) 
-%  over all epochs i, multiplied by mean_nonstat. 
 %
 %example 
 %  [ X, A ] = ssa_toydata(10, 2, 2); % generate data 
@@ -92,8 +70,8 @@ function [ X, A, cov_epo, mean_epo ] = ssa_toydata(n, ds, dn, varargin)
 
 opt = propertylist2struct(varargin{:});
 opt = set_defaults(opt, ...
-						'v_min', 1.2, ...
-					  'v_max', 1.4, ...
+						'min_n_logvar', 0, ...
+						'n_logvar', 1, ...
 						'corr_min', 0, ...
 						'corr_max', 0.5, ...
 						'p_nv_larger', 0.5, ...
@@ -108,7 +86,6 @@ d = ds + dn;
 
 % Check parameters.
 assert(opt.p_nv_larger >= 0 && opt.p_nv_larger <= 1);
-assert(opt.v_max > opt.v_min && opt.v_min > 1);
 assert(opt.corr_min >= 0 && opt.corr_max > opt.corr_min && opt.corr_max <= 1);
 assert(n > 0);
 assert(ds >= 0 && dn >= 0 && d>0);
@@ -118,15 +95,13 @@ if length(opt.n_samples) == 1
 	opt.n_samples = repmat(opt.n_samples, [1 n]);
 end
 
-% Sample log-variances uniformly distributed in the interval (log(vn_min), log(vn_max)).
-E = log(opt.v_min) + (log(opt.v_max)-log(opt.v_min))*rand(dn, n);
+E = rand(dn,n);
+E = opt.n_logvar * (E ./ repmat(mean(E, 1), [dn 1]));
+E = E + opt.min_n_logvar
 
 % Sample the sign of the log-variances. 
 ii = find(rand(dn, n) > opt.p_nv_larger);
 E(ii) = -E(ii);
-
-% Transform back from log-scale such that the variance is uniformly distributed 
-% in the union of the intervals [nv_min, nv_max] and [1/nv_max, 1/nv_min]. 
 E = exp(E);
 
 % Sample the canonical correlation (max. CCA eigenvalue) for each epoch. 
@@ -183,6 +158,7 @@ end
 
 % Now compute the level of non-stationarity in the covariance matrices. 
 W = sqrtm(inv(mean(cov_epo, 3)));
+
 cov_nonstat = 0;
 for i=1:n 
 	[foo, eigvals] = eig(W*cov_epo(:,:,i)*W');
@@ -395,7 +371,7 @@ end
 for Fld=fieldnames(opt)',
   fld= Fld{1};
   if ~isfield(defopt,fld)
-    warning('set_defaults:DEFAULT_FLD',['field ''' fld ''' does not have a valid default option']);
+    error('set_defaults:DEFAULT_FLD',['field ''' fld ''' does not have a valid default option']);
   end
 end
 

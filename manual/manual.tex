@@ -523,14 +523,17 @@ matrix $\Sigma^\n_i$ is generated as,
 	\Sigma^\n_i = B^\n_i \Lambda_i (B^\n_i)^\top,
 \end{align*}
 where $B^\n_i$ is a random orthogonal matrix and $\Lambda_i$ is a diagonal matrix of 
-the eigenvalues $\lambda_1, \ldots, \lambda_{D-d}$. The log eigenvalues are drawn such that they 
-are uniformly distributed, either on the interval $[ \log v_\text{min}, \log v_\text{max}]$ (with probability $p$) 
-or on the interval $[- \log v_\text{max}, - \log v_\text{min}]$ (with probability $1-p$), where 
-$1 < v_\text{min} < v_\text{max}$. 
+the eigenvalues $\lambda_1, \ldots, \lambda_{D-d}$. The log eigenvalues 
+are drawn from a uniform distribution, and the sign is chosen to be positive 
+with probability $p$ and negative otherwise; then they normalized such that 
+\begin{align*}
+	\frac{1}{D-d} \sum_{i=1}^{D-d} | \log \lambda_i | = \log \lambda_{\text{mean}}, 
+\end{align*}
+where $\log \lambda_{\text{mean}}$ is a measure of the distance from the standard normal
+distribution.
 
-For each epoch, the canonical 
-correlation $\rho_i$ is drawn uniformly at random from $[\rho_\text{min}, \rho_\text{max}]$, 
-which determines the scaling of the rows of $C_i$, 
+For each epoch, the canonical correlation $\rho_i$ is drawn uniformly at random from 
+$[\rho_\text{min}, \rho_\text{max}]$, which determines the scaling of the rows of $C_i$, 
 \begin{align*}
 	C_i = B C' (B^\n_i)^\top, 
 \end{align*}
