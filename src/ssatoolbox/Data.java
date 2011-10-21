@@ -264,10 +264,12 @@ public class Data {
                 throw new IllegalArgumentException("Number of epochs must be smaller than the number of samples available");
             }
 
-            if((getTotalNumberOfSamples() / numberOfEpochs) < getNumberOfDimensions())
+            // commented out, since the number of samples needed per epoch is not checkable here
+            // (as it depends on which moments are used)
+            /*if((getTotalNumberOfSamples() / numberOfEpochs) < getNumberOfDimensions())
             {
                 throw new IllegalArgumentException("Number of samples per epoch must be at least the dimension of the dataset");
-            }
+            }*/
             
             int oldval = this.numberOfEqualSizeEpochs;
             this.numberOfEqualSizeEpochs = numberOfEpochs;
@@ -427,29 +429,32 @@ public class Data {
 
     /**
      * Calculates the covariance matrices and means for each epoch.
+     *
+     * @param useCovariance use covariance matrices
      */
-    public void epochize()
+    public void epochize(boolean useCovariance)
     {
         if(getEpochType() == EPOCHS_CUSTOM)
         {
-            epochizeCustom(epochDefinition);
+            epochizeCustom(epochDefinition, useCovariance);
         }
         else if(getEpochType() == EPOCHS_EQUALLY)
         {
-            epochizeEqually(getNumberOfEqualSizeEpochs());
+            epochizeEqually(getNumberOfEqualSizeEpochs(), useCovariance);
         }
         else if(getEpochType() == EPOCHS_EQUALLY_HEURISTIC)
         {
-            epochizeEqually(getNumberOfEpochsHeuristic());
+            epochizeEqually(getNumberOfEpochsHeuristic(), useCovariance);
         }
     }
 
     /**
-     * Calculates the covariance matrices and means for each epoch.
+     * Does an epochization with equally-sized epochs.
      *
      * @param epochs number of epochs
+     * @param useCovariance use covariance matrices
      */
-    private void epochizeEqually(int epochs)
+    private void epochizeEqually(int epochs, boolean useCovariance)
     {
         if(X != null)
         {
@@ -466,11 +471,17 @@ public class Data {
                 epochSizes[i] = epochSize;
             }
 
-            initializeSSA(S, mu, epochSizes);
+            initializeSSA(S, mu, epochSizes, useCovariance);
         }
     }
 
-    private void epochizeCustom(int epDef[])
+    /**
+     * Does a custom epochization.
+     *
+     * @param epDef custom epoch definition
+     * @param useCovariance use covariance matrices
+     */
+    private void epochizeCustom(int epDef[], boolean useCovariance)
     {
         TreeMap<Integer, LinkedList<Integer>> map = new TreeMap<Integer, LinkedList<Integer>>();
         for(int i = 0; i < epDef.length; i++)
@@ -504,7 +515,7 @@ public class Data {
             i++;
         }
 
-        initializeSSA(S, mu, epochSizes);
+        initializeSSA(S, mu, epochSizes, useCovariance);
     }
 
     private int[] toIntArray(LinkedList<Integer> l)
@@ -525,44 +536,59 @@ public class Data {
      * @param S array of covariance matrices over all epochs
      * @param mu array of means over all epochs
      * @param epochSizes number of data points in the epochs
+     * @param useCovariance use covariance matrices
      */
-    private void initializeSSA(SSAMatrix S[], SSAMatrix mu[], int epochSizes[])
+    private void initializeSSA(SSAMatrix S[], SSAMatrix mu[], int epochSizes[], boolean useCovariance)
     {
-        // check whether regularization is necessary
-        double smallestEig = Double.POSITIVE_INFINITY;
-        for(int i = 0; i < S.length; i++)
+        if(useCovariance)
         {
-            double eig = S[i].symmetricEigenvalues().get(0, 0);
-            if(eig < smallestEig) smallestEig = eig;
-        }
-        if(smallestEig < REGULARIZATION_THRESH)
-        {
-            appendToLog("At least one direction has nearly zero-variance. Using regularization.");
-            // regularize
-            SSAMatrix alphaI = SSAMatrix.eye(S[0].getRows()).muli(REGULARIZATION_THRESH - smallestEig);
+            // check whether regularization is necessary on covariance matrices
+            // of *each* epoch
+            double smallestEig = Double.POSITIVE_INFINITY;
             for(int i = 0; i < S.length; i++)
             {
-                S[i].addi(alphaI);
+                double eig = S[i].symmetricEigenvalues().get(0, 0);
+                if(eig < smallestEig) smallestEig = eig;
+            }
+            if(smallestEig < REGULARIZATION_THRESH)
+            {
+                appendToLog("At least one direction has nearly zero-variance. Using regularization.");
+                // regularize
+                SSAMatrix alphaI = SSAMatrix.eye(S[0].getRows()).muli(REGULARIZATION_THRESH - smallestEig);
+                for(int i = 0; i < S.length; i++)
+                {
+                    S[i].addi(alphaI);
+                }
             }
         }
 
-        // calculate covariance matrix and mean over all epochs
+        // calculate covariance matrix over all epochs
         Sall = SSAMatrix.zeros(S[0].getRows(), S[0].getColumns());
-        //muall = SSAMatrix.zeros(1, mu[0].getRows());
+        // calculate mean over all epochs
         muall = SSAMatrix.zeros(mu[0].getRows(), 1);
         int M = 0; // total number of samples in the epochs
         for(int i = 0; i < S.length; i++)
         {
-            //Sall.addi(S[i]);
             Sall.addi(S[i].mul((double)epochSizes[i] - 1.0));
-            //muall.addi(mu[i]);
             muall.addi(mu[i].mul((double)epochSizes[i]));
             M += epochSizes[i];
         }
-        //Sall.divi(S.length);
-        Sall.divi((double)(M - S.length));
-        //muall.divi((double)mu.length);
+
         muall.divi((double)M);
+        Sall.divi((double)(M - S.length));
+
+        // even if covariance matrices are not used, it may be possible, that our covariance matrix
+        // over all epochs is close to singular => regularization necessary
+        if(!useCovariance)
+        {
+            double eig = Sall.symmetricEigenvalues().get(0, 0);
+            if(eig < REGULARIZATION_THRESH)
+            {
+                appendToLog("At least one direction has nearly zero-variance. Using regularization.");
+                SSAMatrix alphaI = SSAMatrix.eye(S[0].getRows()).muli(REGULARIZATION_THRESH - eig);
+                Sall.addi(alphaI);
+            }
+        }
 
         // calculate whitening matrix
         W = MathFunctions.whitening(Sall);

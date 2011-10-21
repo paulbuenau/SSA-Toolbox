@@ -66,6 +66,15 @@ public class SSA
      */
     public void checkParameters(SSAParameters par, Data data)
     {
+        if(par.isUseCovariance())
+        {
+            // if covariances are used, the number of samples per epoch has to be at least the dimension of the dataset
+            if((data.getTotalNumberOfSamples() / data.getNumberOfEpochs()) < data.getNumberOfDimensions())
+            {
+                throw new IllegalArgumentException("Number of samples per epoch must be at least the dimension of the dataset");
+            }
+        }
+
         if(par.isUseMean() && par.isUseCovariance())
         {
             // mean + covariance
@@ -112,7 +121,7 @@ public class SSA
         SSAMatrix S[] = new SSAMatrix[data.S.length];
         SSAMatrix mu[] = new SSAMatrix[data.mu.length];
 
-        int n = data.S[0].getRows();
+        int n = data.getNumberOfDimensions();
         int d = optNSources ? (n - par.getNumberOfStationarySources()) : par.getNumberOfStationarySources();
 
         SSAMatrix B;
@@ -160,7 +169,7 @@ public class SSA
         for(i = 0; i < Integer.MAX_VALUE; i++)
         {
             // get current objective function value and gradient
-            SSAMatrix ret[] = objectiveFunction( d,
+            SSAMatrix ret[] = objectiveFunction(    n, d,
                                                     S, mu, data.epochSizes, null, true,
                                                     par.isUseMean());
             loss = normalizeObjectiveFunction(ret[0].get(0, 0), k);
@@ -197,7 +206,7 @@ public class SSA
             for(int j = 0; j < 10; j++, t *= LSBETA)
             {
                 SSAMatrix M = search.mul(t);
-                ret = objectiveFunction(d,
+                ret = objectiveFunction(n, d,
                                         S, mu, data.epochSizes, M, false,
                                         par.isUseMean());
                 lossNew = normalizeObjectiveFunction(ret[0].get(0, 0), k);
@@ -292,7 +301,7 @@ public class SSA
         checkParameters(par, data);
 
         appendToLog("Calculating covariance matrices and means...");
-        data.epochize();
+        data.epochize(par.isUseCovariance());
 
         appendToLog("Running SSA...");
 
@@ -354,7 +363,7 @@ public class SSA
             }
 
             // now put results of both optimizations together
-            int n = data.S[0].getRows();
+            int n = data.getNumberOfDimensions();
             SSAMatrix Mix = SSAMatrix.solve(SSAMatrix.concatVertically(optSSrc.Ps, optNSrc.Pn), SSAMatrix.eye(n));
             // basis for stationary subspace
             SSAMatrix Bs = Mix.getRange(0, n, 0, optSSrc.d);
@@ -386,7 +395,7 @@ public class SSA
 
             SSAMatrix mu[] = new SSAMatrix[data.mu.length];
 
-            int n = data.S[0].getRows();
+            int n = data.getNumberOfDimensions();
             int d = par.getNumberOfStationarySources();
 
             // prepare matrix H on which we want to solve the eigenvalue problem
@@ -452,6 +461,7 @@ public class SSA
     /**
      * Computes the objective function (and optionally the gradient)
      *
+     * @param n number of dimensions
      * @param d number of stationary sources
      * @param S array with covariance matrices over all epochs
      * @param mu array with means over all epochs
@@ -462,7 +472,8 @@ public class SSA
      * @return array of matrices: 1x1 matrix with the loss at exp(M) at index 0 and optionally
      *         the gradient at exp(M) w.r.t. M at index 1 (only if calcGradient was set to true) and exp(M) at index 2
      */
-    public SSAMatrix[] objectiveFunction(       int d,
+    public SSAMatrix[] objectiveFunction(       int n,
+                                                int d,
                                                 SSAMatrix S[],
                                                 SSAMatrix mu[],
                                                 int epochSizes[],
@@ -477,7 +488,7 @@ public class SSA
         Snew = new SSAMatrix[S.length];
         munew = new SSAMatrix[mu.length];
 
-        int n = S[0].getRows();
+        //int n = data.getNumberOfDimensions();
 
         // only initialize variable gradient if it is needed later
         if(calcGradient)
