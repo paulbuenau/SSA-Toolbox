@@ -923,8 +923,6 @@ The log-likelihood under $H_A$ is given by,
 & = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi)  + N_i \log \det \esi_i + \sum_{x \in \mathcal{T}_i} (x-\emu_i)^\top \esi_i^{-1} (x-\emu_i) \\
 & = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi)  + N_i \log \det \esi_i + 
 		\trace\left[ \sum_{x \in \mathcal{T}_i} (x-\emu_i) (x-\emu_i)^\top \esi_i^{-1} \right] \\
-& = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi) + N_i \log \det \esi_i - N_i \trace \left[ \emu_i \emu^\top_i \right]
-		+ \trace\left[ \left(\sum_{x \in \mathcal{T}_i} x x^\top\right)  \esi_i^{-1}  \right] \\
 & = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi) + N_i \log \det \esi_i + \trace\left[  (N_i-1) \esi_i \esi_i^{-1} \right] \\
 & = -\frac{1}{2} \sum_{i=1}^N N_i d \log (2\pi) + N_i \log \det \esi_i + (N_i-1) d .
 \end{align*}
