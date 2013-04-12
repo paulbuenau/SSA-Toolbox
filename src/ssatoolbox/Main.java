@@ -407,7 +407,7 @@ public class Main {
         {
             gui.setGUIState(GUI.STATE_SSA_RUNNING);
         }
-                    
+        
         if(sepThread)
         {
             (new Thread() {

@@ -487,7 +487,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints.weighty = 1.0;
         jPanel2.add(jScrollPane2, gridBagConstraints);
 
-	/*
+	
         jLabel2.setText("Please cite the following paper for the SSA Toolbox.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -501,7 +501,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         jTextArea2.setColumns(20);
         jTextArea2.setFont(new java.awt.Font("Courier New", 0, 13));
         jTextArea2.setRows(5);
-        jTextArea2.setText("@Article{JMLR:SSAToolbox:2009,\n  author =   {Jan Saputra M{\\\"uller} and\n               Paul von B{\\\"u}nau and\n               Frank C.~Meinecke and\n               Franz J.~Kir\\'{a}ly and \n               Klaus-Robert M{\\\"u}ller},\n  title =  {SSA Toolbox}, \n  journal =   {Journal of Machine Learning Research (accepted)},\n  year =   2009\n}");
+        jTextArea2.setText("@Article{JMLR:SSAToolbox:2011,\n  author =   {Jan Saputra M{\\\"uller} and\n               Paul von B{\\\"u}nau and\n               Frank C.~Meinecke and\n               Franz J.~Kir\\'{a}ly and \n               Klaus-Robert M{\\\"u}ller},\n  title = {The Stationary Subspace Analysis Toolbox}, \n  journal = {Journal of Machine Learning Research},\n  volume = {12}, \n  year = {2011}, \n  pages = {3065-3069} \n}");
         jScrollPane3.setViewportView(jTextArea2);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -511,7 +511,7 @@ public class GUI extends javax.swing.JFrame implements Logger {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         jPanel2.add(jScrollPane3, gridBagConstraints);
-		*/
+		
 
         jButton1.setText("Close");
         jButton1.addActionListener(new java.awt.event.ActionListener() {

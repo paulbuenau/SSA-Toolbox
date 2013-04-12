@@ -9,6 +9,9 @@ function [Ps, Pn, As, An, ssa_results] = ssa(X, d, varargin)
 %                  * D x n matrix with data in the columns
 %                  * cell array where each X{i} is a D x n_i matrix
 %                    and n_i the number of samples in epoch i
+%                  * or an empty matrix, i.e. X = []. In this case, the
+%                    means and covariances of the epochs have to be specified
+%                    directly (see optional parameters 'means' and 'covs').
 %  d              Dimensionality of stationary subspace
 %  <options>      List of key-value pairs to set the following options.
 %    reps                Number of restarts (the one with the lowest
@@ -28,6 +31,11 @@ function [Ps, Pn, As, An, ssa_results] = ssa(X, d, varargin)
 %                         Default: false
 %    ignore_determinacy  Set this to true, if the determinacy bounds should
 %                         be ignored. Default: false
+%    means               If X = [], this parameter has to be a D x N matrix,
+%                        containing the means of the epochs in the columns.
+%    covs                If X = [], this parameter has to be a cell array
+%                        of length N, where the elements of the array are
+%                        the D x D covariance matrices of the epochs.
 %                     
 %
 %output
@@ -44,8 +52,8 @@ function [Ps, Pn, As, An, ssa_results] = ssa(X, d, varargin)
 %  This software is distributed under the BSD license. See COPYING for
 %  details.
 
-% Copyright (c) 2010, Jan Saputra Müller, Paul von Bünau, Frank C. Meinecke,
-% Franz J. Kiraly and Klaus-Robert Müller.
+% Copyright (c) 2010, Jan Saputra Mueller, Paul von Buenau, Frank C. Meinecke,
+% Franz J. Kiraly and Klaus-Robert Mueller.
 % All rights reserved.
 % 
 % Redistribution and use in source and binary forms, with or without modification,
@@ -58,7 +66,7 @@ function [Ps, Pn, As, An, ssa_results] = ssa(X, d, varargin)
 % list of conditions and the following disclaimer in the documentation and/or other
 %  materials provided with the distribution.
 % 
-% * Neither the name of the Berlin Institute of Technology (Technische Universität
+% * Neither the name of the Berlin Institute of Technology (Technische Universit??t
 % Berlin) nor the names of its contributors may be used to endorse or promote
 % products derived from this software without specific prior written permission.
 % 
@@ -86,7 +94,9 @@ opt = set_defaults(opt, ...
 						'matrix_library', 'colt', ...
 						'random_seed', 0,  ...
 					    'quiet', false, ...
-                        'ignore_determinacy', false ...
+                        'ignore_determinacy', false, ...
+                        'means', [], ...
+                        'covs', [] ...
 						 );
 
 % instantiate classes
@@ -147,16 +157,47 @@ try
     ssamain.data.setCustomEpochDefinition(epdef, epochs, min_ep_size, fakefile);
     ssamain.data.setEpochType(ssamain.data.EPOCHS_CUSTOM);
  else
-    % epochize equally
-    if ~opt.quiet, fprintf('No custom epochization found. Using equally sized epochs.\n'); end
-    Xdm = ssatoolbox.SSAMatrix(X);
-    ssamain.data.setTimeSeries(Xdm, []);
-    if opt.equal_epochs == 0
-        % use heuristic
-        ssamain.data.setEpochType(ssamain.data.EPOCHS_EQUALLY_HEURISTIC);
+    if isempty(X)
+       % means and covs are specified directly
+       fprintf('X is empty, means and covariances are specified directly...\n');
+       if isempty(opt.means) && opt.use_mean
+          error('Error: means should be used but variable means is not set.');
+       end
+       if isempty(opt.covs) && opt.use_covariance
+          error('Error: covariances should be used but variable covs is not set.');
+       end
+       if opt.use_mean && opt.use_covariance && length(opt.covs) ~= size(opt.means, 2)
+          error('Error: number of epochs in means and covs have to be the same.');
+       end
+       ssamain.data.setEpochType(ssamain.data.EPOCHS_SPECIFIED_MOMENTS);
+       if opt.use_covariance
+          epochs = length(opt.covs);
+          ssamain.data.customS = javaArray('ssatoolbox.SSAMatrix', epochs);
+       end
+       if opt.use_mean
+          epochs = length(opt.means);
+          ssamain.data.customMu = javaArray('ssatoolbox.SSAMatrix', epochs);
+       end
+       for i=1:epochs
+          if opt.use_covariance
+             ssamain.data.customS(i) = ssatoolbox.SSAMatrix(opt.covs{i});
+          end
+          if opt.use_mean
+             ssamain.data.customMu(i) = ssatoolbox.SSAMatrix(opt.means(:,i));
+          end
+       end
     else
-        ssamain.data.setNumberOfEqualSizeEpochs(opt.equal_epochs);
-        ssamain.data.setEpochType(ssamain.data.EPOCHS_EQUALLY);
+       % epochize equally
+       if ~opt.quiet, fprintf('No custom epochization found. Using equally sized epochs.\n'); end
+       Xdm = ssatoolbox.SSAMatrix(X);
+       ssamain.data.setTimeSeries(Xdm, []);
+       if opt.equal_epochs == 0
+           % use heuristic
+           ssamain.data.setEpochType(ssamain.data.EPOCHS_EQUALLY_HEURISTIC);
+       else
+           ssamain.data.setNumberOfEqualSizeEpochs(opt.equal_epochs);
+           ssamain.data.setEpochType(ssamain.data.EPOCHS_EQUALLY);
+       end
     end
  end
 catch
@@ -215,8 +256,10 @@ if iscell(X)
     ssa_results.s_src = Ps * Xwoeps;
     ssa_results.n_src = Pn * Xwoeps;
 else
-    ssa_results.s_src = Ps * X;
-    ssa_results.n_src = Pn * X;
+    if ~isempty(X)
+       ssa_results.s_src = Ps * X;
+       ssa_results.n_src = Pn * X;
+    end
 end
 parameters = struct;
 parameters.input_file = '';

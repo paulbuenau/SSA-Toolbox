@@ -119,7 +119,9 @@ public class SSA
     public Results optimizeOnce(SSAParameters par, Data data, boolean optNSources, SSAMatrix init)
     {
         SSAMatrix S[] = new SSAMatrix[data.S.length];
-        SSAMatrix mu[] = new SSAMatrix[data.mu.length];
+        SSAMatrix mu[] = null;
+        if(par.isUseMean())
+	        mu = new SSAMatrix[data.mu.length];
 
         int n = data.getNumberOfDimensions();
         int d = optNSources ? (n - par.getNumberOfStationarySources()) : par.getNumberOfStationarySources();
@@ -140,7 +142,8 @@ public class SSA
         for(int i = 0; i < data.S.length; i++)
         {
             S[i] = B.mmul(data.S[i]).mmuli(B.transpose());
-            mu[i] = B.mmul(data.mu[i].sub(data.muall));
+            if(par.isUseMean())
+	            mu[i] = B.mmul(data.mu[i].sub(data.muall));
         }
 
         int k; // degrees of freedom of chi^2 distribution
@@ -159,7 +162,6 @@ public class SSA
             // use only means
             k = S.length*d;
         }
-
         // Optimization loop
         SSAMatrix grad, gradOld = null;
         SSAMatrix alpha, alphaOld = null;
@@ -299,8 +301,11 @@ public class SSA
         }
 
         checkParameters(par, data);
-
-        appendToLog("Calculating covariance matrices and means...");
+		
+		if(data.getEpochType() != data.EPOCHS_SPECIFIED_MOMENTS)
+		{
+           appendToLog("Calculating covariance matrices and means...");
+		}
         data.epochize(par.isUseCovariance());
 
         appendToLog("Running SSA...");
@@ -400,10 +405,11 @@ public class SSA
 
             // prepare matrix H on which we want to solve the eigenvalue problem
             SSAMatrix H = SSAMatrix.zeros(n, n);
-            for(int i = 0; i < data.S.length; i++)
+            for(int i = 0; i < data.mu.length; i++)
             {
-                // whiten means
-                mu[i] = data.W.mmul(data.mu[i].sub(data.muall));
+                // whiten means; assume identity covariance matrix
+                //mu[i] = data.W.mmul(data.mu[i].sub(data.muall));
+                mu[i] = data.mu[i].sub(data.muall);
                 // add mu'*mu to H
                 H.addi(mu[i].mmul(mu[i].transpose()).muli(data.epochSizes[i]));
             }
@@ -419,8 +425,8 @@ public class SSA
             // loss_n is the sum of the eigenvalues for the non-stationary subspace
             double loss_n = diag.getRange(d, n, 0, 1).sum();
             // Now normalize losses
-            int k_s = data.S.length * d; // degrees of freedom of chi^2 distribution
-            int k_n = data.S.length * (n - d);
+            int k_s = data.mu.length * d; // degrees of freedom of chi^2 distribution
+            int k_n = data.mu.length * (n - d);
             loss_s = normalizeObjectiveFunction(loss_s, k_s);
             loss_n = normalizeObjectiveFunction(loss_n, k_n);
 
@@ -486,7 +492,8 @@ public class SSA
 
         // rotated covariance matrices and means
         Snew = new SSAMatrix[S.length];
-        munew = new SSAMatrix[mu.length];
+        if(useMean)
+	        munew = new SSAMatrix[mu.length];
 
         //int n = data.getNumberOfDimensions();
 
@@ -514,15 +521,20 @@ public class SSA
             // rotate covariance matrix and mean vector in epoch i
             SSAMatrix RScomplete = Rcomplete.mmul(S[i]); // R multiplied only from left side (needed for gradient)
             SSAMatrix RSRtcomplete = RScomplete.mmul(Rtcomplete); // rotated covariance matrix
-            SSAMatrix Rmucomplete = Rcomplete.mmul(mu[i]); // rotated mean
+            SSAMatrix Rmucomplete = null;
+            if(useMean)
+            	Rmucomplete = Rcomplete.mmul(mu[i]); // rotated mean
 
             // truncate to the stationary subspace
             SSAMatrix RS = RScomplete.getRange(0, d, 0, n);
             SSAMatrix RSRt = RSRtcomplete.getRange(0, d, 0, d);
-            SSAMatrix Rmu = Rmucomplete.getRange(0, d, 0, 1);
+            SSAMatrix Rmu = null;
+            if(useMean)
+            	Rmu = Rmucomplete.getRange(0, d, 0, 1);
 
             Snew[i] = RSRtcomplete;
-            munew[i] = Rmucomplete;
+            if(useMean)
+	            munew[i] = Rmucomplete;
 
             double add = -Math.log(MathFunctions.det(RSRt));
             //loss += -Math.log(MathFunctions.det(RSRt));
