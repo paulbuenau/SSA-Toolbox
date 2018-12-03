@@ -67,6 +67,9 @@ public class Data {
 
     /** Constant for epochization type "custom epochs" */
     public static final int EPOCHS_CUSTOM = 3;
+    
+    /** Constant for "direct specification of means and covariances" */
+    public static final int EPOCHS_SPECIFIED_MOMENTS = 4;
 
     /** Saves the file, from which the time series has been loaded (if it has been) */
     protected File timeseriesFile = null;
@@ -89,6 +92,12 @@ public class Data {
     
     /** Array of means */
     protected SSAMatrix mu[];
+    
+    /** Array of covariance matrices, if specified directly. */
+    public SSAMatrix customS[];
+    
+    /** Array of means, if specified directly */
+    public SSAMatrix customMu[];
 
     /** Number of data points in the epochs */
     protected int epochSizes[];
@@ -170,6 +179,7 @@ public class Data {
      */
     public int getTotalNumberOfSamples() {
         if(X != null) return X.getColumns();
+        else if(getEpochType() == EPOCHS_SPECIFIED_MOMENTS) return Integer.MAX_VALUE;
         else return 0;
     }
 
@@ -181,6 +191,8 @@ public class Data {
     public int getNumberOfDimensions()
     {
         if(X != null) return X.getRows();
+        else if(customS != null) return customS[0].getRows();
+        else if(customMu != null) return customMu[0].getRows();
         else return 0;
     }
 
@@ -217,6 +229,15 @@ public class Data {
                 return getNumberOfEqualSizeEpochs();
             case EPOCHS_EQUALLY_HEURISTIC:
                 return getNumberOfEpochsHeuristic();
+            case EPOCHS_SPECIFIED_MOMENTS:
+                if(customMu != null)
+                {
+				    return customMu.length;
+				}
+				else if(customS != null)
+				{
+				    return customS.length;
+				}
         }
 
         return 0;
@@ -446,6 +467,16 @@ public class Data {
         {
             epochizeEqually(getNumberOfEpochsHeuristic(), useCovariance);
         }
+        else if(getEpochType() == EPOCHS_SPECIFIED_MOMENTS)
+        {
+            // customMu and customS have to be already specified
+            int epochSizes[] = new int[getNumberOfEpochs()];
+            for(int i = 0; i < getNumberOfEpochs(); i++)
+            {
+                epochSizes[i] = 1;
+            }
+            initializeSSA(customS, customMu, epochSizes, useCovariance);
+        }
     }
 
     /**
@@ -561,25 +592,55 @@ public class Data {
                 }
             }
         }
-
+        int epochs = 0;
         // calculate covariance matrix over all epochs
-        Sall = SSAMatrix.zeros(S[0].getRows(), S[0].getColumns());
-        // calculate mean over all epochs
-        muall = SSAMatrix.zeros(mu[0].getRows(), 1);
-        int M = 0; // total number of samples in the epochs
-        for(int i = 0; i < S.length; i++)
+        if(S != null)
         {
-            Sall.addi(S[i].mul((double)epochSizes[i] - 1.0));
-            muall.addi(mu[i].mul((double)epochSizes[i]));
-            M += epochSizes[i];
+            Sall = SSAMatrix.zeros(S[0].getRows(), S[0].getColumns());
+            epochs = S.length;
+        }
+            
+        // calculate mean over all epochs
+        if(mu != null)
+        {
+            muall = SSAMatrix.zeros(mu[0].getRows(), 1);
+            epochs = mu.length;
+        }
+        
+        int M = 0; // total number of samples in the epochs
+        for(int i = 0; i < epochs; i++)
+        {
+        	if(getEpochType() == EPOCHS_SPECIFIED_MOMENTS)
+        	{
+        	    if(S != null)
+        	        Sall.addi(S[i]);
+        	    if(mu != null)
+        	        muall.addi(mu[i]);
+        	}
+        	else
+        	{
+                Sall.addi(S[i].mul((double)epochSizes[i] - 1.0));
+                muall.addi(mu[i].mul((double)epochSizes[i]));
+                M += epochSizes[i];
+            }
         }
 
-        muall.divi((double)M);
-        Sall.divi((double)(M - S.length));
+        if(getEpochType() == EPOCHS_SPECIFIED_MOMENTS)
+        {
+            if(S != null)
+                Sall.divi((double)epochs);
+            if(mu != null)
+                muall.divi((double)epochs);
+        }
+        else
+        {
+            muall.divi((double)M);
+        	Sall.divi((double)(M - epochs));
+        }
 
         // even if covariance matrices are not used, it may be possible, that our covariance matrix
         // over all epochs is close to singular => regularization necessary
-        if(!useCovariance)
+        if(!useCovariance && S != null)
         {
             double eig = Sall.symmetricEigenvalues().get(0, 0);
             if(eig < REGULARIZATION_THRESH)
@@ -590,8 +651,15 @@ public class Data {
             }
         }
 
-        // calculate whitening matrix
-        W = MathFunctions.whitening(Sall);
+		if(getEpochType() != EPOCHS_SPECIFIED_MOMENTS || (getEpochType() == EPOCHS_SPECIFIED_MOMENTS && useCovariance))
+		{
+        	// calculate whitening matrix
+        	W = MathFunctions.whitening(Sall);
+        }
+        else
+        {
+            W = SSAMatrix.eye(mu[0].getRows());
+        }
 
         this.S = S;
         this.mu = mu;
